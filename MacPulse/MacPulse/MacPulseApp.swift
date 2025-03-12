@@ -24,9 +24,17 @@ struct MacPulseApp: App {
     }()
 
     var body: some Scene {
+        #if os(iOS)
         WindowGroup {
             SystemMetricsDashboard()
         }
         .modelContainer(sharedModelContainer)
+        #elseif os(macOS)
+        WindowGroup {
+            SystemMetricsDashboardMac()
+            //ProcessListView()
+        }
+        .modelContainer(sharedModelContainer)
+        #endif
     }
 }

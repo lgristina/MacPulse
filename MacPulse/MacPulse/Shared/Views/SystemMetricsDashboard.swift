@@ -11,7 +11,8 @@ import Charts
 
 
 struct SystemMetricsDashboard: View {
-    @ObservedObject var viewModel = SystemMetricsViewModel()
+    @ObservedObject var viewModel = SystemMonitor()
+    @ObservedObject var processModel = ProcessModel()
     
     var body: some View {
         NavigationView {
@@ -33,8 +34,8 @@ struct SystemMetricsDashboard: View {
                         MetricPanel(title: "Disk Activity", value: viewModel.diskActivity, unit: "%")
                     }
                     
-                    NavigationLink(destination: ProcessDetailedView(processes: viewModel.runningProcesses)) {
-                        ProcessPanel(title: "Running Processes", processes: viewModel.runningProcesses)
+                    NavigationLink(destination: ProcessDetailedView(processes: processModel.runningProcesses)) {
+                        ProcessPanel(title: "Running Processes", processes: processModel.runningProcesses)
                     }
                 }
                 .padding()
@@ -64,14 +65,14 @@ struct MetricPanel: View {
 
 struct ProcessPanel: View {
     let title: String
-    let processes: [String]
+    let processes: [ProcessInfo]
 
     var body: some View {
         VStack {
             Text(title)
                 .font(.headline)
-            List(processes, id: \.self) { process in
-                Text(process)
+            List(processes, id: \.id) { process in
+                Text(String(process.id))
             }
         }
         .frame(width: 200, height: 120)
@@ -177,14 +178,14 @@ struct DiskDetailedView: View {
 }
 
 struct ProcessDetailedView: View {
-    let processes: [String]
+    let processes: [ProcessInfo]
     
     var body: some View {
         VStack {
             Text("Running Processes Detailed View")
                 .font(.largeTitle)
             List(processes, id: \.self) { process in
-                Text(process)
+                Text(String(process.id))
             }
         }
         .padding()

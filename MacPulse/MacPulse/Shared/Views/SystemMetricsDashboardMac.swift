@@ -1,4 +1,3 @@
-//
 //  SystemMetricsDashboardMac.swift
 //  MacPulse
 //
@@ -9,7 +8,8 @@ import SwiftUI
 import Charts
 
 struct SystemMetricsDashboardMac: View {
-    @ObservedObject var viewModel = SystemMetricsViewModel()
+    @ObservedObject var viewModel = SystemMonitor()
+    @ObservedObject var processModel = ProcessModel()
     
     var body: some View {
         VStack {
@@ -24,15 +24,15 @@ struct SystemMetricsDashboardMac: View {
                         MetricPanel(title: "CPU Usage", value: viewModel.cpuUsage, unit: "%")
                     }
                     NavigationLink(destination: MemoryDetailedView(memoryUsage: viewModel.memoryUsage)) {
-                        MetricPanel(title: "Memory Usage", value: viewModel.memoryUsage, unit: "%")
+                        MetricPanel(title: "Memory Usage", value: viewModel.memoryUsage, unit: "MB")
                     }
                 }
                 GridRow {
                     NavigationLink(destination: DiskDetailedView(diskActivity: viewModel.diskActivity)) {
-                        MetricPanel(title: "Disk Activity", value: viewModel.diskActivity, unit: "%")
+                        MetricPanel(title: "Disk Activity", value: viewModel.diskActivity, unit: "MB")
                     }
-                    NavigationLink(destination: ProcessDetailedView(processes: viewModel.runningProcesses)) {
-                        ProcessPanel(title: "Running Processes", processes: viewModel.runningProcesses)
+                    NavigationLink(destination: ProcessDetailedView(processes: processModel.runningProcesses)) {
+                        ProcessPanel(title: "Running Processes", processes: processModel.runningProcesses)
                     }
                 }
             }
@@ -44,5 +44,6 @@ struct SystemMetricsDashboardMac: View {
 struct SystemMetricsDashboardMac_Previews: PreviewProvider {
     static var previews: some View {
         SystemMetricsDashboardMac()
+        
     }
 }

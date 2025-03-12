@@ -1,16 +1,15 @@
 //
-//  SystemMetric.swift
+//  ProcessMetrics.swift
 //  MacPulse
 //
-//  Created by Luca Gristina on 3/11/25.
+//  Created by Austin Frank on 3/12/25.
 //
 
 import Foundation
 
-struct SystemMetric: Identifiable, Codable {
+struct ProcessInfo: Identifiable, Codable, Hashable{
     let id : Int
     let timestamp: Date
     let cpuUsage: Double
     let memoryUsage: Double
-    let diskActivity: Double
 }
