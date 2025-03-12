@@ -25,7 +25,7 @@ struct MacPulseApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SystemMetricsDashboard()
         }
         .modelContainer(sharedModelContainer)
     }
