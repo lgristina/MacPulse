@@ -6,11 +6,19 @@
 //
 
 import Foundation
+import SwiftData
 
-struct SystemMetric: Identifiable, Codable {
-    let id : Int
-    let timestamp: Date
-    let cpuUsage: Double
-    let memoryUsage: Double
-    let diskActivity: Double
+@Model
+class SystemMetric {  // Use 'class' instead of 'struct'
+    var timestamp: Date
+    var cpuUsage: Double
+    var memoryUsage: Double
+    var diskActivity: Double
+
+    init(timestamp: Date, cpuUsage: Double, memoryUsage: Double, diskActivity: Double) {
+        self.timestamp = timestamp
+        self.cpuUsage = cpuUsage
+        self.memoryUsage = memoryUsage
+        self.diskActivity = diskActivity
+    }
 }
