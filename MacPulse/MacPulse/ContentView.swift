@@ -47,7 +47,13 @@ struct ContentView: View {
     private var detailView: some View {
         switch selectedOption?.title {
         case "Home":
-            Text("Home View")
+            VStack {
+                  Image("MacPulse")
+                      .resizable()
+                      .scaledToFill() // Ensures the image fills the entire view
+                      .edgesIgnoringSafeArea(.all) // Makes the image fill the safe area of the screen
+                      .padding(.bottom, 20)
+              }
         case "System":
             SystemMetricsDashboardMac()
         case "Process":
