@@ -31,7 +31,8 @@ struct MacPulseApp: App {
         .modelContainer(sharedModelContainer)
         #elseif os(macOS)
         WindowGroup {
-            SystemMetricsDashboardMac()
+            ContentView()
+            //SystemMetricsDashboardMac()
             //ProcessListView()
         }
         .modelContainer(sharedModelContainer)
