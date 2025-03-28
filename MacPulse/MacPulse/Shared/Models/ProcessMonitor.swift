@@ -1,9 +1,41 @@
 import Foundation
+import SwiftUI
 
-class ProcessMonitor {
+class ProcessMonitor: ObservableObject {
     static let shared = ProcessMonitor()
 
-    /// Returns a list of running processes with CPU & memory usage
+    private var timer: Timer?
+
+    init() {
+        startMonitoring()
+    }
+
+    func startMonitoring() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+            self.collectAndSaveProcesses()
+        }
+        print("📊 Process monitoring started.")
+    }
+
+    func stopMonitoring() {
+        timer?.invalidate()
+        print("🛑 Process monitoring stopped.")
+    }
+
+    private func collectAndSaveProcesses() {
+        let processes = getRunningProcesses().map { process in
+            ProcessMetric(id: Int(), timestamp: process.timestamp, cpuUsage: process.cpuUsage, memoryUsage: process.memoryUsage)
+        }
+
+        if !processes.isEmpty {
+            Task { @MainActor in
+                DataManager.shared.saveProcessMetrics(processes: processes)
+            }
+        }
+    }
+
+    /// Fetches running processes with CPU & memory usage
     func getRunningProcesses() -> [ProcessInfo] {
         let task = Process()
         task.launchPath = "/bin/ps"
@@ -13,16 +45,16 @@ class ProcessMonitor {
         task.standardOutput = pipe
 
         do {
-            try task.run() // Updated to use `run()` instead of `launch()` (deprecated)
+            try task.run()
         } catch {
-            print("Failed to fetch processes: \(error)")
+            print("❌ Failed to fetch processes: \(error)")
             return []
         }
 
         let output = pipe.fileHandleForReading.readDataToEndOfFile()
         guard let result = String(data: output, encoding: .utf8) else { return [] }
 
-        let lines = result.split(separator: "\n").dropFirst() // Ignore header line
+        let lines = result.split(separator: "\n").dropFirst()
         var processList: [ProcessInfo] = []
 
         for line in lines {

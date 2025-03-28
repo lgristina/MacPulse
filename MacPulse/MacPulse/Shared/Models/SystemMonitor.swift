@@ -57,6 +57,10 @@ class SystemMonitor: ObservableObject{
         diskActivity = getDiskUsage()
 
         print("📊 CPU: \(cpuUsage)% | 🖥️ Memory: \(memoryUsage) MB | 💾 Disk: \(diskActivity) GB")
+        
+        Task { @MainActor in
+                DataManager.shared.saveMetrics(cpu: cpuUsage, memory: memoryUsage, disk: diskActivity)
+            }
     }
    
     private var previousLoad: host_cpu_load_info = SystemMonitor.hostCPULoadInfo()
