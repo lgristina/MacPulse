@@ -21,8 +21,7 @@ jobs:
       - name: Determine Default Scheme
         run: |
           # Search for the Xcode project or workspace file
-          project_file=$(find . -type f \( -name "*.xcodeproj" -or -name "*.xcworkspace" \) | head -n 1)
-
+          project_file=$(find ./ -type f \( -name "*.xcodeproj" -or -name "*.xcworkspace" \) | head -n 1)
           if [ -z "$project_file" ]; then
             echo "No Xcode workspace or project found!" && exit 1
           fi
