@@ -1,8 +1,31 @@
 import Foundation
+import SwiftUI
 
-class ProcessMonitor {
+
+struct ProcessInfo: Identifiable, Codable, Hashable{
+    let id : Int
+    let timestamp: Date
+    let cpuUsage: Double
+    let memoryUsage: Double
+}
+
+class ProcessMonitor: ObservableObject {
     static let shared = ProcessMonitor()
-
+    @Published var runningProcesses: [ProcessInfo] = []
+    
+    init() {
+        fetchRunningProcesses()
+    }
+    
+    func fetchRunningProcesses() {
+        DispatchQueue.global(qos: .background).async {
+            let processes = ProcessMonitor.shared.getRunningProcesses()
+            DispatchQueue.main.async {
+                self.runningProcesses = processes
+            }
+        }
+    }
+    
     /// Returns a list of running processes with CPU & memory usage
     func getRunningProcesses() -> [ProcessInfo] {
         let task = Process()

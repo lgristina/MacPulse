@@ -9,7 +9,7 @@ import Charts
 
 struct SystemMetricsDashboardMac: View {
     @ObservedObject var viewModel = SystemMonitor()
-    @ObservedObject var processModel = ProcessModel()
+    @ObservedObject var processModel = ProcessMonitor()
     
     var body: some View {
         VStack {
@@ -24,15 +24,10 @@ struct SystemMetricsDashboardMac: View {
                         MetricPanel(title: "CPU Usage", value: viewModel.cpuUsage, unit: "%")
                     }
                     NavigationLink(destination: MemoryDetailedView(memoryUsage: viewModel.memoryUsage)) {
-                        MetricPanel(title: "Memory Usage", value: viewModel.memoryUsage, unit: "MB")
+                        MetricPanel(title: "Memory Usage", value: viewModel.memoryUsage, unit: "GB")
                     }
-                }
-                GridRow {
                     NavigationLink(destination: DiskDetailedView(diskActivity: viewModel.diskActivity)) {
-                        MetricPanel(title: "Disk Activity", value: viewModel.diskActivity, unit: "MB")
-                    }
-                    NavigationLink(destination: ProcessDetailedView(processes: processModel.runningProcesses)) {
-                        ProcessPanel(title: "Running Processes", processes: processModel.runningProcesses)
+                        MetricPanel(title: "Disk Activity", value: viewModel.diskActivity, unit: "GB")
                     }
                 }
             }

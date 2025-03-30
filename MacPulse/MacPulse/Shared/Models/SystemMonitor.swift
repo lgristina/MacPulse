@@ -1,6 +1,22 @@
 import Foundation
 import SwiftUI
 import Combine
+import SwiftData
+
+@Model
+class SystemMetric {
+    var timestamp: Date
+    var cpuUsage: Double
+    var memoryUsage: Double
+    var diskActivity: Double
+
+    init(timestamp: Date, cpuUsage: Double, memoryUsage: Double, diskActivity: Double) {
+        self.timestamp = timestamp
+        self.cpuUsage = cpuUsage
+        self.memoryUsage = memoryUsage
+        self.diskActivity = diskActivity
+    }
+}
 
 // Extend Double to round to N decimal places efficiently
 extension Double {
@@ -112,7 +128,7 @@ class SystemMonitor: ObservableObject{
         }
         guard result == KERN_SUCCESS else { return -1 }
 
-        let usedMemory = Double(stats.active_count + stats.inactive_count + stats.wire_count) * Double(vm_page_size) / (1024 * 1024)
+        let usedMemory = Double(stats.active_count + stats.inactive_count + stats.wire_count) * Double(vm_page_size) / (1024 * 1024 * 1024) // Convert bytes to GB
         return usedMemory.rounded(toPlaces: 2)
     }
 
@@ -120,13 +136,33 @@ class SystemMonitor: ObservableObject{
         let fileManager = FileManager.default
         do {
             let attributes = try fileManager.attributesOfFileSystem(forPath: NSHomeDirectory())
-            if let freeSpace = attributes[.systemFreeSize] as? NSNumber {
-                return (freeSpace.doubleValue / (1024 * 1024 * 1024)).rounded(toPlaces: 2) // Convert bytes to GB
+            
+            // Get the total disk space and free space
+            if let totalSpace = attributes[.systemSize] as? NSNumber,
+               let freeSpace = attributes[.systemFreeSize] as? NSNumber {
+                
+                // Debug: print out the raw values for total space and free space (in bytes)
+                print("Total Disk Space: \(totalSpace.doubleValue) bytes")
+                print("Free Disk Space: \(freeSpace.doubleValue) bytes")
+                
+                // Calculate used space
+                let usedSpace = totalSpace.doubleValue - freeSpace.doubleValue
+                
+                // Debug: print out the used space (in bytes)
+                print("Used Disk Space: \(usedSpace) bytes")
+                
+                // Convert bytes to GB (1024^3 bytes in 1 GB)
+                let usedSpaceInGB = usedSpace / (1024 * 1024 * 1024)
+                
+                // Debug: print out the used space in GB
+                print("Used Disk Space in GB: \(usedSpaceInGB)")
+                
+                // Return the value rounded to 2 decimal places
+                return usedSpaceInGB.rounded(toPlaces: 2)
             }
         } catch {
             print("❌ Error getting disk usage: \(error)")
         }
         return -1
-        
     }
 }

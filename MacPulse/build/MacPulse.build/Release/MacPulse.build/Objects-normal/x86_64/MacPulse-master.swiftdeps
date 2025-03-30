@@ -1,0 +1,25 @@
+version: "Apple Swift version 6.0.3 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)"
+options: "42e78a9ddecb159950b2157dc3657441ff7231f57e921af6d42672d44c4ac827"
+build_start_time: [1743291766, 584502000]
+build_end_time: [1743291769, 209638000]
+inputs:
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/ContentView.swift": [1743085423, 399089485]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Item.swift": [1741659532, 368125475]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/MacPulseApp.swift": [1743083362, 715064753]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Models/DataManager.swift": [1742935121, 912031090]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Models/LogManager.swift": [1743080841, 197651440]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Models/Persistence.swift": [1742935121, 912177463]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Models/ProcessMetric.swift": [1741817723, 981488737]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Models/ProcessMonitor.swift": [1741818472, 709848668]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Models/SystemMetric.swift": [1742935121, 912819370]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Models/SystemMonitor.swift": [1741819033, 135130661]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/ViewModels/ProcessModel.swift": [1741818285, 810282959]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/ViewModels/SystemMetricsViewModel.swift": [1741819033, 762538800]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Views/LogView.swift": [1743084095, 600472548]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Views/ProcessDetailView.swift": [1741818044, 893178760]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Views/ProcessListView.swift": [1741818160, 195894375]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Views/ProcessViewModel.swift": [1741816305, 44728249]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Views/SystemMetricsDashboard.swift": [1741818941, 902385556]
+  "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Views/SystemMetricsDashboardMac.swift": [1741819250, 351823069]
+  ? "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/build/MacPulse.build/Release/MacPulse.build/DerivedSources/GeneratedAssetSymbols.swift"
+  : [1743291766, 394544983]

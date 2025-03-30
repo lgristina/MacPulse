@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>colors</key>
+	<array/>
+	<key>images</key>
+	<array>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameMacPulse</string>
+			<key>relativePath</key>
+			<string>./MacPulse.imageset</string>
+			<key>swiftSymbol</key>
+			<string>macPulse</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameHouse</string>
+			<key>relativePath</key>
+			<string>./house.imageset</string>
+			<key>swiftSymbol</key>
+			<string>house</string>
+		</dict>
+	</array>
+	<key>symbols</key>
+	<array/>
+</dict>
+</plist>

@@ -1,0 +1,24 @@
+{
+  "source": "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "MacPulse",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "Select an option",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 64
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -12,7 +12,7 @@ import Charts
 
 struct SystemMetricsDashboard: View {
     @ObservedObject var viewModel = SystemMonitor()
-    @ObservedObject var processModel = ProcessModel()
+    @ObservedObject var processModel = ProcessMonitor()
     
     var body: some View {
         NavigationView {
@@ -27,15 +27,11 @@ struct SystemMetricsDashboard: View {
                     }
                     
                     NavigationLink(destination: MemoryDetailedView(memoryUsage: viewModel.memoryUsage)) {
-                        MetricPanel(title: "Memory Usage", value: viewModel.memoryUsage, unit: "%")
+                        MetricPanel(title: "Memory Usage", value: viewModel.memoryUsage, unit: "GB")
                     }
                     
                     NavigationLink(destination: DiskDetailedView(diskActivity: viewModel.diskActivity)) {
-                        MetricPanel(title: "Disk Activity", value: viewModel.diskActivity, unit: "%")
-                    }
-                    
-                    NavigationLink(destination: ProcessDetailedView(processes: processModel.runningProcesses)) {
-                        ProcessPanel(title: "Running Processes", processes: processModel.runningProcesses)
+                        MetricPanel(title: "Disk Activity", value: viewModel.diskActivity, unit: "GB")
                     }
                 }
                 .padding()
