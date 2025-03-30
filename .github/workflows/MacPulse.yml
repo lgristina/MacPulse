@@ -18,16 +18,13 @@ jobs:
       - name: Install xcpretty (for better logs)
         run: gem install xcpretty
 
-      - name: Debug Project File Location
+      - name: Find Project File
+        id: find_project
         run: |
-          # Search for the Xcode project file in the correct subdirectory
           project_file=$(find . -type d -name "MacPulse.xcodeproj" | head -n 1)
-          echo "Found project file: $project_file"
           if [ -z "$project_file" ]; then
             echo "No Xcode project file found!" && exit 1
           fi
-
-          # Get the file type (either project or workspace)
           if [[ "$project_file" == *.xcworkspace ]]; then
             filetype_parameter="workspace"
           elif [[ "$project_file" == *.xcodeproj ]]; then
@@ -35,28 +32,28 @@ jobs:
           else
             echo "Invalid file type!" && exit 1
           fi
-
-          echo "File type: $filetype_parameter"
+          echo "filetype_parameter=$filetype_parameter" >> $GITHUB_ENV
+          echo "project_file=$project_file" >> $GITHUB_ENV
 
       - name: Get the Default Scheme
+        id: get_scheme
         run: |
-          # Get the schemes using xcodebuild
           scheme_list=$(xcodebuild -"$filetype_parameter" "$project_file" -list -json | tr -d "\n")
-          
-          # Extract the default scheme
-          default=$(echo $scheme_list | ruby -e "require 'json'; parsed = JSON.parse(STDIN.read); puts parsed['project']['targets'][0] if parsed['project'] && parsed['project']['targets']")
+          default=$(echo "$scheme_list" | jq -r '.project.targets[0]')
           if [ -z "$default" ]; then
             echo "Could not determine default scheme!" && exit 1
           fi
-
-          echo "Using default scheme: $default" 
-          echo "$default" > default
+          echo "Using default scheme: $default"
+          echo "$default" > "$GITHUB_WORKSPACE/default"
 
       - name: Build and Analyze
         run: |
-          scheme=$(cat default)
-          xcodebuild clean build analyze -scheme "$scheme" -"$filetype_parameter" "$project_file" | xcpretty
-          
+          scheme=$(cat "$GITHUB_WORKSPACE/default")
+          if [[ "$filetype_parameter" == "workspace" ]]; then
+            xcodebuild clean build analyze -workspace "$project_file" -scheme "$scheme" | xcpretty
+          else
+            xcodebuild clean build analyze -project "$project_file" -scheme "$scheme" | xcpretty
+          fi
           exit_code=${PIPESTATUS[0]}
           if [ $exit_code -ne 0 ]; then
             echo "xcodebuild failed with exit code $exit_code" && exit $exit_code
