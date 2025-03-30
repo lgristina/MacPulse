@@ -21,7 +21,7 @@ jobs:
       - name: Debug Project File Location
         run: |
           # Search for the Xcode project file in the correct subdirectory
-          project_file=$(find ./Macpulse/Macpulse -type f -name "Macpulse.xcodeproj" | head -n 1)
+          project_file=$(find . -type d -name "MacPulse.xcodeproj" | head -n 1)
           echo "Found project file: $project_file"
           if [ -z "$project_file" ]; then
             echo "No Xcode project file found!" && exit 1
