@@ -8,16 +8,16 @@
 import Foundation
 import SwiftData
 
-@MainActor  // Ensures all methods run on the main thread
+@MainActor  
 class DataManager {
     static let shared = DataManager()
     let context = EncryptedContainer.shared.container.mainContext
 
-    @MainActor  // Ensures this function runs in the correct thread
+    @MainActor
     func saveMetrics(cpu: Double, memory: Double, disk: Double) {
         let newMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
         do {
-            context.insert(newMetric)  // Now correctly runs in @MainActor
+            context.insert(newMetric)
             try context.save()
         } catch {
             print("Error saving metric: \(error)")
@@ -36,4 +36,31 @@ class DataManager {
             return []
         }
     }
+    
+    func saveProcessMetrics(processes: [ProcessMetric]) {
+            for process in processes {
+                print("Saving process: \(process)")
+                context.insert(process)
+            }
+
+            do {
+                try context.save()
+                print("✅ Process metrics saved successfully.")
+            } catch {
+                print("❌ Error saving process metrics: \(error)")
+            }
+        }
+
+        func fetchRecentProcessMetrics() -> [ProcessMetric] {
+            let oneHourAgo = Calendar.current.date(byAdding: .hour, value: -1, to: Date())!
+            let fetchDescriptor = FetchDescriptor<ProcessMetric>(predicate: #Predicate { $0.timestamp > oneHourAgo })
+
+            do {
+                return try context.fetch(fetchDescriptor)
+            } catch {
+                print("❌ Error fetching process metrics: \(error)")
+                return []
+            }
+        }
+
 }
