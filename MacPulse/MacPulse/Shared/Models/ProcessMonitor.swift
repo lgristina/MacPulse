@@ -1,5 +1,7 @@
 import Foundation
 import SwiftUI
+import SwiftData
+
 
 struct ProcessInfo: Identifiable, Codable, Hashable {
     let id : Int
@@ -23,6 +25,7 @@ class ProcessMonitor: ObservableObject {
     func startMonitoring() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+            print("Collecting process metrics!")
             self.collectAndSaveProcesses()
         }
         print("📊 Process monitoring started.")
@@ -39,8 +42,10 @@ class ProcessMonitor: ObservableObject {
         }
 
         if !processes.isEmpty {
+            print("Not empty!")
             Task { @MainActor in
                 DataManager.shared.saveProcessMetrics(processes: processes)
+                print("Saving!")
             }
         }
     }

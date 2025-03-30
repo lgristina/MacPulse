@@ -20,7 +20,7 @@ struct ProcessListView: View {
             }
             .navigationTitle("Running Processes")
             .onAppear {
-                viewModel.fetchRunningProcesses()
+                viewModel.startMonitoring()
             }
         }
     }
