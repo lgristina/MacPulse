@@ -20,20 +20,39 @@ jobs:
 
       - name: Determine Default Scheme
         run: |
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
+          # Find the Xcode project or workspace
+          if [ "$(ls -A | grep -i \\.xcworkspace\$)" ]; then 
+            filetype_parameter="workspace"
+            file_to_build="$(ls -A | grep -i \\.xcworkspace\$)"
+          elif [ "$(ls -A | grep -i \\.xcodeproj\$)" ]; then
+            filetype_parameter="project"
+            file_to_build="$(ls -A | grep -i \\.xcodeproj\$)"
+          else
+            echo "No Xcode workspace or project found!" && exit 1
+          fi
+          
+          # Get the schemes using xcodebuild
+          scheme_list=$(xcodebuild -"$filetype_parameter" "$file_to_build" -list -json | tr -d "\n")
+          
+          # Extract the default scheme (make sure it's valid)
+          default=$(echo $scheme_list | ruby -e "require 'json'; parsed = JSON.parse(STDIN.read); puts parsed['project']['targets'][0] if parsed['project'] && parsed['project']['targets']")
+          if [ -z "$default" ]; then
+            echo "Could not determine default scheme!" && exit 1
+          fi
+          
+          echo "Using default scheme: $default" 
           echo "$default" > default
-          echo "Using default scheme: $default"
 
       - name: Build and Analyze
         run: |
+          # Use the default scheme for build
           scheme=$(cat default)
-          if [ "$(ls -A | grep -i \\.xcworkspace\$)" ]; then 
-            filetype_parameter="workspace" 
-            file_to_build="$(ls -A | grep -i \\.xcworkspace\$)"
-          else 
-            filetype_parameter="project" 
-            file_to_build="$(ls -A | grep -i \\.xcodeproj\$)"
+
+          # Build the project/workspace
+          xcodebuild clean build analyze -scheme "$scheme" -"$filetype_parameter" "$file_to_build" | xcpretty
+          
+          # Exit if xcodebuild fails
+          exit_code=${PIPESTATUS[0]}
+          if [ $exit_code -ne 0 ]; then
+            echo "xcodebuild failed with exit code $exit_code" && exit $exit_code
           fi
-          file_to_build=$(echo "$file_to_build" | awk '{$1=$1;print}')
-          xcodebuild clean build analyze -scheme "$scheme" -"$filetype_parameter" "$file_to_build" | xcpretty && exit ${PIPESTATUS[0]}
