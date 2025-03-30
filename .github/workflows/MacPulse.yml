@@ -18,12 +18,13 @@ jobs:
       - name: Install xcpretty (for better logs)
         run: gem install xcpretty
 
-      - name: Determine Default Scheme
+      - name: Debug Project File Location
         run: |
-          # Search for the Xcode project or workspace file
-          project_file=$(find ./ -type f \( -name "*.xcodeproj" -or -name "*.xcworkspace" \) | head -n 1)
+          # Search for the Xcode project file in the correct subdirectory
+          project_file=$(find ./Macpulse/Macpulse -type f -name "Macpulse.xcodeproj" | head -n 1)
+          echo "Found project file: $project_file"
           if [ -z "$project_file" ]; then
-            echo "No Xcode workspace or project found!" && exit 1
+            echo "No Xcode project file found!" && exit 1
           fi
 
           # Get the file type (either project or workspace)
@@ -31,29 +32,31 @@ jobs:
             filetype_parameter="workspace"
           elif [[ "$project_file" == *.xcodeproj ]]; then
             filetype_parameter="project"
+          else
+            echo "Invalid file type!" && exit 1
           fi
-          
+
+          echo "File type: $filetype_parameter"
+
+      - name: Get the Default Scheme
+        run: |
           # Get the schemes using xcodebuild
           scheme_list=$(xcodebuild -"$filetype_parameter" "$project_file" -list -json | tr -d "\n")
           
-          # Extract the default scheme (make sure it's valid)
+          # Extract the default scheme
           default=$(echo $scheme_list | ruby -e "require 'json'; parsed = JSON.parse(STDIN.read); puts parsed['project']['targets'][0] if parsed['project'] && parsed['project']['targets']")
           if [ -z "$default" ]; then
             echo "Could not determine default scheme!" && exit 1
           fi
-          
+
           echo "Using default scheme: $default" 
           echo "$default" > default
 
       - name: Build and Analyze
         run: |
-          # Use the default scheme for build
           scheme=$(cat default)
-
-          # Build the project/workspace
           xcodebuild clean build analyze -scheme "$scheme" -"$filetype_parameter" "$project_file" | xcpretty
           
-          # Exit if xcodebuild fails
           exit_code=${PIPESTATUS[0]}
           if [ $exit_code -ne 0 ]; then
             echo "xcodebuild failed with exit code $exit_code" && exit $exit_code
