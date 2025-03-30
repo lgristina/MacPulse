@@ -9,49 +9,55 @@ on:
 jobs:
   build:
     name: Build and analyze MacPulse project
-    runs-on: macos-latest
-
+    runs-on: macos-14 # macos-14 supports Xcode 16.x as of late 2024/early 2025
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set Xcode Version to 16.2
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.2.app
+          xcodebuild -version # Verify the version
+
       - name: Install xcpretty (for better logs)
         run: gem install xcpretty
 
-      - name: Determine Default Scheme
+      - name: Find Project File
+        id: find_project
         run: |
-          # Find the Xcode project or workspace
-          if [ "$(ls -A | grep -i \\.xcworkspace\$)" ]; then 
-            filetype_parameter="workspace"
-            file_to_build="$(ls -A | grep -i \\.xcworkspace\$)"
-          elif [ "$(ls -A | grep -i \\.xcodeproj\$)" ]; then
-            filetype_parameter="project"
-            file_to_build="$(ls -A | grep -i \\.xcodeproj\$)"
-          else
-            echo "No Xcode workspace or project found!" && exit 1
+          project_file=$(find . -type d -name "MacPulse.xcodeproj" | head -n 1)
+          if [ -z "$project_file" ]; then
+            echo "No Xcode project file found!" && exit 1
           fi
-          
-          # Get the schemes using xcodebuild
-          scheme_list=$(xcodebuild -"$filetype_parameter" "$file_to_build" -list -json | tr -d "\n")
-          
-          # Extract the default scheme (make sure it's valid)
-          default=$(echo $scheme_list | ruby -e "require 'json'; parsed = JSON.parse(STDIN.read); puts parsed['project']['targets'][0] if parsed['project'] && parsed['project']['targets']")
+          if [[ "$project_file" == *.xcworkspace ]]; then
+            filetype_parameter="workspace"
+          elif [[ "$project_file" == *.xcodeproj ]]; then
+            filetype_parameter="project"
+          else
+            echo "Invalid file type!" && exit 1
+          fi
+          echo "filetype_parameter=$filetype_parameter" >> $GITHUB_ENV
+          echo "project_file=$project_file" >> $GITHUB_ENV
+
+      - name: Get the Default Scheme
+        id: get_scheme
+        run: |
+          scheme_list=$(xcodebuild -"$filetype_parameter" "$project_file" -list -json | tr -d "\n")
+          default=$(echo "$scheme_list" | jq -r '.project.targets[0]')
           if [ -z "$default" ]; then
             echo "Could not determine default scheme!" && exit 1
           fi
-          
-          echo "Using default scheme: $default" 
-          echo "$default" > default
+          echo "Using default scheme: $default"
+          echo "$default" > "$GITHUB_WORKSPACE/default"
 
       - name: Build and Analyze
         run: |
-          # Use the default scheme for build
-          scheme=$(cat default)
-
-          # Build the project/workspace
-          xcodebuild clean build analyze -scheme "$scheme" -"$filetype_parameter" "$file_to_build" | xcpretty
-          
-          # Exit if xcodebuild fails
+          scheme=$(cat "$GITHUB_WORKSPACE/default")
+          if [[ "$filetype_parameter" == "workspace" ]]; then
+            xcodebuild clean build analyze -workspace "$project_file" -scheme "$scheme" | xcpretty
+          else
+            xcodebuild clean build analyze -project "$project_file" -scheme "$scheme" | xcpretty
+          fi
           exit_code=${PIPESTATUS[0]}
           if [ $exit_code -ne 0 ]; then
             echo "xcodebuild failed with exit code $exit_code" && exit $exit_code
