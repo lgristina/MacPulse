@@ -20,19 +20,22 @@ jobs:
 
       - name: Determine Default Scheme
         run: |
-          # Find the Xcode project or workspace
-          if [ "$(ls -A | grep -i \\.xcworkspace\$)" ]; then 
-            filetype_parameter="workspace"
-            file_to_build="$(ls -A | grep -i \\.xcworkspace\$)"
-          elif [ "$(ls -A | grep -i \\.xcodeproj\$)" ]; then
-            filetype_parameter="project"
-            file_to_build="$(ls -A | grep -i \\.xcodeproj\$)"
-          else
+          # Search for the Xcode project or workspace file
+          project_file=$(find . -type f \( -name "*.xcodeproj" -or -name "*.xcworkspace" \) | head -n 1)
+
+          if [ -z "$project_file" ]; then
             echo "No Xcode workspace or project found!" && exit 1
+          fi
+
+          # Get the file type (either project or workspace)
+          if [[ "$project_file" == *.xcworkspace ]]; then
+            filetype_parameter="workspace"
+          elif [[ "$project_file" == *.xcodeproj ]]; then
+            filetype_parameter="project"
           fi
           
           # Get the schemes using xcodebuild
-          scheme_list=$(xcodebuild -"$filetype_parameter" "$file_to_build" -list -json | tr -d "\n")
+          scheme_list=$(xcodebuild -"$filetype_parameter" "$project_file" -list -json | tr -d "\n")
           
           # Extract the default scheme (make sure it's valid)
           default=$(echo $scheme_list | ruby -e "require 'json'; parsed = JSON.parse(STDIN.read); puts parsed['project']['targets'][0] if parsed['project'] && parsed['project']['targets']")
@@ -49,7 +52,7 @@ jobs:
           scheme=$(cat default)
 
           # Build the project/workspace
-          xcodebuild clean build analyze -scheme "$scheme" -"$filetype_parameter" "$file_to_build" | xcpretty
+          xcodebuild clean build analyze -scheme "$scheme" -"$filetype_parameter" "$project_file" | xcpretty
           
           # Exit if xcodebuild fails
           exit_code=${PIPESTATUS[0]}
