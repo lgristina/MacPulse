@@ -9,6 +9,8 @@ struct Option: Hashable {
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
+    private static var systemMetrics = SystemMetricsDashboardMac()
+    private static var processMetrics = ProcessListView()
     
     let options: [Option] = [
         .init(title: "Home", imageName: "house"),
@@ -55,9 +57,9 @@ struct ContentView: View {
                       .padding(.bottom, 20)
               }
         case "System":
-            SystemMetricsDashboardMac()
+            ContentView.systemMetrics
         case "Process":
-            ProcessListView()
+            ContentView.processMetrics
         case "Log":
             LogView()
         default:

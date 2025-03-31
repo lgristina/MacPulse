@@ -1,5 +1,5 @@
 {
-  "source": "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Views/SystemMetricsDashboardMac.swift",
+  "source": "/Users/austinfrank/Documents/GitHub/MacPulse/MacPulse/MacPulse/Shared/Views/SystemMetricsDashboardMac.swift",
   "tables": {
     "Localizable": [
       {
@@ -7,7 +7,7 @@
         "key": "Mac Performance Dashboard",
         "location": {
           "startingColumn": 18,
-          "startingLine": 16
+          "startingLine": 15
         }
       }
     ]

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ProcessListView: View {
-    @StateObject private var viewModel = ProcessMonitor()
+    @StateObject private var viewModel = ProcessMonitor.shared
     
     var body: some View {
         NavigationView {
@@ -19,9 +19,6 @@ struct ProcessListView: View {
                 }
             }
             .navigationTitle("Running Processes")
-            .onAppear {
-                viewModel.startMonitoring()
-            }
         }
     }
 }

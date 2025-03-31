@@ -30,6 +30,8 @@ fileprivate func hostCPULoadInfo() -> host_cpu_load_info {
 }
 
 class SystemMonitor: ObservableObject{
+    static let shared = SystemMonitor()
+
     @Published var cpuUsage: Double = 0.0
     @Published var memoryUsage: Double = 0.0
     @Published var diskActivity: Double = 0.0
@@ -60,7 +62,7 @@ class SystemMonitor: ObservableObject{
         print("📊 CPU: \(cpuUsage)% | 🖥️ Memory: \(memoryUsage) MB | 💾 Disk: \(diskActivity) GB")
         
         Task { @MainActor in
-                DataManager.shared.saveMetrics(cpu: cpuUsage, memory: memoryUsage, disk: diskActivity)
+                DataManager.shared.saveSystemMetrics(cpu: cpuUsage, memory: memoryUsage, disk: diskActivity)
             }
     }
    

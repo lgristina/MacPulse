@@ -9,8 +9,8 @@ import Foundation
 import SwiftData
 
 @Model  
-class ProcessMetric: Identifiable {
-    @Attribute(.unique) var id: Int
+class ProcessInfo: Identifiable {
+    var id: Int
     var timestamp: Date
     var cpuUsage: Double
     var memoryUsage: Double

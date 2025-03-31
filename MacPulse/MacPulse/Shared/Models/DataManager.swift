@@ -1,66 +1,60 @@
-//
-//  DataManager.swift
-//  MacPulse
-//
-//  Created by Marguerite McGahay on 3/14/25.
-//
-
 import Foundation
 import SwiftData
 
-@MainActor  
+@MainActor
 class DataManager {
     static let shared = DataManager()
-    let context = EncryptedContainer.shared.container.mainContext
+    let modelContext = MetricContainer.shared.container.mainContext // Single context for both SystemMetric and ProcessMetric
 
+    // Saving System and Process Metrics together
     @MainActor
-    func saveMetrics(cpu: Double, memory: Double, disk: Double) {
-        let newMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
+    func saveProcessMetrics(processes: [ProcessInfo]) {
         do {
-            context.insert(newMetric)
-            try context.save()
+            for process in processes {
+                modelContext.insert(process) // Insert process metrics
+            }
+            try modelContext.save() // Save all metrics at once
+            print("✅ Process metrics saved successfully.")
         } catch {
-            print("Error saving metric: \(error)")
+            print("❌ Error saving process metrics: \(error)")
+        }
+    }
+    @MainActor
+    func saveSystemMetrics(cpu: Double, memory: Double, disk: Double) {
+        let newSystemMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
+        do {
+            modelContext.insert(newSystemMetric) // Insert system metric
+            try modelContext.save() // Save all metrics at once
+        //    print("✅ System metrics saved successfully.")
+        } catch {
+            print("❌ Error saving system metrics: \(error)")
         }
     }
 
-    @MainActor  // Fetching data must also be @MainActor
-    func fetchRecentMetrics() -> [SystemMetric] {
+    // Fetching Recent System Metrics
+    @MainActor
+    func fetchRecentSystemMetrics() -> [SystemMetric] {
         let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
         let fetchDescriptor = FetchDescriptor<SystemMetric>(predicate: #Predicate { $0.timestamp > sevenDaysAgo })
 
         do {
-            return try context.fetch(fetchDescriptor)
+            return try modelContext.fetch(fetchDescriptor)
         } catch {
-            print("Error fetching metrics: \(error)")
+            print("❌ Error fetching System metrics: \(error)")
             return []
         }
     }
-    
-    func saveProcessMetrics(processes: [ProcessMetric]) {
-            for process in processes {
-                print("Saving process: \(process)")
-                context.insert(process)
-            }
 
-            do {
-                try context.save()
-                print("✅ Process metrics saved successfully.")
-            } catch {
-                print("❌ Error saving process metrics: \(error)")
-            }
+    // Fetching Recent Process Metrics
+    func fetchRecentProcessMetrics() -> [ProcessInfo] {
+        let oneHourAgo = Calendar.current.date(byAdding: .hour, value: -1, to: Date())!
+        let fetchDescriptor = FetchDescriptor<ProcessInfo>(predicate: #Predicate { $0.timestamp > oneHourAgo })
+
+        do {
+            return try modelContext.fetch(fetchDescriptor)
+        } catch {
+            print("❌ Error fetching Process metrics: \(error)")
+            return []
         }
-
-        func fetchRecentProcessMetrics() -> [ProcessMetric] {
-            let oneHourAgo = Calendar.current.date(byAdding: .hour, value: -1, to: Date())!
-            let fetchDescriptor = FetchDescriptor<ProcessMetric>(predicate: #Predicate { $0.timestamp > oneHourAgo })
-
-            do {
-                return try context.fetch(fetchDescriptor)
-            } catch {
-                print("❌ Error fetching process metrics: \(error)")
-                return []
-            }
-        }
-
+    }
 }

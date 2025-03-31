@@ -1,23 +1,17 @@
-//
-//  Persistence.swift
-//  MacPulse
-//
-//  Created by Marguerite McGahay on 3/14/25.
-//
-
+// Persistence.swift
 import SwiftData
 
-struct EncryptedContainer {
-    static let shared = EncryptedContainer()
-    
+// Unified ModelContainer for both SystemMetric and ProcessMetric
+struct MetricContainer {
+    static let shared = MetricContainer()
     let container: ModelContainer
-    
+
     init() {
         do {
-            self.container = try ModelContainer(for: SystemMetric.self)
-
+            // Initialize the container for both SystemMetric and ProcessMetric
+            self.container = try ModelContainer(for: SystemMetric.self, ProcessInfo.self)
         } catch {
-            fatalError("Failed to initialize the database: \(error)")
+            fatalError("Failed to initialize Metric container: \(error)")
         }
     }
 }

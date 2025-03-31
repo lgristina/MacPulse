@@ -22,3 +22,4 @@ class SystemMetric {
         self.diskActivity = diskActivity
     }
 }
+

@@ -1,5 +1,5 @@
 {
-  "source": "/Users/austinfrank/Documents/GitHub/MacPulse1/MacPulse/MacPulse/Shared/Views/SystemMetricsDashboard.swift",
+  "source": "/Users/austinfrank/Documents/GitHub/MacPulse/MacPulse/MacPulse/Shared/Views/SystemMetricsDashboard.swift",
   "tables": {
     "Localizable": [
       {
@@ -15,7 +15,7 @@
         "key": "%.1f%@",
         "location": {
           "startingColumn": 18,
-          "startingLine": 56
+          "startingLine": 52
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "CPU Usage Detailed View",
         "location": {
           "startingColumn": 18,
-          "startingLine": 90
+          "startingLine": 86
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "Time",
         "location": {
           "startingColumn": 31,
-          "startingLine": 97
+          "startingLine": 93
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "CPU Usage",
         "location": {
           "startingColumn": 31,
-          "startingLine": 98
+          "startingLine": 94
         }
       },
       {
@@ -47,7 +47,7 @@
         "key": "%@",
         "location": {
           "startingColumn": 26,
-          "startingLine": 108
+          "startingLine": 104
         }
       },
       {
@@ -55,7 +55,7 @@
         "key": "%.1f%%",
         "location": {
           "startingColumn": 26,
-          "startingLine": 110
+          "startingLine": 106
         }
       },
       {
@@ -63,7 +63,7 @@
         "key": "Memory Detailed View",
         "location": {
           "startingColumn": 18,
-          "startingLine": 155
+          "startingLine": 151
         }
       },
       {
@@ -71,7 +71,7 @@
         "key": "Current Memory Usage: %.1f%%",
         "location": {
           "startingColumn": 18,
-          "startingLine": 157
+          "startingLine": 153
         }
       },
       {
@@ -79,7 +79,7 @@
         "key": "Disk Activity Detailed View",
         "location": {
           "startingColumn": 18,
-          "startingLine": 170
+          "startingLine": 166
         }
       },
       {
@@ -87,7 +87,7 @@
         "key": "Current Disk Activity: %.1f%%",
         "location": {
           "startingColumn": 18,
-          "startingLine": 172
+          "startingLine": 168
         }
       },
       {
@@ -95,7 +95,7 @@
         "key": "Running Processes Detailed View",
         "location": {
           "startingColumn": 18,
-          "startingLine": 185
+          "startingLine": 181
         }
       }
     ]

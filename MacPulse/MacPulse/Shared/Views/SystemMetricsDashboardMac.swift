@@ -8,9 +8,8 @@ import SwiftUI
 import Charts
 
 struct SystemMetricsDashboardMac: View {
-    @ObservedObject var viewModel = SystemMonitor()
-    @ObservedObject var processModel = ProcessMonitor()
-    
+    @ObservedObject var viewModel = SystemMonitor.shared
+
     var body: some View {
         VStack {
             Text("Mac Performance Dashboard")

@@ -1,10 +1,3 @@
-//
-//  MacPulseApp.swift
-//  MacPulse
-//
-//  Created by Luca Gristina on 3/10/25.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -12,8 +5,10 @@ import SwiftData
 struct MacPulseApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            SystemMetric.self, // Add your model types here
+            ProcessInfo.self  // Add ProcessMetric if it is part of your app's data model
         ])
+        
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
@@ -28,12 +23,12 @@ struct MacPulseApp: App {
         WindowGroup {
             SystemMetricsDashboard()
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(sharedModelContainer)  // Attach the sharedModelContainer to the app’s window group
         #elseif os(macOS)
         WindowGroup {
             ContentView()
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(sharedModelContainer)  // Attach the sharedModelContainer to the app’s window group
         #endif
     }
 }

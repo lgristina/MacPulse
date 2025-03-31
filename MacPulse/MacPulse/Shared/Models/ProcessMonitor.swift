@@ -2,14 +2,6 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-
-struct ProcessInfo: Identifiable, Codable, Hashable {
-    let id : Int
-    let timestamp: Date
-    let cpuUsage: Double
-    let memoryUsage: Double
-}
-
     /// Returns a list of running processes with CPU & memory usage
 class ProcessMonitor: ObservableObject {
     static let shared = ProcessMonitor()
@@ -19,6 +11,7 @@ class ProcessMonitor: ObservableObject {
     private var timer: Timer?
 
     init() {
+        print("📊 Process monitoring started.")
         startMonitoring()
     }
 
@@ -28,27 +21,26 @@ class ProcessMonitor: ObservableObject {
             print("Collecting process metrics!")
             self.collectAndSaveProcesses()
         }
-        print("📊 Process monitoring started.")
+        print("---- GETTING PROCESS METRICS! -----")
     }
 
     func stopMonitoring() {
         timer?.invalidate()
         print("🛑 Process monitoring stopped.")
     }
-
+    
     private func collectAndSaveProcesses() {
-        let processes = getRunningProcesses().map { process in
-            ProcessMetric(id: Int(), timestamp: process.timestamp, cpuUsage: process.cpuUsage, memoryUsage: process.memoryUsage)
-        }
-
-        if !processes.isEmpty {
-            print("Not empty!")
-            Task { @MainActor in
-                DataManager.shared.saveProcessMetrics(processes: processes)
-                print("Saving!")
+            let processes = getRunningProcesses().map { process in
+                ProcessInfo(id: process.id, timestamp: process.timestamp, cpuUsage: process.cpuUsage, memoryUsage: process.memoryUsage)
+            }
+            if !processes.isEmpty {
+                Task { @MainActor in
+                    self.runningProcesses = processes
+                    DataManager.shared.saveProcessMetrics(processes: processes)
+                    
+                }
             }
         }
-    }
 
     /// Fetches running processes with CPU & memory usage
     func getRunningProcesses() -> [ProcessInfo] {
