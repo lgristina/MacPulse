@@ -28,7 +28,7 @@ struct ContentView: View {
         } detail: {
             detailView
         }
-        .frame(minWidth: 600, minHeight: 400)
+        .frame(minWidth: 800, minHeight: 600)
         #else
         NavigationStack {
             sidebar

@@ -26,8 +26,8 @@ struct SystemMetricsDashboard: View {
                         MetricPanel(title: "CPU Usage", value: viewModel.cpuUsage, unit: "%")
                     }
                     
-                    NavigationLink(destination: MemoryDetailedView(memoryUsage: viewModel.memoryUsage)) {
-                        MetricPanel(title: "Memory Usage", value: viewModel.memoryUsage, unit: "GB")
+                    NavigationLink(destination: MemoryDetailedView()) {
+                        MetricPanel(title: "Memory Usage", value: viewModel.memoryUsage, unit: "MB")
                     }
                     
                     NavigationLink(destination: DiskDetailedView(diskActivity: viewModel.diskActivity)) {
@@ -40,24 +40,24 @@ struct SystemMetricsDashboard: View {
     }
 }
 
-struct MetricPanel: View {
-    let title: String
-    let value: Double
-    let unit: String
-
-    var body: some View {
-        VStack {
-            Text(title)
-                .font(.headline)
-            Text("\(value, specifier: "%.1f")\(unit)")
-                .font(.largeTitle)
-                .bold()
-                .foregroundColor(.blue)
-        }
-        .frame(width: 150, height: 120)
-        .background(RoundedRectangle(cornerRadius: 15).fill(Color.gray.opacity(0.2)))
-    }
-}
+//struct MetricPanel: View {
+//    let title: String
+//    let value: Double
+//    let unit: String
+//
+//    var body: some View {
+//        VStack {
+//            Text(title)
+//                .font(.headline)
+//            Text("\(value, specifier: "%.1f")\(unit)")
+//                .font(.largeTitle)
+//                .bold()
+//                .foregroundColor(.blue)
+//        }
+//        .frame(width: 150, height: 120)
+//        .background(RoundedRectangle(cornerRadius: 15).fill(Color.gray.opacity(0.2)))
+//    }
+//}
 
 struct ProcessPanel: View {
     let title: String
@@ -77,64 +77,64 @@ struct ProcessPanel: View {
 }
 
 // MARK: - Detailed Views
-struct CPUDetailedView: View {
-    @State private var cpuUsageHistory: [CPUUsageData] = []
-    private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
-
-    var body: some View {
-        VStack {
-            Text("CPU Usage Detailed View")
-                .font(.largeTitle)
-                .padding(.bottom, 20)
-
-            // 📊 CPU Usage Chart
-            Chart(cpuUsageHistory) {
-                LineMark(
-                    x: .value("Time", $0.time),
-                    y: .value("CPU Usage", $0.usage)
-                )
-                .foregroundStyle(.blue)
-            }
-            .frame(height: 200)
-            .padding()
-
-            // 📋 List of CPU Usage Percentages
-            List(cpuUsageHistory.reversed(), id: \.id) { data in
-                HStack {
-                    Text("\(data.time, formatter: timeFormatter)")
-                    Spacer()
-                    Text("\(data.usage, specifier: "%.1f")%")
-                        .fontWeight(.bold)
-                }
-            }
-        }
-        .onAppear {
-            addCPUUsage()
-        }
-        .onReceive(timer) { _ in
-            addCPUUsage()
-        }
-        .padding()
-    }
-
-    // Function to simulate CPU usage data collection
-    private func addCPUUsage() {
-        let newUsage = Double.random(in: 20.0...80.0)  // Simulated data
-        let newData = CPUUsageData(usage: newUsage, time: Date())
-        cpuUsageHistory.append(newData)
-
-        if cpuUsageHistory.count > 50 {
-            cpuUsageHistory.removeFirst()  // Keep history manageable
-        }
-    }
-}
+//struct CPUDetailedView: View {
+//    @State private var cpuUsageHistory: [CPUUsageData] = []
+//    private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+//
+//    var body: some View {
+//        VStack {
+//            Text("CPU Usage Detailed View")
+//                .font(.largeTitle)
+//                .padding(.bottom, 20)
+//
+//            // 📊 CPU Usage Chart
+//            Chart(cpuUsageHistory) {
+//                LineMark(
+//                    x: .value("Time", $0.time),
+//                    y: .value("CPU Usage", $0.usage)
+//                )
+//                .foregroundStyle(.blue)
+//            }
+//            .frame(height: 200)
+//            .padding()
+//
+//            // 📋 List of CPU Usage Percentages
+//            List(cpuUsageHistory.reversed(), id: \.id) { data in
+//                HStack {
+//                    Text("\(data.time, formatter: timeFormatter)")
+//                    Spacer()
+//                    Text("\(data.usage, specifier: "%.1f")%")
+//                        .fontWeight(.bold)
+//                }
+//            }
+//        }
+//        .onAppear {
+//            addCPUUsage()
+//        }
+//        .onReceive(timer) { _ in
+//            addCPUUsage()
+//        }
+//        .padding()
+//    }
+//
+//    // Function to simulate CPU usage data collection
+//    private func addCPUUsage() {
+//        let newUsage = Double.random(in: 20.0...80.0)  // Simulated data
+//        let newData = CPUUsageData(usage: newUsage, time: Date())
+//        cpuUsageHistory.append(newData)
+//
+//        if cpuUsageHistory.count > 50 {
+//            cpuUsageHistory.removeFirst()  // Keep history manageable
+//        }
+//    }
+//}
 
 // Model for CPU Usage Data
-struct CPUUsageData: Identifiable {
-    let id = UUID()
-    let usage: Double
-    let time: Date
-}
+//struct CPUUsageData: Identifiable {
+//    let id = UUID()
+//    let usage: Double
+//    let time: Date
+//}
 
 // Formatter for displaying time in the list
 private let timeFormatter: DateFormatter = {
@@ -143,20 +143,20 @@ private let timeFormatter: DateFormatter = {
     return formatter
 }()
 
-struct MemoryDetailedView: View {
-    let memoryUsage: Double
-    
-    var body: some View {
-        VStack {
-            Text("Memory Detailed View")
-                .font(.largeTitle)
-            Text("Current Memory Usage: \(memoryUsage, specifier: "%.1f")%")
-                .font(.title)
-            // Additional detailed memory metrics here
-        }
-        .padding()
-    }
-}
+//struct MemoryDetailedView: View {
+//    let memoryUsage: Double
+//    
+//    var body: some View {
+//        VStack {
+//            Text("Memory Detailed View")
+//                .font(.largeTitle)
+//            Text("Current Memory Usage: \(memoryUsage, specifier: "%.1f")%")
+//                .font(.title)
+//            // Additional detailed memory metrics here
+//        }
+//        .padding()
+//    }
+//}
 
 struct DiskDetailedView: View {
     let diskActivity: Double
