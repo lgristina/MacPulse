@@ -3,6 +3,7 @@ import SwiftData
 
 @main
 struct MacPulseApp: App {
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             SystemMetric.self, // Add your model types here
@@ -18,6 +19,9 @@ struct MacPulseApp: App {
         }
     }()
 
+    init() {
+            DataManager.shared.startPruningTimer()
+        }
     var body: some Scene {
         #if os(iOS)
         WindowGroup {
