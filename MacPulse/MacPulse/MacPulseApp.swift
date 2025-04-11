@@ -3,7 +3,7 @@ import SwiftData
 
 @main
 struct MacPulseApp: App {
-
+    @StateObject private var syncService = MultipeerConnectivityService()
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             SystemMetric.self, // Add your model types here
@@ -31,6 +31,8 @@ struct MacPulseApp: App {
         #elseif os(macOS)
         WindowGroup {
             ContentView()
+            //SystemMetricsDashboard()
+                .environmentObject(syncService)
         }
         .modelContainer(sharedModelContainer)  // Attach the sharedModelContainer to the app’s window group
         #endif
