@@ -9,7 +9,12 @@ struct Option: Hashable {
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
+    #if os(macOS)
     private static var systemMetrics = SystemMetricsDashboardMac()
+    #else
+    private static var systemMetrics = SystemMetricsDashboardiOS()
+    #endif
+    
     private static var processMetrics = ProcessListView()
     
     let options: [Option] = [
@@ -26,13 +31,21 @@ struct ContentView: View {
         NavigationSplitView {
             sidebar
         } detail: {
-            detailView
+            detailViewMac
         }
         .frame(minWidth: 800, minHeight: 600)
         #else
         NavigationStack {
-            sidebar
-        }
+                    List(options, id: \.self) { option in
+                        NavigationLink(value: option) {
+                            Label(option.title, systemImage: option.imageName)
+                        }
+                    }
+                    .navigationTitle("MacPulse")
+                    .navigationDestination(for: Option.self) { option in
+                        detailViewiOS(for:option)
+                    }
+                }
         #endif
     }
     
@@ -46,7 +59,7 @@ struct ContentView: View {
     }
     
     @ViewBuilder
-    private var detailView: some View {
+    private var detailViewMac: some View {
         switch selectedOption?.title {
         case "Home":
             VStack {
@@ -65,6 +78,38 @@ struct ContentView: View {
         default:
             Text("Select an option")
         }
+    }
+    
+    struct detailViewiOS: View {
+        let option: Option
+            
+        init(for option: Option) {
+            self.option = option
+        }
+        
+        var body: some View {
+                VStack {
+                    Text("Detail for \(option.title)")
+                        .font(.largeTitle)
+                    // Replace with your actual content views.
+                    if option.title == "Home" {
+                        Image("MacPulse")
+                            .resizable()
+                            .scaledToFill() // Ensures the image fills the entire view
+                            .edgesIgnoringSafeArea(.all) // Makes the image fill the safe area of the screen
+                            .padding(.bottom, 20)
+                    } else if option.title == "System" {
+                        ContentView.systemMetrics
+                    } else if option.title == "Process" {
+                        ContentView.processMetrics
+                    } else if option.title == "Log" {
+                        LogView()
+                    }
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle(option.title)
+            }
     }
 }
 

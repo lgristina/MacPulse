@@ -25,7 +25,7 @@ struct MacPulseApp: App {
     var body: some Scene {
         #if os(iOS)
         WindowGroup {
-            SystemMetricsDashboard()
+            ContentView()
         }
         .modelContainer(sharedModelContainer)  // Attach the sharedModelContainer to the app’s window group
         #elseif os(macOS)

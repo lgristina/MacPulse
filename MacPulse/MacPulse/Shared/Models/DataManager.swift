@@ -10,7 +10,7 @@ class DataManager {
     
     // MARK: - Saving Metrics
     @MainActor
-    func saveProcessMetrics(processes: [ProcessInfo]) {
+    func saveProcessMetrics(processes: [CustomProcessInfo]) {
         do {
             for process in processes {
                 modelContext.insert(process) // Insert process metrics
@@ -33,15 +33,17 @@ class DataManager {
             print("❌ Error saving system metrics: \(error)")
         }
     }
-
+    
     // MARK: - Pruning Old Metrics
     @MainActor
     func pruneOldSystemMetrics() {
         let retentionPeriod = Calendar.current.date(byAdding: .minute, value: -10, to: Date())! // 10 minutes ago
-        let fetchDescriptor = FetchDescriptor<SystemMetric>(predicate: #Predicate { $0.timestamp < retentionPeriod })
+        let fetchDescriptor = FetchDescriptor<SystemMetric>(predicate: #Predicate { (metric: SystemMetric) in
+            metric.timestamp < retentionPeriod
+        })
         
         print("🕒 Pruning system metrics older than \(retentionPeriod)")
-
+        
         do {
             let oldMetrics = try modelContext.fetch(fetchDescriptor)
             print("Before pruning: Found \(oldMetrics.count) old system metrics.")
@@ -55,14 +57,16 @@ class DataManager {
             print("❌ Error pruning system metrics: \(error)")
         }
     }
-
+    
     @MainActor
     func pruneOldProcessMetrics() {
         let retentionPeriod = Calendar.current.date(byAdding: .minute, value: -1, to: Date())! // 1 minute ago
-        let fetchDescriptor = FetchDescriptor<ProcessInfo>(predicate: #Predicate { $0.timestamp < retentionPeriod })
+        let fetchDescriptor = FetchDescriptor<CustomProcessInfo>(predicate: #Predicate { (process: CustomProcessInfo) in
+            process.timestamp < retentionPeriod
+        })
         
         print("🕒 Pruning process metrics older than \(retentionPeriod)")
-
+        
         do {
             let oldMetrics = try modelContext.fetch(fetchDescriptor)
             print("Before pruning: Found \(oldMetrics.count) old process metrics.")
@@ -76,7 +80,7 @@ class DataManager {
             print("❌ Error pruning process metrics: \(error)")
         }
     }
-
+    
     // MARK: - Pruning Timers
     func startPruningTimer() {
         pruningTimer?.invalidate()
@@ -89,11 +93,11 @@ class DataManager {
         }
         print("🕒 Pruning scheduled every 1 minute.")
     }
-
+    
     // MARK: - Debugging
     func databaseSizeInfo() {
         let systemCount = (try? modelContext.fetch(FetchDescriptor<SystemMetric>()))?.count ?? 0
-        let processCount = (try? modelContext.fetch(FetchDescriptor<ProcessInfo>()))?.count ?? 0
+        let processCount = (try? modelContext.fetch(FetchDescriptor<CustomProcessInfo>()))?.count ?? 0
         print("📊 Database size: \(systemCount) system metrics, \(processCount) process metrics")
     }
 }

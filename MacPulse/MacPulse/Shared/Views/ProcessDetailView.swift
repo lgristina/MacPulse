@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProcessDetailView: View {
-    let process: ProcessInfo
+    let process: CustomProcessInfo  // Updated to use CustomProcessInfo
     
     var body: some View {
         VStack(spacing: 15) {
@@ -45,3 +45,4 @@ struct ProcessDetailView: View {
         .navigationTitle("Process \(process.id)")
     }
 }
+

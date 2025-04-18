@@ -3,34 +3,37 @@ import MultipeerConnectivity
 
 class MultipeerConnectivityService: NSObject, ObservableObject {
     private let serviceType = "macpulse-sync"
-    //private let myPeerID = MCPeerID(displayName: UIDevice.current.name) // for macOS, use Host.current().localizedName
-    private let myPeerID = MCPeerID(displayName: Host.current().localizedName ?? "macpulse-mac")
-    private let session: MCSession
-
-    #if os(iOS)
-    private var browser: MCNearbyServiceBrowser?
-    #elseif os(macOS)
-    private var advertiser: MCNearbyServiceAdvertiser?
-    #endif
-
-    @Published var connectedPeers: [MCPeerID] = []
-    var onReceive: ((Data) -> Void)?
-
-    override init() {
-        self.session = MCSession(peer: myPeerID, securityIdentity: nil, encryptionPreference: .required)
-        super.init()
-        self.session.delegate = self
+        #if os(iOS)
+        private let myPeerID = MCPeerID(displayName: UIDevice.current.name)
+        #else
+        private let myPeerID = MCPeerID(displayName: Host.current().localizedName ?? "macpulse-mac")
+        #endif
+        private let session: MCSession
 
         #if os(iOS)
-        browser = MCNearbyServiceBrowser(peer: myPeerID, serviceType: serviceType)
-        browser?.delegate = self
-        browser?.startBrowsingForPeers()
+        private var browser: MCNearbyServiceBrowser?
         #elseif os(macOS)
-        advertiser = MCNearbyServiceAdvertiser(peer: myPeerID, discoveryInfo: nil, serviceType: serviceType)
-        advertiser?.delegate = self
-        advertiser?.startAdvertisingPeer()
+        private var advertiser: MCNearbyServiceAdvertiser?
         #endif
-    }
+
+        @Published var connectedPeers: [MCPeerID] = []
+        var onReceive: ((Data) -> Void)?
+
+        override init() {
+            self.session = MCSession(peer: myPeerID, securityIdentity: nil, encryptionPreference: .required)
+            super.init()
+            self.session.delegate = self
+
+            #if os(iOS)
+            browser = MCNearbyServiceBrowser(peer: myPeerID, serviceType: serviceType)
+            browser?.delegate = self
+            browser?.startBrowsingForPeers()
+            #elseif os(macOS)
+            advertiser = MCNearbyServiceAdvertiser(peer: myPeerID, discoveryInfo: nil, serviceType: serviceType)
+            advertiser?.delegate = self
+            advertiser?.startAdvertisingPeer()
+            #endif
+        }
 
     func send(_ data: Data) {
         try? session.send(data, toPeers: session.connectedPeers, with: .reliable)

@@ -11,22 +11,38 @@ struct SystemMetricsDashboardMac: View {
     @ObservedObject var systemMonitor = SystemMonitor.shared
 
     var body: some View {
-        NavigationStack{
+        NavigationStack {
             VStack {
                 Text("Mac Performance Dashboard")
                     .font(.title)
                     .bold()
                     .padding()
-                
+
                 Grid {
                     GridRow {
-                        NavigationLink(destination: CPUDetailedView()) {
+                        NavigationLink(destination: DetailedUsageView<CPUUsageData>(
+                            title: "CPU Usage",
+                            unit: "%",
+                            lineColor: .blue,
+                            currentUsage: systemMonitor.cpuUsage,
+                            usagePublisher: systemMonitor.$cpuUsage,
+                            makeData: { CPUUsageData(usage: $0, time: $1) }
+                        )) {
                             MetricPanel(title: "CPU Usage", value: systemMonitor.cpuUsage, unit: "%")
                         }
-                        NavigationLink(destination: MemoryDetailedView()) {
+
+                        NavigationLink(destination: DetailedUsageView<MemoryUsageData>(
+                            title: "Memory Usage",
+                            unit: "MB",
+                            lineColor: .green,
+                            currentUsage: systemMonitor.memoryUsage,
+                            usagePublisher: systemMonitor.$memoryUsage,
+                            makeData: { MemoryUsageData(usage: $0, time: $1) }
+                        )) {
                             MetricPanel(title: "Memory Usage", value: systemMonitor.memoryUsage, unit: "MB")
                         }
-                        NavigationLink(destination: DiskDetailedView(diskActivity: systemMonitor.diskActivity)) {
+
+                        NavigationLink(destination: DiskDetailedView()) {
                             MetricPanel(title: "Disk Activity", value: systemMonitor.diskActivity, unit: "GB")
                         }
                     }
@@ -56,65 +72,6 @@ struct MetricPanel: View {
     }
 }
 
-struct CPUDetailedView: View {
-    @ObservedObject var systemMonitor = SystemMonitor.shared
-    @State private var cpuUsageHistory: [CPUUsageData] = []
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
-    var body: some View {
-        VStack {
-            Text("CPU Usage Detailed View")
-                .font(.largeTitle)
-                .padding(.bottom, 20)
-
-            // 📊 CPU Usage Chart
-            Chart(cpuUsageHistory) {
-                LineMark(
-                    x: .value("Time", $0.time),
-                    y: .value("CPU Usage", $0.usage)
-                )
-                .foregroundStyle(.blue)
-            }
-            .frame(height: 200)
-            .padding()
-
-            // 📋 Scrollable List of CPU Usage Percentages
-            ScrollView {
-                LazyVStack(alignment: .leading) {
-                    ForEach(cpuUsageHistory.reversed(), id: \.id) { data in
-                        HStack {
-                            Text("\(data.time, formatter: timeFormatter)")
-                            Spacer()
-                            Text("\(data.usage, specifier: "%.1f")%")
-                                .fontWeight(.bold)
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-            }
-            .frame(maxHeight: 300) // Set a limit to keep UI structured
-        }
-        .onAppear {
-            cpuUsageHistory.append(CPUUsageData(usage: systemMonitor.cpuUsage, time: Date())) // ✅ Add initial value
-        }
-        .onReceive(systemMonitor.$cpuUsage) { newUsage in
-            addCPUUsage(newUsage) // ✅ Now updates with live data
-        }
-        .padding()
-    }
-
-    // Function to store CPU usage history
-    private func addCPUUsage(_ usage: Double) {
-        let newData = CPUUsageData(usage: usage, time: Date())
-        cpuUsageHistory.append(newData)
-
-        if cpuUsageHistory.count > 50 {
-            cpuUsageHistory.removeFirst()  // Keep history manageable
-        }
-    }
-}
-
-
 // 🕒 Date Formatter
 private let timeFormatter: DateFormatter = {
     let formatter = DateFormatter()
@@ -122,78 +79,102 @@ private let timeFormatter: DateFormatter = {
     return formatter
 }()
 
-// 🆔 CPU Usage Data Model
-struct CPUUsageData: Identifiable {
+protocol UsageData: Identifiable {
+    var time: Date { get }
+    var value: Double { get }
+}
+
+struct CPUUsageData: UsageData {
     let id = UUID()
     let usage: Double
     let time: Date
+    var value: Double { usage }
 }
 
-struct MemoryDetailedView: View {
-    @ObservedObject var systemMonitor = SystemMonitor.shared
-    @State private var memoryUsageHistory: [MemoryUsageData] = []
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+struct MemoryUsageData: UsageData {
+    let id = UUID()
+    let usage: Double
+    let time: Date
+    var value: Double { usage }
+}
+
+struct DetailedUsageView<Data: UsageData>: View {
+    let title: String
+    let unit: String
+    let lineColor: Color
+    let currentUsage: Double
+    let usagePublisher: Published<Double>.Publisher
+    // Closure to create a new data point for the history log.
+    let makeData: (Double, Date) -> Data
+
+    @State private var usageHistory: [Data] = []
 
     var body: some View {
         VStack {
-            Text("Memory Usage Detailed View")
+            Text("\(title) Detailed View")
                 .font(.largeTitle)
                 .padding(.bottom, 20)
 
-            // 📊 Memory Usage Chart
-            Chart(memoryUsageHistory) {
+            // Usage Chart
+            Chart(usageHistory) {
                 LineMark(
                     x: .value("Time", $0.time),
-                    y: .value("Memory Usage", $0.usage)
+                    y: .value(title, $0.value)
                 )
-                .foregroundStyle(.green)
+                .foregroundStyle(lineColor)
             }
             .frame(height: 200)
             .padding()
 
-            // 📋 Scrollable List of Memory Usage Percentages
+            // Scrollable List of Usage Data
             ScrollView {
                 LazyVStack(alignment: .leading) {
-                    ForEach(memoryUsageHistory.reversed(), id: \.id) { data in
+                    ForEach(usageHistory.reversed(), id: \.id) { data in
                         HStack {
                             Text("\(data.time, formatter: timeFormatter)")
                             Spacer()
-                            Text("\(data.usage, specifier: "%.1f") MB")
+                            Text("\(data.value, specifier: "%.1f") \(unit)")
                                 .fontWeight(.bold)
                         }
                         .padding(.horizontal)
                     }
                 }
             }
-            .frame(maxHeight: 300) // Set a limit to keep UI structured
+            .frame(maxHeight: 300)
         }
         .onAppear {
-            memoryUsageHistory.append(MemoryUsageData(usage: systemMonitor.memoryUsage, time: Date())) // ✅ Initial data point
+            // Add an initial data point from the current value
+            usageHistory.append(makeData(currentUsage, Date()))
         }
-        .onReceive(systemMonitor.$memoryUsage) { newUsage in
-            addMemoryUsage(newUsage) // ✅ Updates live
+        .onReceive(usagePublisher) { newUsage in
+            addUsage(newUsage)
         }
         .padding()
     }
 
-    // Function to store memory usage history
-    private func addMemoryUsage(_ usage: Double) {
-        let newData = MemoryUsageData(usage: usage, time: Date())
-        memoryUsageHistory.append(newData)
-
-        if memoryUsageHistory.count > 50 {
-            memoryUsageHistory.removeFirst()  // Keep history manageable
+    // Append new data and maintain history count.
+    private func addUsage(_ usage: Double) {
+        let newData = makeData(usage, Date())
+        usageHistory.append(newData)
+        if usageHistory.count > 50 {
+            usageHistory.removeFirst()
         }
     }
 }
 
-// 🆔 Memory Usage Data Model
-struct MemoryUsageData: Identifiable {
-    let id = UUID()
-    let usage: Double
-    let time: Date
+struct DiskDetailedView: View {
+    @ObservedObject var systemMonitor = SystemMonitor.shared
+    @State var diskUsageData: [DiskActivityData] = []
+    
+    var body: some View {
+        Text("Disk Detailed View")
+    }
 }
 
+struct DiskActivityData: Identifiable {
+    let id = UUID()
+    
+}
 
 struct SystemMetricsDashboardMac_Previews: PreviewProvider {
     static var previews: some View {
