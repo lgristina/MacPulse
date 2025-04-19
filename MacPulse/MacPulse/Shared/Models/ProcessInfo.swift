@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-class ProcessInfo: Identifiable, CustomStringConvertible, Codable {
+class CustomProcessInfo: Identifiable, CustomStringConvertible, Codable {
     var id: Int
     var timestamp: Date
     var cpuUsage: Double
@@ -46,3 +46,5 @@ class ProcessInfo: Identifiable, CustomStringConvertible, Codable {
         try container.encode(memoryUsage, forKey: .memoryUsage)
     }
 }
+
+

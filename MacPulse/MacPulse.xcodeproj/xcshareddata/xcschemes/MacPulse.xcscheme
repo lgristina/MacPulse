@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "778521382D7FBF6200C057AF"
-               BuildableName = "MacPulse.app"
-               BlueprintName = "MacPulse"
+               BuildableName = "MacPulse macOS.app"
+               BlueprintName = "MacPulse macOS"
                ReferencedContainer = "container:MacPulse.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -69,8 +69,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "778521382D7FBF6200C057AF"
-            BuildableName = "MacPulse.app"
-            BlueprintName = "MacPulse"
+            BuildableName = "MacPulse macOS.app"
+            BlueprintName = "MacPulse macOS"
             ReferencedContainer = "container:MacPulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -86,8 +86,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "778521382D7FBF6200C057AF"
-            BuildableName = "MacPulse.app"
-            BlueprintName = "MacPulse"
+            BuildableName = "MacPulse macOS.app"
+            BlueprintName = "MacPulse macOS"
             ReferencedContainer = "container:MacPulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
