@@ -58,6 +58,7 @@ struct SystemMetricsDashboardiOS: View {
         }
         .onDisappear {
             if let manager = RemoteSystemMonitor.shared.connectionManager {
+                print("Stopping!")
                 manager.send(.stopSending(typeToStop: 0))
             } else {
                 print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
