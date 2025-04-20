@@ -35,7 +35,7 @@ class SystemMonitor: ObservableObject{
     @Published var cpuUsage: Double = 0.0
     @Published var memoryUsage: Double = 0.0
     @Published var diskActivity: Double = 0.0
-    private var timer: Timer?
+    var timer: Timer?
     private var previousCPUInfo: host_cpu_load_info_data_t?
     private var interval: TimeInterval = 1.0
 
@@ -50,11 +50,17 @@ class SystemMonitor: ObservableObject{
     }
 
     func stopMonitoring() {
+        // Invalidate the timer first
         timer?.invalidate()
+
+        // Set timer to nil to break any reference
+        timer = nil
+
         print("🛑 Stopped system monitoring.")
     }
 
-    private func collectMetrics() {
+
+    func collectMetrics() {
         cpuUsage = getCPUUsage()
         memoryUsage = getMemoryUsage()
         diskActivity = getDiskUsage()
@@ -109,7 +115,7 @@ class SystemMonitor: ObservableObject{
     
     }
     
-    private func getMemoryUsage() -> Double {
+    func getMemoryUsage() -> Double {
         var stats = vm_statistics64()
         var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.stride / MemoryLayout<integer_t>.stride)
         let result = withUnsafeMutablePointer(to: &stats) {
@@ -123,7 +129,7 @@ class SystemMonitor: ObservableObject{
         return usedMemory.rounded(toPlaces: 2)
     }
 
-    private func getDiskUsage() -> Double {
+    func getDiskUsage() -> Double {
         let fileManager = FileManager.default
         do {
             let attributes = try fileManager.attributesOfFileSystem(forPath: NSHomeDirectory())

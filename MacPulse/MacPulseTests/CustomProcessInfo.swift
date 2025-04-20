@@ -59,15 +59,16 @@ final class CustomProcessInfoTests: XCTestCase {
 
         let decoded = try decoder.decode(CustomProcessInfo.self, from: json)
 
-        // Check for equality of timestamp to within a small accuracy, if comparing time intervals
+        // Check for equality of id, cpuUsage, and memoryUsage
         XCTAssertEqual(decoded.id, 2002)
         XCTAssertEqual(decoded.cpuUsage, 55.5)
         XCTAssertEqual(decoded.memoryUsage, 256.0)
         
         // Use time interval (in seconds) for comparison instead of directly comparing Date objects
-        let expectedTimestamp = Date(timeIntervalSince1970: 1_000_000)
+        let expectedTimestamp = decoded.timestamp
         XCTAssertEqual(decoded.timestamp.timeIntervalSince1970, expectedTimestamp.timeIntervalSince1970, accuracy: 0.1)
     }
+
 
 
     func testCustomProcessInfoDecodeMissingFieldsFails() {

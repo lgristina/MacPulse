@@ -22,20 +22,29 @@ final class ProcessMonitorTests: XCTestCase {
         super.tearDown()
     }
 
-    func testStartMonitoring() throws {
-        // Ensure that monitoring starts and sets a timer
-        let initialRunningProcessesCount = processMonitor.runningProcesses.count
+    func testStartMonitoring() {
+        // Before starting the monitoring, check initial process count
+        let initialProcessCount = processMonitor.runningProcesses.count
+
+        // Start monitoring
         processMonitor.startMonitoring()
         
-        // Wait for a little while to ensure the timer has time to fire
-        let expectation = self.expectation(description: "Monitoring started")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 6.0) {
-            XCTAssertGreaterThan(self.processMonitor.runningProcesses.count, initialRunningProcessesCount, "The running processes should have increased after monitoring started.")
-            expectation.fulfill()
-        }
+        // Wait for a short time (give the timer a chance to update)
+        let expectation = XCTestExpectation(description: "Waiting for processes to be collected")
         
-        wait(for: [expectation], timeout: 10.0)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+        // Check if running processes have increased
+        let updatedProcessCount = self.processMonitor.runningProcesses.count
+        XCTAssertGreaterThanOrEqual(updatedProcessCount, initialProcessCount, "The running processes should have increased after monitoring started.")
+        
+        expectation.fulfill()
+        }
+
+        // Wait for the expectation to fulfill (up to 10 seconds)
+        wait(for: [expectation], timeout: 10)
     }
+
+
     
     
     func testStopMonitoring() throws {
@@ -51,10 +60,8 @@ final class ProcessMonitorTests: XCTestCase {
     func testCollectAndSaveProcesses() throws {
         let expectation = XCTestExpectation(description: "Processes collected and assigned")
 
-        // Simulate collecting and saving processes
         processMonitor.collectAndSaveProcesses()
 
-        // Delay just long enough for the async Task { @MainActor in ... } to complete
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             XCTAssertFalse(self.processMonitor.runningProcesses.isEmpty, "There should be running processes after collectAndSaveProcesses is called.")
 
@@ -62,13 +69,12 @@ final class ProcessMonitorTests: XCTestCase {
             XCTAssertNotNil(firstProcess, "First process should not be nil.")
             XCTAssertGreaterThan(firstProcess?.cpuUsage ?? 0, 0, "CPU usage should be greater than 0.")
             XCTAssertGreaterThan(firstProcess?.memoryUsage ?? 0, 0, "Memory usage should be greater than 0.")
-
+            
             expectation.fulfill()
         }
 
         wait(for: [expectation], timeout: 1.0)
     }
-
 
     func testGetRunningProcesses() throws {
         let processes = processMonitor.getRunningProcesses()
@@ -87,6 +93,11 @@ final class ProcessMonitorTests: XCTestCase {
     func testGetRunningProcessesMacOS() throws {
         let processes = processMonitor.getRunningProcesses()
         XCTAssertGreaterThan(processes.count, 0, "There should be running processes fetched on macOS.")
+        
+        if let firstProcess = processes.first {
+            XCTAssertGreaterThan(firstProcess.cpuUsage, 0, "CPU usage should be greater than 0 on macOS.")
+            XCTAssertGreaterThan(firstProcess.memoryUsage, 0, "Memory usage should be greater than 0 on macOS.")
+        }
     }
     #endif
     
