@@ -4,7 +4,7 @@
 //
 //  Created by Luca Gristina on 4/20/25.
 //
-
+#if os(iOS)
 import XCTest
 
 class MacPulseiOSUITests: XCTestCase {
@@ -73,3 +73,4 @@ class MacPulseiOSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Log"].exists)
     }
 }
+#endif

@@ -54,6 +54,7 @@ struct ContentView: View {
             NavigationLink(value: option) {
                 Label(option.title, systemImage: option.imageName)
             }
+            .accessibilityIdentifier(option.title)
         }
         .navigationTitle("MacPulse")
     }
