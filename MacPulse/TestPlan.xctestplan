@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "D8D9A5A7-6D15-4880-A8D5-5FFB1528A77D",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:MacPulse.xcodeproj",
+        "identifier" : "7785214B2D7FBF6300C057AF",
+        "name" : "MacPulseTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -79,6 +79,7 @@ class DataManager {
         }
     }
     
+    
     @MainActor
     func pruneOldProcessMetrics() {
         let retentionPeriod = Calendar.current.date(byAdding: .minute, value: -1, to: Date())! // 1 minute ago

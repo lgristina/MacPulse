@@ -55,5 +55,6 @@ final class DataManagerTests: XCTestCase {
 
         XCTAssertTrue(remaining.allSatisfy { $0.timestamp >= Calendar.current.date(byAdding: .minute, value: -10, to: Date())! })
     }
+    
 }
 

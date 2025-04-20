@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1D8773E92DB55C4B007543FC /* TestPlan.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 1D8773E82DB55C4B007543FC /* TestPlan.xctestplan */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		7785214D2D7FBF6300C057AF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1D8773E82DB55C4B007543FC /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
 		778521392D7FBF6200C057AF /* MacPulse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPulse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7785214C2D7FBF6300C057AF /* MacPulseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPulseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		778521562D7FBF6300C057AF /* MacPulseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPulseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +80,7 @@
 		778521302D7FBF6200C057AF = {
 			isa = PBXGroup;
 			children = (
+				1D8773E82DB55C4B007543FC /* TestPlan.xctestplan */,
 				7785213B2D7FBF6200C057AF /* MacPulse */,
 				7785214F2D7FBF6300C057AF /* MacPulseTests */,
 				778521592D7FBF6300C057AF /* MacPulseUITests */,
@@ -212,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1D8773E92DB55C4B007543FC /* TestPlan.xctestplan in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
