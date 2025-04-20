@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+      "filename" : "MacPulse-Logo.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -12,6 +13,7 @@
           "value" : "dark"
         }
       ],
+      "filename" : "MacPulse-Logo copy 9.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -23,56 +25,67 @@
           "value" : "tinted"
         }
       ],
+      "filename" : "MacPulse-Logo copy 8.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
     },
     {
+      "filename" : "MacPulse-Logo copy 1.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "16x16"
     },
     {
+      "filename" : "MacPulse-Logo copy.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "16x16"
     },
     {
+      "filename" : "MacPulse-Logo copy 10.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "32x32"
     },
     {
+      "filename" : "MacPulse-Logo copy 11.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "32x32"
     },
     {
+      "filename" : "MacPulse-Logo copy 3.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "128x128"
     },
     {
+      "filename" : "MacPulse-Logo copy 2.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "128x128"
     },
     {
+      "filename" : "MacPulse-Logo copy 4.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "256x256"
     },
     {
+      "filename" : "MacPulse-Logo copy 5.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "256x256"
     },
     {
+      "filename" : "MacPulse-Logo copy 6.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "512x512"
     },
     {
+      "filename" : "MacPulse-Logo copy 7.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"

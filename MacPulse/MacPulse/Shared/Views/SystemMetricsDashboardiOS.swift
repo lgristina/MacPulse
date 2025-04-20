@@ -5,7 +5,6 @@
 //  Created by Luca Gristina on 3/11/25.
 //
 
-
 import SwiftUI
 import Charts
 #if os(iOS)
@@ -49,6 +48,21 @@ struct SystemMetricsDashboardiOS: View {
                 }
             }
             .padding()
+        }
+        .onAppear {
+            if let manager = RemoteSystemMonitor.shared.connectionManager {
+                manager.send(.sendSystemMetrics)
+            } else {
+                print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+            }
+        }
+        .onDisappear {
+            if let manager = RemoteSystemMonitor.shared.connectionManager {
+                print("Stopping!")
+                manager.send(.stopSending(typeToStop: 0))
+            } else {
+                print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+            }
         }
     }
 }

@@ -46,3 +46,5 @@ class CustomProcessInfo: Identifiable, CustomStringConvertible, Codable {
         try container.encode(memoryUsage, forKey: .memoryUsage)
     }
 }
+
+

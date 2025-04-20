@@ -1,9 +1,30 @@
 import SwiftUI
 import SwiftData
 
+
+func getPeerName() -> String {
+    #if os(macOS)
+    return Host.current().localizedName ?? "MacPulse"
+    #elseif os(iOS)
+    return UIDevice.current.name
+    #else
+    return "MacPulse"
+    #endif
+}
+
 @main
 struct MacPulseApp: App {
-    @StateObject private var syncService = MultipeerConnectivityService()
+    
+    @StateObject private var syncService: MCConnectionManager
+
+    init() {
+        let peerName = getPeerName()
+        let manager = MCConnectionManager(yourName: peerName)
+        _syncService = StateObject(wrappedValue: manager)
+
+        RemoteSystemMonitor.shared = RemoteSystemMonitor(connectionManager: manager)
+    }
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             SystemMetric.self, // Add your model types here
@@ -18,10 +39,7 @@ struct MacPulseApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
-    init() {
-            DataManager.shared.startPruningTimer()
-        }
+    
     var body: some Scene {
         #if os(iOS)
         WindowGroup {
