@@ -7,7 +7,7 @@ struct MacPulseApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             SystemMetric.self, // Add your model types here
-            ProcessInfo.self  // Add ProcessMetric if it is part of your app's data model
+            CustomProcessInfo.self  // Add ProcessMetric if it is part of your app's data model
         ])
         
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)

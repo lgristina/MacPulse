@@ -9,7 +9,7 @@ struct MetricContainer {
     init() {
         do {
             // Initialize the container for both SystemMetric and ProcessMetric
-            self.container = try ModelContainer(for: SystemMetric.self, ProcessInfo.self)
+            self.container = try ModelContainer(for: SystemMetric.self, CustomProcessInfo.self)
         } catch {
             fatalError("Failed to initialize Metric container: \(error)")
         }

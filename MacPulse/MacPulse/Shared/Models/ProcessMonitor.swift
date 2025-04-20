@@ -3,21 +3,21 @@ import SwiftUI
 import SwiftData
 
 /// Custom data model for process information
-@Model
-final class CustomProcessInfo: Identifiable {
-    var id: Int
-    var timestamp: Date
-    var cpuUsage: Double
-    var memoryUsage: Double
-
-    // Provide a simple initializer for use in your code.
-    init(id: Int, timestamp: Date, cpuUsage: Double, memoryUsage: Double) {
-        self.id = id
-        self.timestamp = timestamp
-        self.cpuUsage = cpuUsage
-        self.memoryUsage = memoryUsage
-    }
-}
+//@Model
+//final class CustomProcessInfo: Identifiable {
+//    var id: Int
+//    var timestamp: Date
+//    var cpuUsage: Double
+//    var memoryUsage: Double
+//
+//    // Provide a simple initializer for use in your code.
+//    init(id: Int, timestamp: Date, cpuUsage: Double, memoryUsage: Double) {
+//        self.id = id
+//        self.timestamp = timestamp
+//        self.cpuUsage = cpuUsage
+//        self.memoryUsage = memoryUsage
+//    }
+//}
 
 /// Returns a list of running processes with CPU & memory usage.
 /// On iOS this returns an empty list since the Process API is unavailable.
