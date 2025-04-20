@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "778521382D7FBF6200C057AF"
-               BuildableName = "MacPulse macOS.app"
-               BlueprintName = "MacPulse macOS"
+               BuildableName = "MacPulse.app"
+               BlueprintName = "MacPulse"
                ReferencedContainer = "container:MacPulse.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -34,30 +34,6 @@
             default = "YES">
          </TestPlanReference>
       </TestPlans>
-      <Testables>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7785214B2D7FBF6300C057AF"
-               BuildableName = "MacPulseTests.xctest"
-               BlueprintName = "MacPulseTests"
-               ReferencedContainer = "container:MacPulse.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "778521552D7FBF6300C057AF"
-               BuildableName = "MacPulseUITests.xctest"
-               BlueprintName = "MacPulseUITests"
-               ReferencedContainer = "container:MacPulse.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -74,8 +50,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "778521382D7FBF6200C057AF"
-            BuildableName = "MacPulse macOS.app"
-            BlueprintName = "MacPulse macOS"
+            BuildableName = "MacPulse.app"
+            BlueprintName = "MacPulse"
             ReferencedContainer = "container:MacPulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -91,8 +67,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "778521382D7FBF6200C057AF"
-            BuildableName = "MacPulse macOS.app"
-            BlueprintName = "MacPulse macOS"
+            BuildableName = "MacPulse.app"
+            BlueprintName = "MacPulse"
             ReferencedContainer = "container:MacPulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

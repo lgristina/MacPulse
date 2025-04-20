@@ -72,7 +72,7 @@ class RemoteSystemMonitor: ObservableObject {
                 self.cpuUsage = metric.cpuUsage
                 self.memoryUsage = metric.memoryUsage
                 self.diskActivity = metric.diskActivity
-            case .process(let metric):
+            case .process(_):
                 self.remoteProcesses = ProcessMonitor.shared.runningProcesses
             default:
                 break

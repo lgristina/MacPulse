@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "778521382D7FBF6200C057AF"
-               BuildableName = "MacPulse macOS.app"
-               BlueprintName = "MacPulse macOS"
+               BlueprintIdentifier = "99745FD32DB1F6EE003B7F9B"
+               BuildableName = "MacPulse-Monitor.app"
+               BlueprintName = "MacPulse-Monitor"
                ReferencedContainer = "container:MacPulse.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,8 +27,13 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      shouldAutocreateTestPlan = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:TestPlan.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+      </TestPlans>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -44,9 +49,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "778521382D7FBF6200C057AF"
-            BuildableName = "MacPulse macOS.app"
-            BlueprintName = "MacPulse macOS"
+            BlueprintIdentifier = "99745FD32DB1F6EE003B7F9B"
+            BuildableName = "MacPulse-Monitor.app"
+            BlueprintName = "MacPulse-Monitor"
             ReferencedContainer = "container:MacPulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -61,9 +66,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "778521382D7FBF6200C057AF"
-            BuildableName = "MacPulse macOS.app"
-            BlueprintName = "MacPulse macOS"
+            BlueprintIdentifier = "99745FD32DB1F6EE003B7F9B"
+            BuildableName = "MacPulse-Monitor.app"
+            BlueprintName = "MacPulse-Monitor"
             ReferencedContainer = "container:MacPulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
