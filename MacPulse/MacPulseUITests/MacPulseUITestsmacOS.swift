@@ -9,39 +9,41 @@ class MacPulseUITestsmacOS: XCTestCase {
         app.launch()
     }
 
-    func testSidebarOptionsExist() throws {
-        // Sidebar should list the four options
-        XCTAssertTrue(app.staticTexts["Home"].exists)
-        XCTAssertTrue(app.staticTexts["System"].exists)
-        XCTAssertTrue(app.staticTexts["Process"].exists)
-        XCTAssertTrue(app.staticTexts["Log"].exists)
+    func testHomeOptionShowsLogo() throws {
+        let homeButton = app.descendants(matching: .button)["Home"]
+        XCTAssertTrue(homeButton.exists, "Home button should exist")
+        homeButton.click()
+        XCTAssertTrue(app.images["MacPulse"].waitForExistence(timeout: 1),
+                      "Selecting 'Home' should show the MacPulse logo")
     }
 
     func testHomeDetailShowsLogo() throws {
-        // Default selection is “Home” → shows the MacPulse image
         XCTAssertTrue(app.images["MacPulse"].waitForExistence(timeout: 1),
                       "The MacPulse logo should appear in the Home pane")
     }
 
     func testSystemOptionShowsDashboard() throws {
-        app.staticTexts["System"].click()
-        // System metrics dashboard title
+        let systemButton = app.descendants(matching: .button)["System"]
+        XCTAssertTrue(systemButton.exists, "System button should exist")
+        systemButton.click()
         XCTAssertTrue(app.staticTexts["Mac Performance Dashboard"]
                         .waitForExistence(timeout: 1),
-                      "Selecting ’System’ should show the performance dashboard")
+                      "Selecting 'System' should show the performance dashboard")
     }
 
     func testProcessOptionShowsProcessList() throws {
-        app.staticTexts["Process"].click()
-        // We expect a List (table) of processes to appear
+        let processButton = app.descendants(matching: .button)["Process"]
+        XCTAssertTrue(processButton.exists, "Process button should exist")
+        processButton.click()
         XCTAssertTrue(app.tables.firstMatch.waitForExistence(timeout: 1),
-                      "Selecting ’Process’ should show the process list")
+                      "Selecting 'Process' should show the process list")
     }
 
     func testLogOptionShowsLogList() throws {
-        app.staticTexts["Log"].click()
-        // We expect a List (table) of log entries to appear
+        let logButton = app.descendants(matching: .button)["Log"]
+        XCTAssertTrue(logButton.exists, "Log button should exist")
+        logButton.click()
         XCTAssertTrue(app.tables.firstMatch.waitForExistence(timeout: 1),
-                      "Selecting ’Log’ should show the log view")
+                      "Selecting 'Log' should show the log view")
     }
 }
