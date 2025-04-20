@@ -34,6 +34,9 @@ struct ContentView: View {
             detailViewMac
         }
         .frame(minWidth: 800, minHeight: 600)
+        .task {
+            LogManager.shared.logInfo("ContentView appeared - App Launched (macOS)")
+        }
         #else
         NavigationStack {
                     List(options, id: \.self) { option in
@@ -46,6 +49,9 @@ struct ContentView: View {
                         detailViewiOS(for:option)
                     }
                 }
+        .task {
+            LogManager.shared.logInfo("ContentView appeared - App Launched (iOS)")
+        }
         #endif
     }
     

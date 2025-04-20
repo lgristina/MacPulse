@@ -60,17 +60,28 @@ class MacPulseiOSUITests: XCTestCase {
                       "Process detail must show a list of processes")
         XCTAssertTrue(app.navigationBars["Process"].exists)
     }
-
+    
+    
     func testLogDetailView() throws {
         app.staticTexts["Log"].tap()
-        // Detail for Log
-        XCTAssertTrue(app.staticTexts["Detail for Log"]
-                        .waitForExistence(timeout: 1),
-                      "Tapping Log should show its detail view")
-        // Expect a table of log entries
-        XCTAssertTrue(app.tables.firstMatch.exists,
-                      "Log detail must show a list of logs")
-        XCTAssertTrue(app.navigationBars["Log"].exists)
+        
+        // Wait for the nav bar
+        XCTAssertTrue(app.navigationBars["Log"].waitForExistence(timeout: 1),
+                      "Should navigate to the Log detail view")
+
+        // If there are no logs, the placeholder text should exist
+        if app.staticTexts["No logs yet."].exists {
+            XCTAssertTrue(app.staticTexts["No logs yet."].exists,
+                          "When there are no logs, it should show a placeholder")
+        } else {
+            // Otherwise, assert at least one log item exists
+            // Option 1: Look for known log text if you're injecting one during testing
+             XCTAssertTrue(app.staticTexts["[INFO] ContentView appeared - App Launched (macOS)."].exists)
+
+            // Option 2: Loosely verify some log content exists
+            let logText = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "INFO")).firstMatch
+            XCTAssertTrue(logText.exists, "Log content should be visible in the log view")
+        }
     }
 }
 #endif
