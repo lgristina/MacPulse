@@ -18,6 +18,14 @@
         "identifier" : "7785214B2D7FBF6300C057AF",
         "name" : "MacPulseTests"
       }
+    },
+    {
+      "enabled" : false,
+      "target" : {
+        "containerPath" : "container:MacPulse.xcodeproj",
+        "identifier" : "778521552D7FBF6300C057AF",
+        "name" : "MacPulseUITests"
+      }
     }
   ],
   "version" : 1

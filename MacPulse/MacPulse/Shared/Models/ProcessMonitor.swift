@@ -25,7 +25,7 @@ class ProcessMonitor: ObservableObject {
     static let shared = ProcessMonitor()
     @Published var runningProcesses: [CustomProcessInfo] = []
 
-    private var timer: Timer?
+    var timer: Timer?
 
     init() {
         print("📊 Process monitoring started.")
@@ -43,10 +43,11 @@ class ProcessMonitor: ObservableObject {
 
     func stopMonitoring() {
         timer?.invalidate()
+        timer = nil // release the reference
         print("🛑 Process monitoring stopped.")
     }
     
-    private func collectAndSaveProcesses() {
+    func collectAndSaveProcesses() {
         let processes = getRunningProcesses().map { process in
             CustomProcessInfo(
                 id: process.id,
