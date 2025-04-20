@@ -3,11 +3,32 @@ import SwiftData
 
 @MainActor
 class DataManager {
-    static let shared = DataManager()
-    let modelContext = MetricContainer.shared.container.mainContext // Single context for both SystemMetric and ProcessMetric
-    
+//    static let shared = DataManager()
+//    let modelContext: ModelContext
+//    @MainActor
+//    init(context: ModelContext = MetricContainer.shared.container.mainContext) {
+//        self.modelContext = context
+//    }
+//
+//    private var pruningTimer: Timer?
+    static let shared: DataManager = {
+        let ctx = MetricContainer.shared.container.mainContext
+        return DataManager(_modelContext: ctx)
+    }()
+
+    let modelContext: ModelContext
     private var pruningTimer: Timer?
-    
+
+    @MainActor
+    private init(_modelContext: ModelContext) {
+        self.modelContext = _modelContext
+    }
+
+    @MainActor
+    init(testingContext: ModelContext) {
+        self.modelContext = testingContext
+    }
+
     // MARK: - Saving Metrics
     @MainActor
     func saveProcessMetrics(processes: [CustomProcessInfo]) {
@@ -101,3 +122,4 @@ class DataManager {
         print("📊 Database size: \(systemCount) system metrics, \(processCount) process metrics")
     }
 }
+
