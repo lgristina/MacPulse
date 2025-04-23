@@ -20,6 +20,8 @@ class MCConnectionManager: NSObject, ObservableObject {
     var onReceiveMetric: ((MetricPayload) -> Void)?
     
     @Published var availablePeers = [MCPeerID]()
+    @Published var selectedPeer: MCPeerID?  // Store the selected peer
+
     @Published var receivedInvite: Bool = false
     @Published var receivedInviteFrom: MCPeerID?
     @Published var invitationHandler: ((Bool, MCSession?) -> Void)?
@@ -53,12 +55,12 @@ class MCConnectionManager: NSObject, ObservableObject {
         self.session.delegate = self
         self.advertiser.delegate = self
         self.browser.delegate = self
-
-        if isSender {
-            startAdvertising()
-        } else {
-            startBrowsing()
-        }
+//
+//        if isSender {
+//            startAdvertising()
+//        } else {
+//            startBrowsing()
+//        }
     }
     
     deinit {
@@ -87,6 +89,17 @@ class MCConnectionManager: NSObject, ObservableObject {
         print("STOPPED BROWSING!")
     }
     
+    func sendInviteToPeer() {
+           guard let selectedPeer = selectedPeer else {
+               print("No peer selected to invite.")
+               return
+           }
+           
+           // Send invitation to the selected peer
+           print("📨 Inviting peer: \(selectedPeer.displayName)")
+           browser.invitePeer(selectedPeer, to: self.session, withContext: nil, timeout: 200)
+       }
+    
     func send(_ payload: MetricPayload) {
         guard !session.connectedPeers.isEmpty else {
             print("No peers are connected.")
@@ -110,10 +123,10 @@ extension MCConnectionManager: MCNearbyServiceBrowserDelegate {
             if !self.availablePeers.contains(peerID) {
                 self.availablePeers.append(peerID)
 
-                // Auto-invite logic (only if not already connected)
-                if !self.session.connectedPeers.contains(peerID) {
-                    print("📨 Inviting peer: \(peerID.displayName)")
-                    browser.invitePeer(peerID, to: self.session, withContext: nil, timeout: 200)
+                // Store the first available peer found
+                if self.selectedPeer == nil {
+                    self.selectedPeer = peerID
+                    print("📍 Found a peer: \(peerID.displayName)")
                 }
             }
         }

@@ -16,7 +16,8 @@ func getPeerName() -> String {
 struct MacPulseApp: App {
     
     @StateObject private var syncService: MCConnectionManager
-
+    @State private var hasStarted: Bool = false
+    
     init() {
         let peerName = getPeerName()
         let manager = MCConnectionManager(yourName: peerName)
@@ -41,18 +42,16 @@ struct MacPulseApp: App {
     }()
     
     var body: some Scene {
-        #if os(iOS)
         WindowGroup {
-            ContentView()
+            if hasStarted {
+                ContentView()
+                    .environmentObject(syncService)
+            }
+            else {
+                LandingView(hasStarted: $hasStarted)
+                    .environmentObject(syncService)
+            }
         }
         .modelContainer(sharedModelContainer)  // Attach the sharedModelContainer to the app’s window group
-        #elseif os(macOS)
-        WindowGroup {
-            ContentView()
-            //SystemMetricsDashboard()
-                .environmentObject(syncService)
-        }
-        .modelContainer(sharedModelContainer)  // Attach the sharedModelContainer to the app’s window group
-        #endif
     }
 }

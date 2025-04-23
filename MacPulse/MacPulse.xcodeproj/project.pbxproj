@@ -48,7 +48,6 @@
 		99745FDB2DB1F6EE003B7F9B /* Exceptions for "MacPulse" folder in "MacPulse-Monitor" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Assets.xcassets,
 				"Preview Content/Preview Assets.xcassets",
 				Shared/Views/SystemMetricsDashboardMac.swift,
 			);

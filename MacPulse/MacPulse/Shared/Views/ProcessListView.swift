@@ -33,17 +33,8 @@ struct ProcessListView: View {
             .onAppear {
                 #if os(iOS)
                 if let manager = RemoteSystemMonitor.shared.connectionManager {
+                    manager.send(.stopSending(typeToStop: 0))
                     manager.send(.sendProcessMetrics)
-                } else {
-                    print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
-                }
-                #endif
-            }
-            .onDisappear {
-                #if os(iOS)
-                if let manager = RemoteSystemMonitor.shared.connectionManager {
-                    print("Stopping process!")
-                    manager.send(.stopSending(typeToStop: 1))
                 } else {
                     print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
                 }
