@@ -7,6 +7,7 @@
 
 import Testing
 @testable import MacPulse
+
 import SwiftData
 
 struct MacPulseTests {

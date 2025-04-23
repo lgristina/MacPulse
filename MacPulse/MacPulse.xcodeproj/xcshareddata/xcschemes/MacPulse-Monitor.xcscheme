@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "778521382D7FBF6200C057AF"
-               BuildableName = "MacPulse.app"
-               BlueprintName = "MacPulse"
+               BlueprintIdentifier = "99745FD32DB1F6EE003B7F9B"
+               BuildableName = "MacPulse-Monitor.app"
+               BlueprintName = "MacPulse-Monitor"
                ReferencedContainer = "container:MacPulse.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -49,9 +49,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "778521382D7FBF6200C057AF"
-            BuildableName = "MacPulse.app"
-            BlueprintName = "MacPulse"
+            BlueprintIdentifier = "99745FD32DB1F6EE003B7F9B"
+            BuildableName = "MacPulse-Monitor.app"
+            BlueprintName = "MacPulse-Monitor"
             ReferencedContainer = "container:MacPulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -66,9 +66,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "778521382D7FBF6200C057AF"
-            BuildableName = "MacPulse.app"
-            BlueprintName = "MacPulse"
+            BlueprintIdentifier = "99745FD32DB1F6EE003B7F9B"
+            BuildableName = "MacPulse-Monitor.app"
+            BlueprintName = "MacPulse-Monitor"
             ReferencedContainer = "container:MacPulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

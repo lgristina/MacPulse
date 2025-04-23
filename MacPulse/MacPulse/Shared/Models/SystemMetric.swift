@@ -53,3 +53,9 @@ class SystemMetric: CustomStringConvertible, Codable {
         try container.encode(diskActivity, forKey: .diskActivity)
     }
 }
+
+extension SystemMetric {
+    func asPayload() -> MetricPayload {
+        .system(self)
+    }
+}

@@ -37,7 +37,7 @@ class DataManager {
                 modelContext.insert(process) // Insert process metrics
             }
             try modelContext.save() // Save all metrics at once
-            print("✅ Process metrics saved successfully.")
+            //print("✅ Process metrics saved successfully.")
         } catch {
             print("❌ Error saving process metrics: \(error)")
         }
@@ -49,7 +49,7 @@ class DataManager {
         do {
             modelContext.insert(newSystemMetric) // Insert system metric
             try modelContext.save() // Save all metrics at once
-            print("✅ System metrics saved successfully.")
+           // print("✅ System metrics saved successfully.")
         } catch {
             print("❌ Error saving system metrics: \(error)")
         }
