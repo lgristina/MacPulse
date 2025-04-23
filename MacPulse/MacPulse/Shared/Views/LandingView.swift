@@ -47,6 +47,7 @@ struct LandingView: View {
                     Button(action: {
                         syncService.browser.invitePeer(peer, to: syncService.session, withContext: nil, timeout: 20)
                         hasStarted = true
+                        syncService.sendInviteToPeer()
                     }) {
                         Text("Connect")
                             .frame(maxWidth: .infinity)
@@ -63,16 +64,11 @@ struct LandingView: View {
                     .foregroundColor(.gray)
             }
             #endif
-
+            #if os(macOS)
             Button(action: {
-                #if os(iOS)
-                syncService.sendInviteToPeer()
-                #endif
                 hasStarted = true
             }) {
-                #if os(macOS)
                 Text("Start Monitoring")
-                #endif
             }
             .font(.headline)
             .padding()
@@ -82,6 +78,7 @@ struct LandingView: View {
             .cornerRadius(12)
             .padding(.horizontal, 40)
             .padding(.bottom, 40)
+            #endif
         }
         .animation(.easeInOut, value: syncService.availablePeers)
         .onAppear {
