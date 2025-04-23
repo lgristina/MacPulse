@@ -44,7 +44,7 @@ enum MetricPayload: Codable {
             try container.encode(PayloadType.sendProcessMetrics, forKey: .type)
         case .stopSending(let typeToStop):
             try container.encode(PayloadType.stopSending, forKey: .type)
-            try container.encode(typeToStop, forKey: .payload) // Encode the typeToStop as payload
+            try container.encode(typeToStop, forKey: .payload)
         }
     }
 
@@ -59,15 +59,15 @@ enum MetricPayload: Codable {
             let metric = try container.decode(SystemMetric.self, forKey: .payload)
             self = .system(metric)
         case .process:
-            let processes = try container.decode(CustomProcessInfo.self, forKey: .payload)
-            self = .process([processes])
+            let processes = try container.decode([CustomProcessInfo].self, forKey: .payload)
+            self = .process(processes)
         case .logs:
             let logs = try container.decode([String].self, forKey: .payload)
             self = .logs(logs)
         case .sendSystemMetrics:
             self = .sendSystemMetrics
         case .sendProcessMetrics:
-            self = .sendSystemMetrics
+            self = .sendProcessMetrics
         case .stopSending:
             let typeToStop = try container.decode(Int.self, forKey: .payload)
             self = .stopSending(typeToStop: typeToStop)  // Properly assign typeToStop

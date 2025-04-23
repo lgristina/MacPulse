@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct ProcessListView: View {
-    @StateObject private var viewModel = ProcessMonitor.shared
+    #if os(macOS)
+    @ObservedObject private var viewModel = ProcessMonitor.shared
+    #endif
     @ObservedObject var systemMonitor = RemoteSystemMonitor.shared
 
     
@@ -34,6 +36,7 @@ struct ProcessListView: View {
                 #if os(iOS)
                 if let manager = RemoteSystemMonitor.shared.connectionManager {
                     manager.send(.stopSending(typeToStop: 0))
+                    print("REQUESTING PROCESS METRICS!")
                     manager.send(.sendProcessMetrics)
                 } else {
                     print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")

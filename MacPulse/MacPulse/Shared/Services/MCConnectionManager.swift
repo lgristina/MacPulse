@@ -55,12 +55,6 @@ class MCConnectionManager: NSObject, ObservableObject {
         self.session.delegate = self
         self.advertiser.delegate = self
         self.browser.delegate = self
-//
-//        if isSender {
-//            startAdvertising()
-//        } else {
-//            startBrowsing()
-//        }
     }
     
     deinit {
@@ -191,49 +185,43 @@ extension MCConnectionManager: MCSessionDelegate {
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         guard session.connectedPeers.contains(peerID) else {
-            print("❌ Peer not connected. Not sending metric.")
+            print("❌ Peer not connected. Not processing data.")
             return
         }
-        if let payload = try? JSONDecoder().decode(MetricPayload.self, from: data) {
-            print("📩 Received payload: \(payload)")
+
+        do {
+            let payload = try JSONDecoder().decode(MetricPayload.self, from: data)
+           // print("📩 Successfully received and decoded payload: \(payload)")
 
             DispatchQueue.main.async {
-                
                 switch payload {
                 case .sendSystemMetrics:
                     print("📡 Received .sendSystemMetrics from peer: \(peerID.displayName)")
-
-//                    // Optionally send back a single metric immediately
-//                    do {
-//                        let currentMetric = self.getCurrentSystemMetric()
-//                        let response = MetricPayload.system(currentMetric)
-//                        let encoded = try JSONEncoder().encode(response)
-//                        try session.send(encoded, toPeers: [peerID], with: .reliable)
-//                        print("✅ Sent initial system metric in response to .startMetrics.")
-//                    } catch {
-//                        print("❌ Failed to send initial system metric: \(error)")
-//                    }
-
-                    // 🔥 Start continuous metric sending
                     RemoteSystemMonitor.shared.startSendingMetrics(type: 0)
                 case .sendProcessMetrics:
                     print("📡 Received .sendProcessMetrics from peer: \(peerID.displayName)")
                     RemoteSystemMonitor.shared.startSendingMetrics(type: 1)
                 case .stopSending(let typeToStop):
                     print("📡 Received .stopSending with type: \(typeToStop) from peer: \(peerID.displayName)")
-                    RemoteSystemMonitor.shared.stopSendingMetrics(type: typeToStop)  // Stop metrics based on type
-                case .system:
+                    RemoteSystemMonitor.shared.stopSendingMetrics(type: typeToStop)
+                case .system, .process:
                     self.onReceiveMetric?(payload)
-                case .process:
-                    self.onReceiveMetric?(payload)
-                default:
-                    break
+                case .logs(_):
+                    print("Logs!")
                 }
+            }
 
-                print("RECEIVING METRIC!")
+        } catch {
+            print("❌ Failed to decode payload: \(error.localizedDescription)")
+            print("📏 Data size: \(data.count) bytes")
+            if let string = String(data: data, encoding: .utf8) {
+                print("🔎 Raw JSON string: \(string)")
+            } else {
+                print("🧨 Couldn't convert data to UTF-8 string.")
             }
         }
     }
+    
     
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
     }

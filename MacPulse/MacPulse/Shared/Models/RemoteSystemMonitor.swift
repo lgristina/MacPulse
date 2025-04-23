@@ -72,9 +72,10 @@ class RemoteSystemMonitor: ObservableObject {
                 self.cpuUsage = metric.cpuUsage
                 self.memoryUsage = metric.memoryUsage
                 self.diskActivity = metric.diskActivity
-            case .process(_):
-                self.remoteProcesses = ProcessMonitor.shared.runningProcesses
+            case .process(let processes):
+                self.remoteProcesses = processes
             default:
+                //print("PAYLOAD: \(payload)")
                 break
             }
         }
@@ -83,17 +84,14 @@ class RemoteSystemMonitor: ObservableObject {
     func startSendingMetrics(type: Int) {
         switch type {
         case 0:
-            systemMetricTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in                    // Collect the latest metrics
+            systemMetricTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in    // Collect the latest metrics
                 let metrics = SystemMonitor.shared.lastMetrics
-
-               
                 let payload = MetricPayload.system(metrics ?? SystemMetric(timestamp: Date(), cpuUsage: 0, memoryUsage: 0.0, diskActivity: 0.0))
                 self.connectionManager?.send(payload)
             }
         case 1:
             processMetricTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in                    // Collect the latest metrics
                 let metrics = ProcessMonitor.shared.runningProcesses
-
                 let payload = MetricPayload.process(metrics)
                 self.connectionManager?.send(payload)
             }
@@ -101,13 +99,13 @@ class RemoteSystemMonitor: ObservableObject {
             print("Invalid metric type!")
             
         }
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                // Collect the latest metrics
-            let metrics = SystemMonitor.shared.lastMetrics
-
-           
-            let payload = MetricPayload.system(metrics ?? SystemMetric(timestamp: Date(), cpuUsage: 0, memoryUsage: 0.0, diskActivity: 0.0))
-            self.connectionManager?.send(payload)
-        }
+//        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+//                // Collect the latest metrics
+//            let metrics = SystemMonitor.shared.lastMetrics
+//
+//           
+//            let payload = MetricPayload.system(metrics ?? SystemMetric(timestamp: Date(), cpuUsage: 0, memoryUsage: 0.0, diskActivity: 0.0))
+//            self.connectionManager?.send(payload)
+//        }
     }
 }

@@ -87,8 +87,6 @@ struct ContentView: View {
         
         var body: some View {
                 VStack {
-                    Text("Detail for \(option.title)")
-                        .font(.largeTitle)
                     if option.title == "System" {
                         ContentView.systemMetrics
                     } else if option.title == "Process" {
