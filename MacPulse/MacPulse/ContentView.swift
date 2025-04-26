@@ -18,13 +18,12 @@ struct ContentView: View {
     private static var processMetrics = ProcessListView()
     
     let options: [Option] = [
-        .init(title: "Home", imageName: "house"),
         .init(title: "System", imageName: "gear"),
         .init(title: "Process", imageName: "cpu"),
         .init(title: "Log", imageName: "doc.text"),
     ]
     
-    @State private var selectedOption: Option? =  Option(title: "Home", imageName: "house")
+    @State private var selectedOption: Option? =  Option(title: "System", imageName: "gear")
 
     var body: some View {
         #if os(macOS)
@@ -34,6 +33,9 @@ struct ContentView: View {
             detailViewMac
         }
         .frame(minWidth: 800, minHeight: 600)
+        .task {
+            LogManager.shared.logInfo("ContentView appeared - App Launched (macOS)")
+        }
         #else
         NavigationStack {
                     List(options, id: \.self) { option in
@@ -46,6 +48,9 @@ struct ContentView: View {
                         detailViewiOS(for:option)
                     }
                 }
+        .task {
+            LogManager.shared.logInfo("ContentView appeared - App Launched (iOS)")
+        }
         #endif
     }
     
@@ -62,14 +67,6 @@ struct ContentView: View {
     @ViewBuilder
     private var detailViewMac: some View {
         switch selectedOption?.title {
-        case "Home":
-            VStack {
-                  Image("MacPulse")
-                      .resizable()
-                      .scaledToFill() // Ensures the image fills the entire view
-                      .edgesIgnoringSafeArea(.all) // Makes the image fill the safe area of the screen
-                      .padding(.bottom, 20)
-              }
         case "System":
             ContentView.systemMetrics
         case "Process":
@@ -90,16 +87,7 @@ struct ContentView: View {
         
         var body: some View {
                 VStack {
-                    Text("Detail for \(option.title)")
-                        .font(.largeTitle)
-                    // Replace with your actual content views.
-                    if option.title == "Home" {
-                        Image("MacPulse")
-                            .resizable()
-                            .scaledToFill() // Ensures the image fills the entire view
-                            .edgesIgnoringSafeArea(.all) // Makes the image fill the safe area of the screen
-                            .padding(.bottom, 20)
-                    } else if option.title == "System" {
+                    if option.title == "System" {
                         ContentView.systemMetrics
                     } else if option.title == "Process" {
                         ContentView.processMetrics

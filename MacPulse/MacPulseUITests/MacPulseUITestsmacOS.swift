@@ -1,3 +1,4 @@
+#if os(macOS)
 import XCTest
 
 class MacPulseUITestsmacOS: XCTestCase {
@@ -43,7 +44,20 @@ class MacPulseUITestsmacOS: XCTestCase {
         let logButton = app.descendants(matching: .button)["Log"]
         XCTAssertTrue(logButton.exists, "Log button should exist")
         logButton.click()
-        XCTAssertTrue(app.tables.firstMatch.waitForExistence(timeout: 1),
-                      "Selecting 'Log' should show the log view")
+        
+        // Wait for the navigation bar to appear
+        XCTAssertTrue(app.navigationBars["Log"].waitForExistence(timeout: 1),
+                      "Selecting 'Log' should navigate to the log view")
+        
+        // If there are no logs, ensure the placeholder exists
+        if app.staticTexts["No logs yet."].exists {
+            XCTAssertTrue(app.staticTexts["No logs yet."].exists,
+                          "When there are no logs, it should show a placeholder")
+        } else {
+            // Otherwise, check for the first log entry
+            let logText = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "INFO")).firstMatch
+            XCTAssertTrue(logText.exists, "Log content should be visible in the log view")
+        }
     }
 }
+#endif
