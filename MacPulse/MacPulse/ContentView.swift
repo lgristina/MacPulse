@@ -9,21 +9,22 @@ struct Option: Hashable {
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
+
     #if os(macOS)
     private static var systemMetrics = SystemMetricsDashboardMac()
     #else
     private static var systemMetrics = SystemMetricsDashboardiOS()
     #endif
-    
+
     private static var processMetrics = ProcessListView()
-    
+
     let options: [Option] = [
         .init(title: "System", imageName: "gear"),
         .init(title: "Process", imageName: "cpu"),
         .init(title: "Log", imageName: "doc.text"),
     ]
-    
-    @State private var selectedOption: Option? =  Option(title: "System", imageName: "gear")
+
+    @State private var selectedOption: Option? = Option(title: "System", imageName: "gear")
 
     var body: some View {
         #if os(macOS)
@@ -34,26 +35,34 @@ struct ContentView: View {
         }
         .frame(minWidth: 800, minHeight: 600)
         .task {
-            LogManager.shared.logInfo("ContentView appeared - App Launched (macOS)")
+            // Set verbosity high so info logs show
+            LogManager.shared.verbosityLevelForErrorAndDebug = .high
+            LogManager.shared.verbosityLevelForSync = .high
+
+            LogManager.shared.logInfo(.errorAndDebug, "ContentView appeared - App Launched (macOS)")
         }
         #else
         NavigationStack {
-                    List(options, id: \.self) { option in
-                        NavigationLink(value: option) {
-                            Label(option.title, systemImage: option.imageName)
-                        }
-                    }
-                    .navigationTitle("MacPulse")
-                    .navigationDestination(for: Option.self) { option in
-                        detailViewiOS(for:option)
-                    }
+            List(options, id: \.self) { option in
+                NavigationLink(value: option) {
+                    Label(option.title, systemImage: option.imageName)
                 }
+            }
+            .navigationTitle("MacPulse")
+            .navigationDestination(for: Option.self) { option in
+                detailViewiOS(for: option)
+            }
+        }
         .task {
-            LogManager.shared.logInfo("ContentView appeared - App Launched (iOS)")
+            // Set verbosity high so info logs show
+            LogManager.shared.verbosityLevelForErrorAndDebug = .high
+            LogManager.shared.verbosityLevelForSync = .high
+
+            LogManager.shared.logInfo(.errorAndDebug, "ContentView appeared - App Launched (iOS)")
         }
         #endif
     }
-    
+
     private var sidebar: some View {
         List(options, id: \.self, selection: $selectedOption) { option in
             NavigationLink(value: option) {
@@ -63,42 +72,59 @@ struct ContentView: View {
         }
         .navigationTitle("MacPulse")
     }
-    
+
     @ViewBuilder
     private var detailViewMac: some View {
-        switch selectedOption?.title {
-        case "System":
-            ContentView.systemMetrics
-        case "Process":
-            ContentView.processMetrics
-        case "Log":
-            LogView()
-        default:
-            Text("Select an option")
+        VStack {
+            switch selectedOption?.title {
+            case "System":
+                ContentView.systemMetrics
+            case "Process":
+                ContentView.processMetrics
+            case "Log":
+                LogView()
+            default:
+                Text("Select an option")
+            }
+
+            Spacer()
+
+            // Add Test Log button
+            Button("Add Test Log") {
+                LogManager.shared.logInfo(.errorAndDebug, "Test log added at \(Date()) (macOS)")
+            }
+            .padding()
         }
     }
-    
+
     struct detailViewiOS: View {
         let option: Option
-            
+
         init(for option: Option) {
             self.option = option
         }
-        
+
         var body: some View {
-                VStack {
-                    if option.title == "System" {
-                        ContentView.systemMetrics
-                    } else if option.title == "Process" {
-                        ContentView.processMetrics
-                    } else if option.title == "Log" {
-                        LogView()
-                    }
-                    Spacer()
+            VStack {
+                if option.title == "System" {
+                    ContentView.systemMetrics
+                } else if option.title == "Process" {
+                    ContentView.processMetrics
+                } else if option.title == "Log" {
+                    LogView()
+                }
+
+                Spacer()
+
+                // Add Test Log button
+                Button("Add Test Log") {
+                    LogManager.shared.logInfo(.errorAndDebug, "Test log added at \(Date()) (iOS)")
                 }
                 .padding()
-                .navigationTitle(option.title)
             }
+            .padding()
+            .navigationTitle(option.title)
+        }
     }
 }
 
