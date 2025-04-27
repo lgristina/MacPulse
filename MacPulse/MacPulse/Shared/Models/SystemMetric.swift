@@ -14,28 +14,28 @@ class SystemMetric: CustomStringConvertible, Codable {
     var cpuUsage: Double
     var memoryUsage: Double
     var diskActivity: Double
-
+    
     init(timestamp: Date, cpuUsage: Double, memoryUsage: Double, diskActivity: Double) {
         self.timestamp = timestamp
         self.cpuUsage = cpuUsage
         self.memoryUsage = memoryUsage
         self.diskActivity = diskActivity
     }
-
+    
     func toString() -> String {
         "SystemMetric | Time: \(timestamp.formatted()), CPU: \(cpuUsage)%, MEM: \(memoryUsage)%, DISK: \(diskActivity)%"
     }
-
+    
     var description: String {
         toString()
     }
-
+    
     // MARK: - Codable
-
+    
     enum CodingKeys: CodingKey {
         case timestamp, cpuUsage, memoryUsage, diskActivity
     }
-
+    
     required convenience init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let timestamp = try container.decode(Date.self, forKey: .timestamp)
@@ -44,7 +44,7 @@ class SystemMetric: CustomStringConvertible, Codable {
         let diskActivity = try container.decode(Double.self, forKey: .diskActivity)
         self.init(timestamp: timestamp, cpuUsage: cpuUsage, memoryUsage: memoryUsage, diskActivity: diskActivity)
     }
-
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(timestamp, forKey: .timestamp)

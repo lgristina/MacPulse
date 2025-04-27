@@ -14,20 +14,20 @@ enum MetricPayload: Codable {
     case sendSystemMetrics
     case sendProcessMetrics
     case stopSending(typeToStop: Int)
-
+    
     enum CodingKeys: String, CodingKey {
         case type, payload
     }
-
+    
     enum PayloadType: String, Codable {
         case system, process, logs, sendSystemMetrics, sendProcessMetrics, stopSending
     }
-
+    
     // MARK: - Encoding
-
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-
+        
         switch self {
         case .system(let systemMetric):
             try container.encode(PayloadType.system, forKey: .type)
@@ -47,13 +47,13 @@ enum MetricPayload: Codable {
             try container.encode(typeToStop, forKey: .payload)
         }
     }
-
+    
     // MARK: - Decoding
-
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(PayloadType.self, forKey: .type)
-
+        
         switch type {
         case .system:
             let metric = try container.decode(SystemMetric.self, forKey: .payload)

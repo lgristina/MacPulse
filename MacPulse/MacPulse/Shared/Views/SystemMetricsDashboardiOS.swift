@@ -14,14 +14,14 @@ import UIKit
 
 struct SystemMetricsDashboardiOS: View {
     @ObservedObject var systemMonitor = RemoteSystemMonitor.shared
-
+    
     var body: some View {
         VStack {
             Text("Companion Dashboard")
                 .font(.title)
                 .bold()
                 .padding()
-
+            
             Grid {
                 GridRow {
                     NavigationLink(destination: DetailedUsageView<CPUUsageData>(
@@ -34,7 +34,7 @@ struct SystemMetricsDashboardiOS: View {
                     )) {
                         MetricPanel(title: "CPU Usage", value: systemMonitor.cpuUsage, unit: "%")
                     }
-
+                    
                     NavigationLink(destination: DetailedUsageView<MemoryUsageData>(
                         title: "Memory Usage",
                         unit: "MB",

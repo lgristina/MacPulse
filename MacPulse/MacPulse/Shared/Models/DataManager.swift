@@ -1,34 +1,36 @@
+// MARK: DATA MANAGER
+/*  This file is responsible for managing the data collected
+ and stored in CoreData. By default, there are 2 defined
+ thresholds that will trigger data pruning:
+ CoreData memory threshold is hit:
+ o Size of CoreData entities is larger than X MB
+ Data exceeds timeline threshold:
+ o For System Data  -  Data older than 10 minutes
+ o For Process Data -  Data older than 1 minute
+ */
 import Foundation
 import SwiftData
 
 @MainActor
 class DataManager {
-//    static let shared = DataManager()
-//    let modelContext: ModelContext
-//    @MainActor
-//    init(context: ModelContext = MetricContainer.shared.container.mainContext) {
-//        self.modelContext = context
-//    }
-//
-//    private var pruningTimer: Timer?
     static let shared: DataManager = {
         let ctx = MetricContainer.shared.container.mainContext
         return DataManager(_modelContext: ctx)
     }()
-
+    
     let modelContext: ModelContext
     private var pruningTimer: Timer?
-
+    
     @MainActor
     private init(_modelContext: ModelContext) {
         self.modelContext = _modelContext
     }
-
+    
     @MainActor
     init(testingContext: ModelContext) {
         self.modelContext = testingContext
     }
-
+    
     // MARK: - Saving Metrics
     @MainActor
     func saveProcessMetrics(processes: [CustomProcessInfo]) {

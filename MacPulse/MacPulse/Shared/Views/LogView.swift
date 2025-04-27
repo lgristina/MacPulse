@@ -8,14 +8,14 @@ struct LogView: View {
             Text("Log View")
                 .font(.largeTitle)
                 .padding(.bottom, 10)
-
+            
             if logManager.logs.isEmpty {
                 Text("No logs yet.")
                     .foregroundColor(.secondary)
             } else {
                 LogListView(logs: logManager.logs)
             }
-
+            
             Spacer()
         }
         .padding()
@@ -24,7 +24,7 @@ struct LogView: View {
 
 struct LogListView: View {
     let logs: [String]
-
+    
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 8) {
@@ -37,7 +37,7 @@ struct LogListView: View {
         .background(backgroundColor)
         .cornerRadius(10)
     }
-
+    
     @ViewBuilder
     private func logRow(_ log: String, index: Int) -> some View {
         Text(log)
@@ -46,21 +46,21 @@ struct LogListView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(index.isMultiple(of: 2) ? rowBackgroundColor : Color.clear)
     }
-
+    
     // Platform-specific background color
     private var backgroundColor: Color {
-        #if os(macOS)
+#if os(macOS)
         return Color(NSColor.windowBackgroundColor)
-        #else
+#else
         return Color(.systemGroupedBackground)
-        #endif
+#endif
     }
-
+    
     private var rowBackgroundColor: Color {
-        #if os(macOS)
+#if os(macOS)
         return Color(NSColor.controlBackgroundColor)
-        #else
+#else
         return Color(.systemGray6)
-        #endif
+#endif
     }
 }

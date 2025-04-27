@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct ProcessListView: View {
-    #if os(macOS)
+#if os(macOS)
     @ObservedObject private var viewModel = ProcessMonitor.shared
-    #endif
+#endif
     @ObservedObject var systemMonitor = RemoteSystemMonitor.shared
     
     // Enum to define sorting criteria
@@ -33,12 +33,12 @@ struct ProcessListView: View {
                         .font(.title2)
                         .padding()
                 }
-
-                #if os(macOS)
+                
+#if os(macOS)
                 let processes = viewModel.runningProcesses
-                #else
+#else
                 let processes = systemMonitor.remoteProcesses
-                #endif
+#endif
                 
                 // Sorting the list based on selected criteria
                 let sortedProcesses = sortedProcesses(for: processes)

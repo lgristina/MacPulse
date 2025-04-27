@@ -32,9 +32,9 @@ class RemoteSystemMonitor: ObservableObject {
     @Published var processMetricTimer: Timer? // Timer to control querying interval
     
     @Published var remoteProcesses: [CustomProcessInfo] = []
-
+    
     var connectionManager: MCConnectionManager?
-
+    
     init(connectionManager: MCConnectionManager?) {
         self.connectionManager = connectionManager
         self.connectionManager?.onReceiveMetric = { [weak self] payload in
@@ -51,20 +51,20 @@ class RemoteSystemMonitor: ObservableObject {
     // Method to stop sending metrics
     func stopSendingMetrics(type: Int) {
         switch type {
-            case 0:
-              // Stop sending system metrics
-              systemMetricTimer?.invalidate()
-              systemMetricTimer = nil
-              print("Stopped sending system metrics.")
-            case 1:
-              // Stop sending process metrics
-              processMetricTimer?.invalidate()
-              processMetricTimer = nil
-              print("Stopped sending process metrics.")
-            default:
-              break
+        case 0:
+            // Stop sending system metrics
+            systemMetricTimer?.invalidate()
+            systemMetricTimer = nil
+            print("Stopped sending system metrics.")
+        case 1:
+            // Stop sending process metrics
+            processMetricTimer?.invalidate()
+            processMetricTimer = nil
+            print("Stopped sending process metrics.")
+        default:
+            break
         }
-      }
+    }
     private func updateMetrics(from payload: MetricPayload) {
         DispatchQueue.main.async {
             switch payload {
@@ -99,13 +99,5 @@ class RemoteSystemMonitor: ObservableObject {
             print("Invalid metric type!")
             
         }
-//        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-//                // Collect the latest metrics
-//            let metrics = SystemMonitor.shared.lastMetrics
-//
-//           
-//            let payload = MetricPayload.system(metrics ?? SystemMetric(timestamp: Date(), cpuUsage: 0, memoryUsage: 0.0, diskActivity: 0.0))
-//            self.connectionManager?.send(payload)
-//        }
     }
 }

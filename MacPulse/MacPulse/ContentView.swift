@@ -9,11 +9,11 @@ struct Option: Hashable {
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
-    #if os(macOS)
+#if os(macOS)
     private static var systemMetrics = SystemMetricsDashboardMac()
-    #else
+#else
     private static var systemMetrics = SystemMetricsDashboardiOS()
-    #endif
+#endif
     
     private static var processMetrics = ProcessListView()
     
@@ -24,9 +24,9 @@ struct ContentView: View {
     ]
     
     @State private var selectedOption: Option? =  Option(title: "System", imageName: "gear")
-
+    
     var body: some View {
-        #if os(macOS)
+#if os(macOS)
         NavigationSplitView {
             sidebar
         } detail: {
@@ -36,22 +36,22 @@ struct ContentView: View {
         .task {
             LogManager.shared.logInfo("ContentView appeared - App Launched (macOS)")
         }
-        #else
+#else
         NavigationStack {
-                    List(options, id: \.self) { option in
-                        NavigationLink(value: option) {
-                            Label(option.title, systemImage: option.imageName)
-                        }
-                    }
-                    .navigationTitle("MacPulse")
-                    .navigationDestination(for: Option.self) { option in
-                        detailViewiOS(for:option)
-                    }
+            List(options, id: \.self) { option in
+                NavigationLink(value: option) {
+                    Label(option.title, systemImage: option.imageName)
                 }
+            }
+            .navigationTitle("MacPulse")
+            .navigationDestination(for: Option.self) { option in
+                detailViewiOS(for:option)
+            }
+        }
         .task {
             LogManager.shared.logInfo("ContentView appeared - App Launched (iOS)")
         }
-        #endif
+#endif
     }
     
     private var sidebar: some View {
@@ -80,25 +80,25 @@ struct ContentView: View {
     
     struct detailViewiOS: View {
         let option: Option
-            
+        
         init(for option: Option) {
             self.option = option
         }
         
         var body: some View {
-                VStack {
-                    if option.title == "System" {
-                        ContentView.systemMetrics
-                    } else if option.title == "Process" {
-                        ContentView.processMetrics
-                    } else if option.title == "Log" {
-                        LogView()
-                    }
-                    Spacer()
+            VStack {
+                if option.title == "System" {
+                    ContentView.systemMetrics
+                } else if option.title == "Process" {
+                    ContentView.processMetrics
+                } else if option.title == "Log" {
+                    LogView()
                 }
-                .padding()
-                .navigationTitle(option.title)
+                Spacer()
             }
+            .padding()
+            .navigationTitle(option.title)
+        }
     }
 }
 

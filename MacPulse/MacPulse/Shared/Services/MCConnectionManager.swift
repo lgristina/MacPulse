@@ -21,18 +21,18 @@ class MCConnectionManager: NSObject, ObservableObject {
     
     @Published var availablePeers = [MCPeerID]()
     @Published var selectedPeer: MCPeerID?  // Store the selected peer
-
+    
     @Published var receivedInvite: Bool = false
     @Published var receivedInviteFrom: MCPeerID?
     @Published var invitationHandler: ((Bool, MCSession?) -> Void)?
     @Published var isAvailableToPlay = false
     @Published var paired: Bool = false
     
-    #if os(macOS)
+#if os(macOS)
     let isSender = true
-    #else
+#else
     let isSender = false
-    #endif
+#endif
     
     var syncAvailable: Bool = false {
         didSet {
@@ -84,15 +84,15 @@ class MCConnectionManager: NSObject, ObservableObject {
     }
     
     func sendInviteToPeer() {
-           guard let selectedPeer = selectedPeer else {
-               print("No peer selected to invite.")
-               return
-           }
-           
-           // Send invitation to the selected peer
-           print("📨 Inviting peer: \(selectedPeer.displayName)")
-           browser.invitePeer(selectedPeer, to: self.session, withContext: nil, timeout: 200)
-       }
+        guard let selectedPeer = selectedPeer else {
+            print("No peer selected to invite.")
+            return
+        }
+        
+        // Send invitation to the selected peer
+        print("📨 Inviting peer: \(selectedPeer.displayName)")
+        browser.invitePeer(selectedPeer, to: self.session, withContext: nil, timeout: 200)
+    }
     
     func send(_ payload: MetricPayload) {
         guard !session.connectedPeers.isEmpty else {
@@ -116,7 +116,7 @@ extension MCConnectionManager: MCNearbyServiceBrowserDelegate {
         DispatchQueue.main.async {
             if !self.availablePeers.contains(peerID) {
                 self.availablePeers.append(peerID)
-
+                
                 // Store the first available peer found
                 if self.selectedPeer == nil {
                     self.selectedPeer = peerID
@@ -188,11 +188,11 @@ extension MCConnectionManager: MCSessionDelegate {
             print("❌ Peer not connected. Not processing data.")
             return
         }
-
+        
         do {
             let payload = try JSONDecoder().decode(MetricPayload.self, from: data)
-           // print("📩 Successfully received and decoded payload: \(payload)")
-
+            // print("📩 Successfully received and decoded payload: \(payload)")
+            
             DispatchQueue.main.async {
                 switch payload {
                 case .sendSystemMetrics:
@@ -210,7 +210,7 @@ extension MCConnectionManager: MCSessionDelegate {
                     print("Logs!")
                 }
             }
-
+            
         } catch {
             print("❌ Failed to decode payload: \(error.localizedDescription)")
             print("📏 Data size: \(data.count) bytes")
@@ -236,10 +236,10 @@ extension MCConnectionManager: MCSessionDelegate {
     
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: (any Error)?) {
         if let error = error {
-                print("❌ Error receiving resource \(resourceName) from \(peerID): \(error)")
-            } else {
-                print("✅ Finished receiving resource \(resourceName) from \(peerID)")
-            }
+            print("❌ Error receiving resource \(resourceName) from \(peerID): \(error)")
+        } else {
+            print("✅ Finished receiving resource \(resourceName) from \(peerID)")
+        }
     }
     
     

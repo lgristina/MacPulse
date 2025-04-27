@@ -7,14 +7,14 @@ import SwiftData
 class ProcessMonitor: ObservableObject {
     static let shared = ProcessMonitor()
     @Published var runningProcesses: [CustomProcessInfo] = []
-
+    
     var timer: Timer?
-
+    
     init() {
         print("📊 Process monitoring started.")
         startMonitoring()
     }
-
+    
     func startMonitoring() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
@@ -23,7 +23,7 @@ class ProcessMonitor: ObservableObject {
         }
         print("---- GETTING PROCESS METRICS! -----")
     }
-
+    
     func stopMonitoring() {
         timer?.invalidate()
         timer = nil // release the reference
@@ -46,30 +46,30 @@ class ProcessMonitor: ObservableObject {
             }
         }
     }
-
+    
     /// Fetches running processes with CPU & memory usage.
     func getRunningProcesses() -> [CustomProcessInfo] {
-        #if os(macOS)
+#if os(macOS)
         let task = Process()
         task.launchPath = "/bin/ps"
         task.arguments = ["-axo", "pid,comm,%cpu,rss"]
-
+        
         let pipe = Pipe()
         task.standardOutput = pipe
-
+        
         do {
             try task.run()
         } catch {
             print("❌ Failed to fetch processes: \(error)")
             return []
         }
-
+        
         let output = pipe.fileHandleForReading.readDataToEndOfFile()
         guard let result = String(data: output, encoding: .utf8) else { return [] }
-
+        
         let lines = result.split(separator: "\n").dropFirst()
         var processList: [CustomProcessInfo] = []
-
+        
         for line in lines {
             let components = line.split(separator: " ", omittingEmptySubsequences: true)
             if components.count >= 4,
@@ -88,9 +88,9 @@ class ProcessMonitor: ObservableObject {
             }
         }
         return processList
-        #else
+#else
         // On iOS, process monitoring via /bin/ps is not supported.
         return []
-        #endif
+#endif
     }
 }

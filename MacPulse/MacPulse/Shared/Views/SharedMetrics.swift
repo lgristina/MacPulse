@@ -34,7 +34,7 @@ struct MetricPanel: View {
     let title: String
     let value: Double
     let unit: String
-
+    
     var body: some View {
         VStack {
             Text(title)
@@ -57,15 +57,15 @@ struct DetailedUsageView<Data: UsageData>: View {
     let currentUsage: Double
     let usagePublisher: Published<Double>.Publisher
     let makeData: (Double, Date) -> Data
-
+    
     @State private var usageHistory: [Data] = []
-
+    
     var body: some View {
         VStack {
             Text("\(title) Detailed View")
                 .font(.largeTitle)
                 .padding(.bottom, 20)
-
+            
             Chart(usageHistory) {
                 LineMark(
                     x: .value("Time", $0.time),
@@ -75,7 +75,7 @@ struct DetailedUsageView<Data: UsageData>: View {
             }
             .frame(height: 200)
             .padding()
-
+            
             ScrollView {
                 LazyVStack(alignment: .leading) {
                     ForEach(usageHistory.reversed(), id: \.id) { data in
@@ -99,7 +99,7 @@ struct DetailedUsageView<Data: UsageData>: View {
         }
         .padding()
     }
-
+    
     private func addUsage(_ usage: Double) {
         let newData = makeData(usage, Date())
         usageHistory.append(newData)

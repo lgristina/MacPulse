@@ -5,7 +5,7 @@ import SwiftData
 struct MetricContainer {
     static let shared = MetricContainer()
     let container: ModelContainer
-
+    
     init() {
         do {
             // Initialize the container for both SystemMetric and ProcessMetric

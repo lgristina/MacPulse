@@ -1,15 +1,22 @@
+// MARK: MACPULSE APP
+/*  This is the entry point for both the macOS and
+ iOS MacPulse applications. It checks the currently
+ running operating system to dispatch the applicable
+ version of the application. In both cases, it will
+ kick off the landing page of the MacPulse app. */
+
 import SwiftUI
 import SwiftData
 
 
 func getPeerName() -> String {
-    #if os(macOS)
+#if os(macOS)
     return Host.current().localizedName ?? "MacPulse"
-    #elseif os(iOS)
+#elseif os(iOS)
     return UIDevice.current.name
-    #else
+#else
     return "MacPulse"
-    #endif
+#endif
 }
 
 @main
@@ -22,18 +29,18 @@ struct MacPulseApp: App {
         let peerName = getPeerName()
         let manager = MCConnectionManager(yourName: peerName)
         _syncService = StateObject(wrappedValue: manager)
-
+        
         RemoteSystemMonitor.shared = RemoteSystemMonitor(connectionManager: manager)
     }
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            SystemMetric.self, // Add your model types here
-            CustomProcessInfo.self  // Add ProcessMetric if it is part of your app's data model
+            SystemMetric.self,
+            CustomProcessInfo.self
         ])
         
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
@@ -52,6 +59,6 @@ struct MacPulseApp: App {
                     .environmentObject(syncService)
             }
         }
-        .modelContainer(sharedModelContainer)  // Attach the sharedModelContainer to the app’s window group
+        .modelContainer(sharedModelContainer)
     }
 }
