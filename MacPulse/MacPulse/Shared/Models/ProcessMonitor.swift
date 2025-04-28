@@ -2,9 +2,10 @@ import Foundation
 import SwiftUI
 import SwiftData
 
+/// <#Description#>
 /// Returns a list of running processes with CPU & memory usage.
-/// On iOS this returns an empty list since the Process API is unavailable.
 class ProcessMonitor: ObservableObject {
+    
     static let shared = ProcessMonitor()
     @Published var runningProcesses: [CustomProcessInfo] = []
     
@@ -30,6 +31,8 @@ class ProcessMonitor: ObservableObject {
         print("🛑 Process monitoring stopped.")
     }
     
+    /// Conforms list of running processes to CustomProcessInfo structure
+    /// and saves them to CoreData
     func collectAndSaveProcesses() {
         let processes = getRunningProcesses().map { process in
             CustomProcessInfo(
@@ -47,7 +50,7 @@ class ProcessMonitor: ObservableObject {
         }
     }
     
-    /// Fetches running processes with CPU & memory usage.
+    /// - Returns: running processes with CPU & memory usage.
     func getRunningProcesses() -> [CustomProcessInfo] {
 #if os(macOS)
         let task = Process()

@@ -5,8 +5,8 @@
 //  Created by Austin Frank on 4/17/25.
 //
 
-import SwiftUI
 import Charts
+import SwiftUI
 
 // MARK: - Shared Protocol
 protocol UsageData: Identifiable {
@@ -34,7 +34,7 @@ struct MetricPanel: View {
     let title: String
     let value: Double
     let unit: String
-    
+
     var body: some View {
         VStack {
             Text(title)
@@ -45,7 +45,8 @@ struct MetricPanel: View {
                 .foregroundColor(.blue)
         }
         .frame(width: 150, height: 120)
-        .background(RoundedRectangle(cornerRadius: 0.5).fill(Color.gray.opacity(0.2)))
+        .background(
+            RoundedRectangle(cornerRadius: 0.5).fill(Color.gray.opacity(0.2)))
     }
 }
 
@@ -57,15 +58,15 @@ struct DetailedUsageView<Data: UsageData>: View {
     let currentUsage: Double
     let usagePublisher: Published<Double>.Publisher
     let makeData: (Double, Date) -> Data
-    
+
     @State private var usageHistory: [Data] = []
-    
+
     var body: some View {
         VStack {
             Text("\(title) Detailed View")
                 .font(.largeTitle)
                 .padding(.bottom, 20)
-            
+
             Chart(usageHistory) {
                 LineMark(
                     x: .value("Time", $0.time),
@@ -75,7 +76,7 @@ struct DetailedUsageView<Data: UsageData>: View {
             }
             .frame(height: 200)
             .padding()
-            
+
             ScrollView {
                 LazyVStack(alignment: .leading) {
                     ForEach(usageHistory.reversed(), id: \.id) { data in
@@ -99,7 +100,7 @@ struct DetailedUsageView<Data: UsageData>: View {
         }
         .padding()
     }
-    
+
     private func addUsage(_ usage: Double) {
         let newData = makeData(usage, Date())
         usageHistory.append(newData)

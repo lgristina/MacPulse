@@ -1,12 +1,8 @@
-//
-//  MetricPayload.swift
-//  MacPulse
-//
-//  Created by Austin Frank on 4/17/25.
-//
 
 import Foundation
 
+/// The MetricPayload enum is responsible for encoding, decoding,
+/// and dispatching a set of operations between different systems
 enum MetricPayload: Codable {
     case system(SystemMetric)
     case process([CustomProcessInfo])
@@ -24,7 +20,6 @@ enum MetricPayload: Codable {
     }
     
     // MARK: - Encoding
-    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
@@ -49,7 +44,6 @@ enum MetricPayload: Codable {
     }
     
     // MARK: - Decoding
-    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(PayloadType.self, forKey: .type)

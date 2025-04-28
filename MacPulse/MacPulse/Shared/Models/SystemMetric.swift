@@ -1,13 +1,9 @@
-//
-//  SystemMetric.swift
-//  MacPulse
-//
-//  Created by Austin Frank on 3/30/25.
-//
 import SwiftUI
 import Foundation
 import SwiftData
 
+/// <#Description#>
+/// Defines the information contained for system metrics
 @Model
 class SystemMetric: CustomStringConvertible, Codable {
     var timestamp: Date

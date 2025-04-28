@@ -1,11 +1,3 @@
-//
-//  RemoteSystemMonitor.swift
-//  MacPulse
-//
-//  Created by Luca Gristina on 4/16/25.
-//  Updated by Austin Frank on 4/17/25.
-//
-
 import Foundation
 import Combine
 
@@ -15,12 +7,10 @@ import AppKit
 import UIKit
 #endif
 
-
-struct MetricsData: Codable {
-    let cpu: Double
-    let memory: Double
-    let disk: Double
-}
+/// <#Description#>
+/// The interface between the MacPulse iOS and MacPulse macOS
+/// Any information requested by the iOS application must flow through
+/// the RemoteSystemMonitor.
 class RemoteSystemMonitor: ObservableObject {
     static var shared = RemoteSystemMonitor(connectionManager: nil)
     

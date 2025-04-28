@@ -1,16 +1,13 @@
-// MARK: DATA MANAGER
-/*  This file is responsible for managing the data collected
- and stored in CoreData. By default, there are 2 defined
- thresholds that will trigger data pruning:
- CoreData memory threshold is hit:
- o Size of CoreData entities is larger than X MB
- Data exceeds timeline threshold:
- o For System Data  -  Data older than 10 minutes
- o For Process Data -  Data older than 1 minute
- */
 import Foundation
 import SwiftData
 
+/// This file is responsible for managing the data collected and stored in CoreData.
+/// By default, there are 2 defined  thresholds that will trigger data pruning:
+///     CoreData memory threshold is hit:
+///      o  Size of CoreData entities is larger than X MB
+///     Data exceeds timeline threshold:
+///      o  For System Data  -  Data older than 10 minutes
+///      o  For Process Data -  Data older than 1 minute
 @MainActor
 class DataManager {
     static let shared: DataManager = {

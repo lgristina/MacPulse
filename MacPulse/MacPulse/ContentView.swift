@@ -6,6 +6,15 @@ struct Option: Hashable {
     let imageName: String
 }
 
+@Model
+final class Item {
+    var timestamp: Date
+
+    init(timestamp: Date) {
+        self.timestamp = timestamp
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]

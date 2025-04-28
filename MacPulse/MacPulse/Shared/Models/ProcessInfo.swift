@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 
+/// Defines the information encapsulated within process information
 @Model
 class CustomProcessInfo: Identifiable, CustomStringConvertible, Codable {
     var id: Int
@@ -25,7 +26,6 @@ class CustomProcessInfo: Identifiable, CustomStringConvertible, Codable {
     }
     
     // MARK: - Codable
-    
     enum CodingKeys: CodingKey {
         case id, timestamp, cpuUsage, memoryUsage
     }
