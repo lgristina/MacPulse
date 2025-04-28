@@ -35,10 +35,8 @@ struct ContentView: View {
         }
         .frame(minWidth: 800, minHeight: 600)
         .task {
-            // Set verbosity high so info logs show
             LogManager.shared.verbosityLevelForErrorAndDebug = .high
             LogManager.shared.verbosityLevelForSync = .high
-
             LogManager.shared.logInfo(.errorAndDebug, "ContentView appeared - App Launched (macOS)")
         }
         #else
@@ -50,15 +48,15 @@ struct ContentView: View {
             }
             .navigationTitle("MacPulse")
             .navigationDestination(for: Option.self) { option in
-                detailViewiOS(for: option)
+                DetailViewiOS(for: option)
             }
         }
         .task {
             // Set verbosity high so info logs show
-            LogManager.shared.verbosityLevelForErrorAndDebug = .high
-            LogManager.shared.verbosityLevelForSync = .high
-
-            LogManager.shared.logInfo(.errorAndDebug, "ContentView appeared - App Launched (iOS)")
+            LogManager.shared.verbosityLevelForErrorAndDebug = LogVerbosityLevel.high
+            LogManager.shared.verbosityLevelForSyncRetrieval = LogVerbosityLevel.high
+            
+            LogManager.shared.log(.errorAndDebug,level: .high, "ContentView appearded = App Launched macOS")
         }
         #endif
     }
@@ -89,42 +87,44 @@ struct ContentView: View {
 
             Spacer()
 
-            // Add Test Log button
             Button("Add Test Log") {
-                LogManager.shared.logInfo(.errorAndDebug, "Test log added at \(Date()) (macOS)")
+                LogManager.shared.log(.errorAndDebug,level: .high, "Test log added at \(Date()) (macOS)")
             }
             .padding()
         }
     }
+}
 
-    struct detailViewiOS: View {
-        let option: Option
+struct DetailViewiOS: View {
+    let option: Option
 
-        init(for option: Option) {
-            self.option = option
-        }
+    init(for option: Option) {
+        self.option = option
+    }
 
-        var body: some View {
-            VStack {
-                if option.title == "System" {
-                    ContentView.systemMetrics
-                } else if option.title == "Process" {
-                    ContentView.processMetrics
-                } else if option.title == "Log" {
-                    LogView()
-                }
+    @ViewBuilder
+    var body: some View {
+        VStack {
+            switch option.title {
+            case "System":
+                ContentView.systemMetrics
+            case "Process":
+                ContentView.processMetrics
+            case "Log":
+                LogView()
+            default:
+                Text("Unknown option")
+            }
 
-                Spacer()
+            Spacer()
 
-                // Add Test Log button
-                Button("Add Test Log") {
-                    LogManager.shared.logInfo(.errorAndDebug, "Test log added at \(Date()) (iOS)")
-                }
-                .padding()
+            Button("Add Test Log") {
+                LogManager.shared.logInfo(.errorAndDebug, "Test log added at \(Date()) (iOS)")
             }
             .padding()
-            .navigationTitle(option.title)
         }
+        .padding()
+        .navigationTitle(option.title)
     }
 }
 
