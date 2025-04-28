@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1D8773E92DB55C4B007543FC /* TestPlan.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 1D8773E82DB55C4B007543FC /* TestPlan.xctestplan */; };
+		999CB0712DBF15B6001F3421 /* TestPlan.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 1D8773E82DB55C4B007543FC /* TestPlan.xctestplan */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,11 +33,38 @@
 		778521392D7FBF6200C057AF /* MacPulse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPulse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7785214C2D7FBF6300C057AF /* MacPulseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPulseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		778521562D7FBF6300C057AF /* MacPulseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPulseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		999CB0752DBF15B6001F3421 /* MacPulse Monitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MacPulse Monitor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		999CB08E2DBF1A9F001F3421 /* MacPulse-Monitor-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "MacPulse-Monitor-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		999CB0762DBF15B6001F3421 /* Exceptions for "MacPulse" folder in "MacPulse Monitor" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				Item.swift,
+				"Preview Content/Preview Assets.xcassets",
+				Shared/Views/SystemMetricsDashboardMac.swift,
+			);
+			target = 999CB06D2DBF15B6001F3421 /* MacPulse Monitor */;
+		};
+		999CB0822DBF16D8001F3421 /* Exceptions for "MacPulse" folder in "MacPulse" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				Shared/Views/SystemMetricsDashboardiOS.swift,
+			);
+			target = 778521382D7FBF6200C057AF /* MacPulse */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		7785213B2D7FBF6200C057AF /* MacPulse */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				999CB0822DBF16D8001F3421 /* Exceptions for "MacPulse" folder in "MacPulse" target */,
+				999CB0762DBF15B6001F3421 /* Exceptions for "MacPulse" folder in "MacPulse Monitor" target */,
+			);
 			path = MacPulse;
 			sourceTree = "<group>";
 		};
@@ -74,12 +102,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		999CB06F2DBF15B6001F3421 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		778521302D7FBF6200C057AF = {
 			isa = PBXGroup;
 			children = (
+				999CB08E2DBF1A9F001F3421 /* MacPulse-Monitor-Info.plist */,
 				1D8773E82DB55C4B007543FC /* TestPlan.xctestplan */,
 				7785213B2D7FBF6200C057AF /* MacPulse */,
 				7785214F2D7FBF6300C057AF /* MacPulseTests */,
@@ -94,6 +130,7 @@
 				778521392D7FBF6200C057AF /* MacPulse.app */,
 				7785214C2D7FBF6300C057AF /* MacPulseTests.xctest */,
 				778521562D7FBF6300C057AF /* MacPulseUITests.xctest */,
+				999CB0752DBF15B6001F3421 /* MacPulse Monitor.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -169,6 +206,28 @@
 			productReference = 778521562D7FBF6300C057AF /* MacPulseUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		999CB06D2DBF15B6001F3421 /* MacPulse Monitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 999CB0722DBF15B6001F3421 /* Build configuration list for PBXNativeTarget "MacPulse Monitor" */;
+			buildPhases = (
+				999CB06E2DBF15B6001F3421 /* Sources */,
+				999CB06F2DBF15B6001F3421 /* Frameworks */,
+				999CB0702DBF15B6001F3421 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				7785213B2D7FBF6200C057AF /* MacPulse */,
+			);
+			name = "MacPulse Monitor";
+			packageProductDependencies = (
+			);
+			productName = MacPulse;
+			productReference = 999CB0752DBF15B6001F3421 /* MacPulse Monitor.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -211,6 +270,7 @@
 				778521382D7FBF6200C057AF /* MacPulse */,
 				7785214B2D7FBF6300C057AF /* MacPulseTests */,
 				778521552D7FBF6300C057AF /* MacPulseUITests */,
+				999CB06D2DBF15B6001F3421 /* MacPulse Monitor */,
 			);
 		};
 /* End PBXProject section */
@@ -238,6 +298,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		999CB0702DBF15B6001F3421 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				999CB0712DBF15B6001F3421 /* TestPlan.xctestplan in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -256,6 +324,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		778521522D7FBF6300C057AF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		999CB06E2DBF15B6001F3421 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -395,16 +470,19 @@
 		778521612D7FBF6300C057AF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "MacPulse-Logo";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MacPulse/MacPulse.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"MacPulse/Preview Content\"";
+				DEVELOPMENT_TEAM = 7XYXT94TN8;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MacPulse/Info.plist;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MacPulse would like to discover a local device to monitor";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -423,10 +501,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = luca.MacPulse;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Debug;
@@ -434,16 +512,19 @@
 		778521622D7FBF6300C057AF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "MacPulse-Logo";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MacPulse/MacPulse.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"MacPulse/Preview Content\"";
+				DEVELOPMENT_TEAM = 7XYXT94TN8;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MacPulse/Info.plist;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MacPulse would like to discover a local device to monitor";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -462,10 +543,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = luca.MacPulse;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Release;
@@ -558,6 +639,92 @@
 			};
 			name = Release;
 		};
+		999CB0732DBF15B6001F3421 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "MacPulse-Logo";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MacPulse/MacPulse.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"MacPulse/Preview Content\"";
+				DEVELOPMENT_TEAM = 7XYXT94TN8;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "MacPulse-Monitor-Info.plist";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MacPulse would like to discover a local device to monitor";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = alm.MacPulse;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				XROS_DEPLOYMENT_TARGET = 2.2;
+			};
+			name = Debug;
+		};
+		999CB0742DBF15B6001F3421 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "MacPulse-Logo";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MacPulse/MacPulse.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"MacPulse/Preview Content\"";
+				DEVELOPMENT_TEAM = 7XYXT94TN8;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "MacPulse-Monitor-Info.plist";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MacPulse would like to discover a local device to monitor";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = alm.MacPulse;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				XROS_DEPLOYMENT_TARGET = 2.2;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -593,6 +760,15 @@
 			buildConfigurations = (
 				778521672D7FBF6300C057AF /* Debug */,
 				778521682D7FBF6300C057AF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		999CB0722DBF15B6001F3421 /* Build configuration list for PBXNativeTarget "MacPulse Monitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				999CB0732DBF15B6001F3421 /* Debug */,
+				999CB0742DBF15B6001F3421 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
