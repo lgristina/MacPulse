@@ -2,7 +2,6 @@ import Foundation
 import OSLog
 import Combine
 
-<<<<<<< Updated upstream
 // MARK: - Verbosity Levels
 enum LogVerbosityLevel: Int, Comparable {
     case low = 0       // minimal logs, errors only
@@ -36,9 +35,6 @@ struct LogEntry: Identifiable {
 }
 
 // MARK: - LogManager Singleton
-=======
-///  LogManager is responsible for documenting different User, System, and CoreData interactions
->>>>>>> Stashed changes
 class LogManager: ObservableObject {
     static let shared = LogManager()
 
@@ -54,7 +50,6 @@ class LogManager: ObservableObject {
     var verbosityLevelForSync: LogVerbosityLevel = .medium
 
     private init() {}
-<<<<<<< Updated upstream
 
     // MARK: - Public Logging Methods
     func log(_ category: LogCategory, level: LogVerbosityLevel, _ message: String) {
@@ -85,26 +80,6 @@ class LogManager: ObservableObject {
 
         // Save locally (on main thread for UI)
         let entry = LogEntry(timestamp: Date(), category: category, level: level, message: message)
-=======
-    
-    func logInfo(_ message: String) {
-        logger.info("\(message, privacy: .public)")
-        addToLog("[INFO] \(message)")
-    }
-    
-    func logError(_ message: String) {
-        logger.error("\(message, privacy: .public)")
-        addToLog("[ERROR] \(message)")
-    }
-    
-    func logWarning(_ message: String, category: String = "General") {
-        logger.warning("\(message, privacy: .public)")
-    }
-    
-    /// Description
-    /// - Parameter entry: entry description
-    private func addToLog(_ entry: String) {
->>>>>>> Stashed changes
         DispatchQueue.main.async {
             self.logs.append(entry)
         }
