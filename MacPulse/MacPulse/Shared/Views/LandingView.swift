@@ -33,36 +33,32 @@ struct LandingView: View {
             Spacer()
             
 #if os(iOS)
-            if let peer = syncService.availablePeers.first {
-                VStack(spacing: 12) {
-                    Text("Discovered Peer:")
-                        .font(.headline)
-                    
-                    Text(peer.displayName)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(10)
-                    
-                    Button(action: {
-                        syncService.browser.invitePeer(peer, to: syncService.session, withContext: nil, timeout: 20)
-                        hasStarted = true
-                        syncService.sendInviteToPeer()
-                    }) {
-                        Text("Connect")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                }
-                .padding(.horizontal, 40)
-            } else {
-                Text("No peers found yet")
-                    .italic()
-                    .foregroundColor(.gray)
-            }
+            if syncService.availablePeers.isEmpty {
+                            Text("No peers found yet")
+                                .italic()
+                                .foregroundColor(.gray)
+                        } else {
+                            VStack(spacing: 12) {
+                                Text("Discovered Peers:")
+                                    .font(.headline)
+                                
+                                ForEach(syncService.availablePeers, id: \.displayName) { peer in
+                                    Button(action: {
+                                        syncService.browser.invitePeer(peer, to: syncService.session, withContext: nil, timeout: 20)
+                                        hasStarted = true
+                                        syncService.sendInviteToPeer()
+                                    }) {
+                                        Text(peer.displayName)
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color.blue)
+                                            .foregroundColor(.white)
+                                            .cornerRadius(10)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 40)
+                        }
 #endif
 #if os(macOS)
             Button(action: {

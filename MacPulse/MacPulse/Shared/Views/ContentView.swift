@@ -17,6 +17,7 @@ final class Item {
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var syncService: MCConnectionManager
     @Query private var items: [Item]
 
 #if os(macOS)
@@ -51,16 +52,30 @@ struct ContentView: View {
         }
 #else
         NavigationStack {
-            List(options, id: \.self) { option in
-                NavigationLink(value: option) {
-                    Label(option.title, systemImage: option.imageName)
+            List {
+                if let connectedPeer = syncService.session.connectedPeers.first {
+                    Section {
+                        Text("Connected to: \(connectedPeer.displayName)")
+                            .font(.subheadline)
+                            .foregroundColor(.green)
+                    }
+                }
+
+                Section {
+                    ForEach(options, id: \.self) { option in
+                        NavigationLink(value: option) {
+                            Label(option.title, systemImage: option.imageName)
+                        }
+                    }
                 }
             }
-            .navigationTitle("MacPulse")
+            .navigationTitle("MacPulse Monitor")
+            .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: Option.self) { option in
                 detailViewiOS(for: option)
             }
         }
+        .environmentObject(syncService)
         .task {
             // Set verbosity high so info logs show
             LogManager.shared.verbosityLevelForErrorAndDebug = .high
@@ -70,7 +85,6 @@ struct ContentView: View {
         }
 #endif
     }
-
     private var sidebar: some View {
         List(options, id: \.self, selection: $selectedOption) { option in
             NavigationLink(value: option) {
@@ -107,6 +121,7 @@ struct ContentView: View {
 
     struct detailViewiOS: View {
         let option: Option
+        
         init(for option: Option) {
             self.option = option
         }
