@@ -1,29 +1,33 @@
 import Foundation
 import SwiftData
 
-/// This file is responsible for managing the data collected and stored in CoreData.
-/// By default, there are 2 defined  thresholds that will trigger data pruning:
-///     CoreData memory threshold is hit:
-///      o  Size of CoreData entities is larger than X MB
-///     Data exceeds timeline threshold:
-///      o  For System Data  -  Data older than 10 minutes
-///      o  For Process Data -  Data older than 1 minute
+/// This file manages the saving and pruning of system and process metrics in CoreData.
+/// It defines two thresholds for pruning:
+/// 1. **CoreData memory threshold**: Prunes when CoreData entities exceed a specified size.
+/// 2. **Timeline threshold**:
+///     - **System Data**: Prunes data older than 10 minutes.
+///     - **Process Data**: Prunes data older than 1 minute.
 @MainActor
 class DataManager {
+    /// Singleton instance of `DataManager` for shared use.
     static let shared: DataManager = {
         let ctx = MetricContainer.shared.container.mainContext
         return DataManager(_modelContext: ctx)
     }()
     
+    /// The CoreData context used to manage model objects.
     let modelContext: ModelContext
+    
+    /// Timer for periodic pruning of old metrics.
     private var pruningTimer: Timer?
     
-    @MainActor
+    /// Initializes `DataManager` with a given CoreData context.
     private init(_modelContext: ModelContext) {
         self.modelContext = _modelContext
         LogManager.shared.log(.dataPersistence, level: .low, "Initialized DataManager with main context")
     }
     
+    /// Initializes `DataManager` for testing purposes with a mock context.
     @MainActor
     init(testingContext: ModelContext) {
         self.modelContext = testingContext
@@ -31,7 +35,10 @@ class DataManager {
     }
     
     // MARK: - Saving Metrics
-    @MainActor
+    
+    /// Saves a collection of process metrics into CoreData.
+    ///
+    /// - Parameter processes: An array of `CustomProcessInfo` objects to be saved.
     func saveProcessMetrics(processes: [CustomProcessInfo]) {
         do {
             for process in processes {
@@ -44,9 +51,15 @@ class DataManager {
         }
     }
 
+    /// Saves system metrics (CPU, memory, disk usage) to CoreData.
+    ///
+    /// - Parameters:
+    ///   - cpu: The CPU usage value to save.
+    ///   - memory: The memory usage value to save.
+    ///   - disk: The disk activity value to save.
     @MainActor
     func saveSystemMetrics(cpu: Double, memory: Double, disk: Double) {
-        let newSystemMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
+        let newMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
         do {
             modelContext.insert(newSystemMetric)
             try modelContext.save()
@@ -57,7 +70,11 @@ class DataManager {
     }
 
     // MARK: - Pruning Old Metrics
-    @MainActor
+    
+    /// Prunes system metrics older than 10 minutes.
+    ///
+    /// - Fetches all system metrics older than 10 minutes.
+    /// - Deletes them and saves the changes to CoreData.
     func pruneOldSystemMetrics() {
         let retentionPeriod = Calendar.current.date(byAdding: .minute, value: -10, to: Date())!
         let fetchDescriptor = FetchDescriptor<SystemMetric>(predicate: #Predicate { metric in
@@ -76,6 +93,11 @@ class DataManager {
             LogManager.shared.log(.dataPersistence, level: .high, "❌ Error pruning system metrics: \(error.localizedDescription)")
         }
     }
+    
+    /// Prunes process metrics older than 1 minute.
+    ///
+    /// - Fetches all process metrics older than 1 minute.
+    /// - Deletes them and saves the changes to CoreData.
 
     @MainActor
     func pruneOldProcessMetrics() {
@@ -96,10 +118,14 @@ class DataManager {
             LogManager.shared.log(.dataPersistence, level: .high, "❌ Error pruning process metrics: \(error.localizedDescription)")
         }
     }
-
-    // MARK: - Pruning Timers
+    
+    // MARK: - Pruning Timer
+    
+    /// Starts a timer to prune old metrics periodically every minute.
+    ///
+    /// - The timer triggers pruning of system metrics every 10 minutes and process metrics every 1 minute.
     func startPruningTimer() {
-        pruningTimer?.invalidate()
+        pruningTimer?.invalidate() // Invalidate any existing timer
         pruningTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
             LogManager.shared.log(.dataPersistence, level: .low, "🕒 Timer fired. Starting pruning tasks...")
             Task { @MainActor in
@@ -111,6 +137,8 @@ class DataManager {
     }
 
     // MARK: - Debugging
+    
+    /// Prints the current count of system and process metrics in the database for debugging purposes.
     func databaseSizeInfo() {
         let systemCount = (try? modelContext.fetch(FetchDescriptor<SystemMetric>()))?.count ?? 0
         let processCount = (try? modelContext.fetch(FetchDescriptor<CustomProcessInfo>()))?.count ?? 0

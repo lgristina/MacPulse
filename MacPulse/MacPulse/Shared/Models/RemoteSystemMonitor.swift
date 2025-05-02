@@ -7,32 +7,39 @@ import AppKit
 import UIKit
 #endif
 
-
-/// <#Description#>
-/// The interface between the MacPulse iOS and MacPulse macOS
-/// Any information requested by the iOS application must flow through
-/// the RemoteSystemMonitor.
-
-struct MetricsData: Codable {
-    let cpu: Double
-    let memory: Double
-    let disk: Double
-}
-
+/// Acts as the bridge between the MacPulse macOS and iOS apps.
+///
+/// `RemoteSystemMonitor` receives system and process metrics from the Mac app,
+/// updates its published properties, and makes them accessible to the iOS dashboard.
+/// All communication to/from the iOS side flows through this class.
 class RemoteSystemMonitor: ObservableObject {
+    /// Shared singleton instance
     static var shared = RemoteSystemMonitor(connectionManager: nil)
     
+    /// Current CPU usage from the remote Mac
     @Published var cpuUsage: Double = 0.0
+    
+    /// Current memory usage from the remote Mac
     @Published var memoryUsage: Double = 0.0
+    
+    /// Current disk activity from the remote Mac
     @Published var diskActivity: Double = 0.0
     
+    /// Timer controlling how often system metrics are sent
     @Published var systemMetricTimer: Timer?
     @Published var processMetricTimer: Timer?
     
+    /// Timer controlling how often process metrics are sent
+    @Published var processMetricTimer: Timer?
+    
+    /// Latest received remote process list
     @Published var remoteProcesses: [CustomProcessInfo] = []
     
+    /// Manages the connection to the peer device (macOS app)
     var connectionManager: MCConnectionManager?
     
+    /// Initializes a new `RemoteSystemMonitor` with an optional connection manager.
+    /// Assigns the metric receive handler if the connection manager is provided.
     init(connectionManager: MCConnectionManager?) {
         self.connectionManager = connectionManager
         self.connectionManager?.onReceiveMetric = { [weak self] payload in
@@ -41,6 +48,8 @@ class RemoteSystemMonitor: ObservableObject {
         LogManager.shared.log(.syncTransmission, level: .medium, "📡 RemoteSystemMonitor initialized.")
     }
     
+    /// Configures the connection manager post-initialization.
+    /// Re-assigns the metric receive handler.
     func configure(connectionManager: MCConnectionManager) {
         self.connectionManager = connectionManager
         self.connectionManager?.onReceiveMetric = { [weak self] payload in
@@ -48,11 +57,13 @@ class RemoteSystemMonitor: ObservableObject {
         }
         LogManager.shared.log(.syncTransmission, level: .medium, "🔄 RemoteSystemMonitor reconfigured with new connection manager.")
     }
-
+    
+    /// Stops sending metrics based on the type:
+    /// - 0: system metrics
+    /// - 1: process metrics
     func stopSendingMetrics(type: Int) {
         switch type {
         case 0:
-
             systemMetricTimer?.invalidate()
             systemMetricTimer = nil
             LogManager.shared.log(.syncTransmission, level: .medium, "🛑 Stopped sending system metrics.")
@@ -64,7 +75,11 @@ class RemoteSystemMonitor: ObservableObject {
             LogManager.shared.log(.syncTransmission, level: .low, "⚠️ Attempted to stop unknown metric type: \(type).")
         }
     }
+    
+    
 
+    
+    /// Updates the published properties with the latest data from the received payload.
     private func updateMetrics(from payload: MetricPayload) {
         DispatchQueue.main.async {
             switch payload {
@@ -81,7 +96,9 @@ class RemoteSystemMonitor: ObservableObject {
             }
         }
     }
-
+    /// Starts sending metrics of the given type at 1-second intervals:
+    /// - 0: system metrics
+    /// - 1: process metrics
     func startSendingMetrics(type: Int) {
         switch type {
         case 0:

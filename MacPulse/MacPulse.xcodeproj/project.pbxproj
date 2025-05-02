@@ -42,7 +42,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Item.swift,
 				"Preview Content/Preview Assets.xcassets",
 				Shared/Views/SystemMetricsDashboardMac.swift,
 			);
