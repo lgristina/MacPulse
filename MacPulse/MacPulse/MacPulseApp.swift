@@ -8,6 +8,19 @@
 import SwiftUI
 import SwiftData
 
+// MARK: – Color Inversion Modifier
+struct InvertColorsModifier: ViewModifier {
+    let isInverted: Bool
+    func body(content: Content) -> some View {
+        Group {
+            if isInverted {
+                content.colorInvert()
+            } else {
+                content
+            }
+        }
+    }
+}
 
 func getPeerName() -> String {
 #if os(macOS)
@@ -21,6 +34,8 @@ func getPeerName() -> String {
 
 @main
 struct MacPulseApp: App {
+    
+    @AppStorage("invertColors") private var invertColors: Bool = false
     
     @StateObject private var syncService: MCConnectionManager
     @State private var hasStarted: Bool = false
@@ -50,14 +65,16 @@ struct MacPulseApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if hasStarted {
-                ContentView()
-                    .environmentObject(syncService)
+            Group {
+                if hasStarted {
+                    ContentView()
+                } else {
+                    LandingView(hasStarted: $hasStarted)
+                }
             }
-            else {
-                LandingView(hasStarted: $hasStarted)
-                    .environmentObject(syncService)
-            }
+            .environmentObject(syncService)
+            // ← override SwiftUI’s colorScheme:
+            .environment(\.colorScheme, invertColors ? .light : .dark)
         }
         .modelContainer(sharedModelContainer)
     }
