@@ -27,8 +27,7 @@ class RemoteSystemMonitor: ObservableObject {
     
     /// Timer controlling how often system metrics are sent
     @Published var systemMetricTimer: Timer?
-    @Published var processMetricTimer: Timer?
-    
+  
     /// Timer controlling how often process metrics are sent
     @Published var processMetricTimer: Timer?
     
