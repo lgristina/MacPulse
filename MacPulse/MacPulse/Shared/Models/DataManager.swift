@@ -59,7 +59,7 @@ class DataManager {
     ///   - disk: The disk activity value to save.
     @MainActor
     func saveSystemMetrics(cpu: Double, memory: Double, disk: Double) {
-        let newMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
+        let newSystemMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
         do {
             modelContext.insert(newSystemMetric)
             try modelContext.save()
