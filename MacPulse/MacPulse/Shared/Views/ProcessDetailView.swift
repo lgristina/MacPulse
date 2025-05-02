@@ -9,26 +9,30 @@ import SwiftUI
 
 // MARK: - Process Detail View
 
-/// Displays detailed information for a single running process,
-/// including PID, CPU usage, and memory usage.
+/// Displays detailed information about a specific running process,
+/// including its name, ID, CPU usage, and memory usage.
+///
+/// Intended to be shown when a user selects a process from the process list view.
 struct ProcessDetailView: View {
+    /// Custom model representing a system process and its associated metrics.
     let process: CustomProcessInfo
 
     var body: some View {
         VStack(spacing: 15) {
-            // View title
+            // MARK: - Header
             Text("Process Details")
                 .font(.largeTitle)
                 .bold()
 
-            // Process ID row
+            // MARK: - Process Name
             HStack {
                 Text("Process name:")
                     .font(.headline)
                 Spacer()
                 Text("\(process.fullProcessName)")
             }
-            
+
+            // MARK: - Process ID
             HStack {
                 Text("Process ID:")
                     .font(.headline)
@@ -36,7 +40,7 @@ struct ProcessDetailView: View {
                 Text("\(process.id)")
             }
 
-            // CPU usage row
+            // MARK: - CPU Usage
             HStack {
                 Text("CPU Usage:")
                     .font(.headline)
@@ -45,7 +49,7 @@ struct ProcessDetailView: View {
                     .foregroundColor(.blue)
             }
 
-            // Memory usage row
+            // MARK: - Memory Usage
             HStack {
                 Text("Memory Usage:")
                     .font(.headline)

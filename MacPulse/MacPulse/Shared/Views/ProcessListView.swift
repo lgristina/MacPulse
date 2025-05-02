@@ -1,28 +1,32 @@
+//
+//  ProcessListView.swift
+//  MacPulse
+//
+//  Created by [Your Name] on [Date].
+//
+
 import SwiftUI
 
-// MARK: - Process List View
-
-/// Displays a list of running processes with sorting options by PID, CPU, or memory.
-/// Data is fetched locally on macOS or remotely via Multipeer Connectivity on iOS.
+/// Displays a list of running processes along with CPU and memory usage metrics.
+/// Supports platform-specific data sources (local for macOS, remote for iOS),
+/// and provides a dropdown menu to sort the list by name, CPU, or memory usage.
 struct ProcessListView: View {
-#if os(macOS)
-    @ObservedObject private var viewModel = ProcessMonitor.shared // Local system monitor
-#endif
-    @ObservedObject var systemMonitor = RemoteSystemMonitor.shared // Remote monitor for iOS
+    #if os(macOS)
+    @ObservedObject private var viewModel = ProcessMonitor.shared
+    #endif
+    @ObservedObject var systemMonitor = RemoteSystemMonitor.shared
 
-    /// Sorting criteria options
+    /// Sorting options for the process list.
     enum SortCriteria {
         case shortProcessName, cpuUsage, memoryUsage
     }
-    
-    // Property to track the selected sorting criteria
+
     @State private var sortCriteria: SortCriteria = .shortProcessName
-    
 
     var body: some View {
         NavigationView {
             VStack {
-                // Sorting menu with options
+                // Sorting Dropdown Menu
                 Menu {
                     Button("Sort by Process Name") {
                         sortCriteria = .shortProcessName
@@ -39,22 +43,21 @@ struct ProcessListView: View {
                         .padding()
                 }
 
-                // Choose the correct process source based on platform
+                // Select correct source of processes depending on platform
                 #if os(macOS)
-                    let processes = viewModel.runningProcesses
+                let processes = viewModel.runningProcesses
                 #else
-                    let processes = systemMonitor.remoteProcesses
+                let processes = systemMonitor.remoteProcesses
                 #endif
 
-                // Sort the processes using the selected criteria
+                // Display sorted list
                 let sortedProcesses = sortedProcesses(for: processes)
 
-                // Display the sorted process list
                 List(sortedProcesses) { process in
                     NavigationLink(destination: ProcessDetailView(process: process)) {
                         VStack(alignment: .leading) {
-               Text("Process: \(process.shortProcessName)").font(.headline)
-
+                            Text("Process: \(process.shortProcessName)")
+                                .font(.headline)
                             Text("CPU Usage: \(process.cpuUsage, specifier: "%.1f")%")
                                 .foregroundColor(.blue)
                             Text("Memory Usage: \(process.memoryUsage, specifier: "%.1f") MB")
@@ -66,24 +69,22 @@ struct ProcessListView: View {
                 }
                 .navigationTitle("Running Processes")
                 .onAppear {
-                    // Request process metrics from the Mac if a connection exists
                     if let manager = RemoteSystemMonitor.shared.connectionManager {
-                        manager.send(.stopSending(typeToStop: 0))
+                        manager.send(.stopSending(typeToStop: 0)) // Stop previous data stream
                         print("REQUESTING PROCESS METRICS!")
-                        manager.send(.sendProcessMetrics)
+                        manager.send(.sendProcessMetrics) // Request new metrics
                     } else {
                         print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
                     }
                 }
+
                 Spacer()
             }
             .frame(maxHeight: .infinity)
         }
     }
 
-    // MARK: - Sorting Function
-
-    /// Sorts the process array based on the selected sort criteria
+    /// Returns a new list of processes sorted according to the selected criteria.
     private func sortedProcesses(for processes: [CustomProcessInfo]) -> [CustomProcessInfo] {
         switch sortCriteria {
         case .shortProcessName:

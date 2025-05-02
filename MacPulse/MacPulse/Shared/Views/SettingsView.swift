@@ -7,22 +7,28 @@
 
 import SwiftUI
 
+// MARK: - Settings View
 
-/// The settings view where users can adjust various thresholds and accessibility options.
+/// Provides sliders and toggles for adjusting system alert thresholds and accessibility settings.
 struct SettingsView: View {
-    // —— Notification thresholds (in %)
+    
+    // MARK: - Stored Properties
+
+    // Notification thresholds (in %)
     @AppStorage("cpuThreshold")    private var cpuThreshold: Double    = 80
     @AppStorage("memoryThreshold") private var memoryThreshold: Double = 80
     @AppStorage("diskThreshold")   private var diskThreshold: Double   = 90
 
-    // —— Accessibility
+    // Accessibility options
     @AppStorage("invertColors") private var invertColors: Bool = false
+
+    // MARK: - View Body
 
     var body: some View {
         Form {
-            // Notification settings section
+            // MARK: Notification Settings
             Section(header:
-                Text("Notifications")
+                Text("Notification")
                     .font(.largeTitle)
                     .padding(.bottom, 10)
             ) {
@@ -45,7 +51,7 @@ struct SettingsView: View {
                 .padding(.vertical, 4)
             }
 
-            // Accessibility preferences section
+            // MARK: Accessibility Settings
             Section(header:
                 Text("Accessibility")
                     .font(.largeTitle)
@@ -56,21 +62,18 @@ struct SettingsView: View {
         }
         .frame(minWidth: 400)
         .padding()
-        .colorInvertIfNeeded(invertColors) // Conditionally invert colors if setting is enabled
         .navigationTitle("Settings")
+        .colorInvertIfNeeded(invertColors)
     }
 }
 
-// MARK: - Conditional Color Inversion
+// MARK: - View Extension
 
-/// Applies colorInvert() only if the invertColors toggle is true
 private extension View {
+    /// Conditionally applies `.colorInvert()` if accessibility toggle is enabled.
     @ViewBuilder
     func colorInvertIfNeeded(_ invert: Bool) -> some View {
-        if invert {
-            self.colorInvert()
-        } else {
-            self
-        }
+        if invert { self.colorInvert() }
+        else      { self }
     }
 }

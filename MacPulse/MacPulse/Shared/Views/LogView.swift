@@ -1,29 +1,36 @@
+//
+//  LogView.swift
+//  MacPulse
+//
+//  Created by [Your Name] on [Date].
+//
+
 import SwiftUI
 
-// MARK: - LogView
+// MARK: - Main Log View
 
-/// A SwiftUI view that displays logs managed by `LogManager`.
-/// Users can filter logs by category using a segmented picker and view real-time updates.
+/// Displays application logs filtered by category (e.g., Error, Debug, Sync).
+/// Allows users to inspect real-time logs with severity highlighting and category filtering.
 struct LogView: View {
-    /// Observes the shared singleton instance of `LogManager`.
+    /// Shared log manager instance to observe log updates.
     @ObservedObject private var logManager = LogManager.shared
 
-    /// The currently selected category to filter the logs displayed.
+    /// Selected category filter (default: error and debug logs).
     @State private var selectedCategory: LogCategory = .errorAndDebug
 
-    /// Computed property to filter logs by the selected category.
+    /// Computed property that returns only the logs matching the selected category.
     var filteredLogs: [LogEntry] {
         logManager.logs.filter { $0.category == selectedCategory }
     }
 
     var body: some View {
         VStack(alignment: .leading) {
-            // View Title
+            // MARK: - Header
             Text("Log")
                 .font(.largeTitle)
                 .padding(.bottom, 10)
 
-            // Picker for selecting the log category
+            // MARK: - Category Picker
             Picker("Category", selection: $selectedCategory) {
                 ForEach(LogCategory.allCases, id: \.self) { category in
                     Text(category.rawValue).tag(category)
@@ -32,9 +39,9 @@ struct LogView: View {
             .pickerStyle(SegmentedPickerStyle())
             .padding(.bottom, 10)
 
-            // Log content or fallback if empty
             Spacer()
 
+            // MARK: - Log Output
             if filteredLogs.isEmpty {
                 Text("No logs yet.")
                     .foregroundColor(.secondary)
@@ -49,12 +56,10 @@ struct LogView: View {
     }
 }
 
-// MARK: - LogListView
+// MARK: - Log List View
 
-/// Displays a scrollable and auto-updating list of log entries.
-/// Applies styling and highlights based on log level.
+/// Renders a scrollable list of log entries with severity-based styling.
 struct LogListView: View {
-    /// The list of logs to be displayed.
     let logs: [LogEntry]
 
     var body: some View {
@@ -70,7 +75,7 @@ struct LogListView: View {
             }
             .background(backgroundColor)
             .cornerRadius(10)
-            // Automatically scroll to the latest entry when a new log appears
+            // Scrolls to the bottom automatically when a new log is added.
             .onChange(of: logs.count) {
                 if let last = logs.indices.last {
                     withAnimation {
@@ -81,7 +86,9 @@ struct LogListView: View {
         }
     }
 
-    /// Builds a single row of the log with appropriate font and background color.
+    // MARK: - Individual Log Row
+
+    /// Renders a single log entry using monospaced font and background color based on severity.
     @ViewBuilder
     private func logRow(_ log: LogEntry) -> some View {
         Text(log.formatted)
@@ -91,24 +98,21 @@ struct LogListView: View {
             .background(rowBackgroundColor(for: log))
     }
 
-    /// Determines the background color based on the log’s verbosity level.
+    /// Highlights row background color based on log severity level.
     private func rowBackgroundColor(for log: LogEntry) -> Color {
         switch log.level {
-        case .low:
-            return Color.red.opacity(0.1)       // For errors
-        case .medium:
-            return Color.yellow.opacity(0.1)    // For warnings/info
-        case .high:
-            return Color.clear                  // For verbose/debug
+        case .low:     return Color.red.opacity(0.1)
+        case .medium:  return Color.yellow.opacity(0.1)
+        case .high:    return Color.clear
         }
     }
 
-    /// Provides platform-specific background color for the log container.
+    /// Sets platform-specific background color for the entire log list.
     private var backgroundColor: Color {
-#if os(macOS)
+        #if os(macOS)
         return Color(NSColor.windowBackgroundColor)
-#else
+        #else
         return Color(.systemGroupedBackground)
-#endif
+        #endif
     }
 }

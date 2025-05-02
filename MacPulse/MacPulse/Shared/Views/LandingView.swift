@@ -7,40 +7,41 @@
 
 import SwiftUI
 
-// MARK: - Landing View
-
-/// Entry screen shown before monitoring starts.
-/// On macOS, it allows the user to start monitoring directly.
-/// On iOS, it displays discovered peers for connection.
+/// The initial screen presented to users on both macOS and iOS.
+/// - macOS: Displays a welcome message and "Start Monitoring" button.
+/// - iOS: Scans for and displays available macOS peers to connect to via MultipeerConnectivity.
 struct LandingView: View {
+    /// Tracks whether the user has started the app experience.
     @Binding var hasStarted: Bool
+    
+    /// The shared multipeer connectivity service for browsing/advertising peers.
     @EnvironmentObject var syncService: MCConnectionManager
 
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
-            
-            /// App logo
+
+            // MARK: - App Icon
             Image("MacPulse")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 200, height: 200)
 
-            /// Title text varies by platform
-#if os(macOS)
+            // MARK: - Title Text
+            #if os(macOS)
             Text("Welcome to MacPulse")
                 .font(.title)
                 .padding()
-#elseif os(iOS)
+            #elseif os(iOS)
             Text("Monitor a Mac from your iPhone or iPad")
                 .font(.title2)
                 .padding()
-#endif
+            #endif
 
             Spacer()
 
-            /// iOS-specific: list of available Mac peers to connect to
-#if os(iOS)
+            // MARK: - iOS: Peer Discovery
+            #if os(iOS)
             if syncService.availablePeers.isEmpty {
                 Text("No peers found yet")
                     .italic()
@@ -50,9 +51,9 @@ struct LandingView: View {
                     Text("Discovered Peers:")
                         .font(.headline)
 
-                    // List of discovered peers shown as tappable buttons
                     ForEach(syncService.availablePeers, id: \.displayName) { peer in
                         Button(action: {
+                            // Send invite to selected peer and mark app as started
                             syncService.browser.invitePeer(peer, to: syncService.session, withContext: nil, timeout: 20)
                             hasStarted = true
                             syncService.sendInviteToPeer()
@@ -68,10 +69,10 @@ struct LandingView: View {
                 }
                 .padding(.horizontal, 40)
             }
-#endif
+            #endif
 
-            /// macOS-specific: button to start monitoring
-#if os(macOS)
+            // MARK: - macOS: Start Button
+            #if os(macOS)
             Button(action: {
                 hasStarted = true
             }) {
@@ -85,25 +86,22 @@ struct LandingView: View {
             .cornerRadius(12)
             .padding(.horizontal, 40)
             .padding(.bottom, 40)
-#endif
+            #endif
         }
-        /// Animate UI changes when peer list updates
+
+        // MARK: - Lifecycle & Animations
         .animation(.easeInOut, value: syncService.availablePeers)
-
-        /// Start advertising or browsing when view appears
         .onAppear {
-#if os(macOS)
+            #if os(macOS)
             syncService.startAdvertising()
-#elseif os(iOS)
+            #elseif os(iOS)
             syncService.startBrowsing()
-#endif
+            #endif
         }
-
-        /// Stop browsing when leaving the view (iOS only)
         .onDisappear {
-#if os(iOS)
+            #if os(iOS)
             syncService.stopBrowsing()
-#endif
+            #endif
         }
     }
 }

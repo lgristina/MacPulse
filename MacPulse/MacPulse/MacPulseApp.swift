@@ -9,6 +9,8 @@ import SwiftUI
 import SwiftData
 
 // MARK: – Color Inversion Modifier
+
+/// Conditionally inverts all colors in the view hierarchy
 struct InvertColorsModifier: ViewModifier {
     let isInverted: Bool
     func body(content: Content) -> some View {
