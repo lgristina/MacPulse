@@ -11,12 +11,12 @@ struct ContentView: View {
     @Query private var items: [Item]
 
     #if os(macOS)
-    private static var systemMetrics = SystemMetricsDashboardMac()
+    static var systemMetrics = SystemMetricsDashboardMac()
     #else
-    private static var systemMetrics = SystemMetricsDashboardiOS()
+    static var systemMetrics = SystemMetricsDashboardiOS()
     #endif
 
-    private static var processMetrics = ProcessListView()
+    static var processMetrics = ProcessListView()
 
     let options: [Option] = [
         .init(title: "System", imageName: "gear"),
@@ -36,8 +36,10 @@ struct ContentView: View {
         .frame(minWidth: 800, minHeight: 600)
         .task {
             LogManager.shared.verbosityLevelForErrorAndDebug = .high
-            LogManager.shared.verbosityLevelForSync = .high
-            LogManager.shared.logInfo(.errorAndDebug, "ContentView appeared - App Launched (macOS)")
+            LogManager.shared.verbosityLevelForSyncRetrieval = .high
+            LogManager.shared.verbosityLevelForSyncConnection = .high
+            LogManager.shared.verbosityLevelForSyncTransmission = .high
+            LogManager.shared.log(.errorAndDebug, level: LogVerbosityLevel.high, "ContentView appeared - App Launched (macOS)")
         }
         #else
         NavigationStack {
@@ -87,9 +89,7 @@ struct ContentView: View {
 
             Spacer()
 
-            Button("Add Test Log") {
-                LogManager.shared.log(.errorAndDebug,level: .high, "Test log added at \(Date()) (macOS)")
-            }
+            
             .padding()
         }
     }
@@ -118,9 +118,7 @@ struct DetailViewiOS: View {
 
             Spacer()
 
-            Button("Add Test Log") {
-                LogManager.shared.logInfo(.errorAndDebug, "Test log added at \(Date()) (iOS)")
-            }
+
             .padding()
         }
         .padding()

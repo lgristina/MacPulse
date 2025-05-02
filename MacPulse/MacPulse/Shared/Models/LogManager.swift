@@ -19,6 +19,7 @@ enum LogCategory: String, CaseIterable, Codable {
     case syncConnection = "SyncConnection"
     case syncTransmission = "SyncTransmission"
     case syncRetrieval = "SyncRetrieval"
+    case dataPersistence = "DataPersistence"
 }
 
 
@@ -46,12 +47,15 @@ class LogManager: ObservableObject {
     private let syncConnectionLogger = Logger(subsystem: "com.MacPulse", category: "SyncConnection")
     private let syncTransmissionLogger = Logger(subsystem: "com.MacPulse", category: "SyncTransmission")
     private let syncRetrievalLogger = Logger(subsystem: "com.MacPulse", category: "SyncRetrieval")
+    private let dataPersistenceLogger = Logger(subsystem: "com.MacPulse", category: "DataPersistence")
+
 
     // Verbosity levels per category
     var verbosityLevelForErrorAndDebug: LogVerbosityLevel = .medium
     var verbosityLevelForSyncConnection: LogVerbosityLevel = .medium
     var verbosityLevelForSyncTransmission: LogVerbosityLevel = .medium
     var verbosityLevelForSyncRetrieval: LogVerbosityLevel = .medium
+    var verbosityLevelForDataPersistence: LogVerbosityLevel = .medium
 
     @Published private(set) var logs: [LogEntry] = []
 
@@ -69,6 +73,8 @@ class LogManager: ObservableObject {
             guard level <= verbosityLevelForSyncTransmission else { return }
         case .syncRetrieval:
             guard level <= verbosityLevelForSyncRetrieval else { return }
+        case .dataPersistence:
+            guard level <= verbosityLevelForDataPersistence else {return}
         }
 
         // OSLog output based on category
@@ -88,6 +94,11 @@ class LogManager: ObservableObject {
         case (.syncRetrieval, .low): syncRetrievalLogger.error("\(message, privacy: .public)")
         case (.syncRetrieval, .medium): syncRetrievalLogger.warning("\(message, privacy: .public)")
         case (.syncRetrieval, .high): syncRetrievalLogger.info("\(message, privacy: .public)")
+        
+        case (.dataPersistence, .low): dataPersistenceLogger.error("\(message, privacy: .public)")
+        case (.dataPersistence, .medium): dataPersistenceLogger.warning("\(message, privacy: .public)")
+        case (.dataPersistence, .high): dataPersistenceLogger.info("\(message, privacy: .public)")
+
         }
 
         // Save locally for UI/log display

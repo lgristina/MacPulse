@@ -1,10 +1,3 @@
-//
-//  MCConnectionManager.swift
-//  MacPulse
-//
-//  Created by Austin Frank on 4/17/25.
-//
-
 import MultipeerConnectivity
 
 extension String {
@@ -60,43 +53,44 @@ class MCConnectionManager: NSObject, ObservableObject {
     deinit {
         stopAdvertising()
         stopBrowsing()
+        LogManager.shared.logConnectionStatus("MCConnectionManager deinitialized.", level: .high)
     }
     
     func startAdvertising() {
         advertiser.startAdvertisingPeer()
-        print("Advertising!")
+        LogManager.shared.logConnectionStatus("Started advertising.", level: .medium)
     }
     
     func stopAdvertising() {
         advertiser.stopAdvertisingPeer()
-        print("STOPPED ADVERTISING!")
+        LogManager.shared.logConnectionStatus("Stopped advertising.", level: .medium)
     }
     
     func startBrowsing() {
         browser.startBrowsingForPeers()
-        print("Browsing!")
+        LogManager.shared.logConnectionStatus("Started browsing.", level: .medium)
     }
     
     func stopBrowsing() {
         browser.stopBrowsingForPeers()
         availablePeers.removeAll()
-        print("STOPPED BROWSING!")
+        LogManager.shared.logConnectionStatus("Stopped browsing and cleared available peers.", level: .medium)
     }
     
     func sendInviteToPeer() {
-           guard let selectedPeer = selectedPeer else {
-               print("No peer selected to invite.")
-               return
-           }
-           
-           // Send invitation to the selected peer
-           print("📨 Inviting peer: \(selectedPeer.displayName)")
-           browser.invitePeer(selectedPeer, to: self.session, withContext: nil, timeout: 200)
-       }
+        guard let selectedPeer = selectedPeer else {
+            LogManager.shared.logConnectionStatus("No peer selected to invite.", level: .low)
+            return
+        }
+        
+        // Send invitation to the selected peer
+        LogManager.shared.logConnectionStatus("Inviting peer: \(selectedPeer.displayName)", level: .medium)
+        browser.invitePeer(selectedPeer, to: self.session, withContext: nil, timeout: 200)
+    }
     
     func send(_ payload: MetricPayload) {
         guard !session.connectedPeers.isEmpty else {
-            print("No peers are connected.")
+            LogManager.shared.logConnectionStatus("No peers are connected.", level: .low)
             return
         }
         do {
@@ -104,9 +98,10 @@ class MCConnectionManager: NSObject, ObservableObject {
                 //print("Sending data: \(payload)")
                 let data = try JSONEncoder().encode(payload)
                 try session.send(data, toPeers: session.connectedPeers, with: .reliable)
+                LogManager.shared.log(.syncTransmission, level: .high, "Sent data: \(payload)")
             }
         } catch {
-            print("Error sending data: \(error.localizedDescription)")
+            LogManager.shared.log(.syncTransmission, level: .high, "Error sending data: \(error.localizedDescription)")
         }
     }
 }
@@ -120,7 +115,7 @@ extension MCConnectionManager: MCNearbyServiceBrowserDelegate {
                 // Store the first available peer found
                 if self.selectedPeer == nil {
                     self.selectedPeer = peerID
-                    print("📍 Found a peer: \(peerID.displayName)")
+                    LogManager.shared.logConnectionStatus("Found a peer: \(peerID.displayName)", level: .medium)
                 }
             }
         }
@@ -130,12 +125,10 @@ extension MCConnectionManager: MCNearbyServiceBrowserDelegate {
         guard let index = availablePeers.firstIndex(of: peerID) else { return }
         DispatchQueue.main.async {
             self.availablePeers.remove(at: index)
-            print("PEER LOST!")
+            LogManager.shared.logConnectionStatus("Lost peer: \(peerID.displayName)", level: .medium)
         }
     }
 }
-
-
 
 extension MCConnectionManager: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
@@ -145,83 +138,74 @@ extension MCConnectionManager: MCNearbyServiceAdvertiserDelegate {
             self.invitationHandler = invitationHandler
             
             invitationHandler(true, self.session)  // Accept the invitation after the delay
-            print("ACCEPTED INVITE!")
+            LogManager.shared.logConnectionStatus("Accepted invitation from \(peerID.displayName).", level: .medium)
         }
     }
 }
 
-
 extension MCConnectionManager: MCSessionDelegate {
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         switch state {
-        case.notConnected:
+        case .notConnected:
             DispatchQueue.main.async {
-                print("NOT CONNECTED!")
+                LogManager.shared.logConnectionStatus("Not connected to peer: \(peerID.displayName).", level: .medium)
                 self.paired = false
                 self.isAvailableToPlay = true
             }
-        case.connected:
+        case .connected:
             DispatchQueue.main.async {
-                print("CONNECTED!")
+                LogManager.shared.logConnectionStatus("Connected to peer: \(peerID.displayName).", level: .medium)
                 self.paired = true
                 self.isAvailableToPlay = false
             }
-        case.connecting:
+        case .connecting:
             DispatchQueue.main.async {
-                print("CONNECTING!!")
+                LogManager.shared.logConnectionStatus("Connecting to peer: \(peerID.displayName).", level: .medium)
             }
         default:
             DispatchQueue.main.async {
-                print("DEFAULT! \(state)")
+                LogManager.shared.logConnectionStatus("Default state for peer: \(peerID.displayName) with state: \(state).", level: .medium)
                 self.paired = false
                 self.isAvailableToPlay = true
             }
         }
     }
-    func getCurrentSystemMetric() -> SystemMetric {
-        // Collect and return the system metric you want to send
-        return SystemMetric(timestamp: Date(), cpuUsage: 40, memoryUsage: 3000, diskActivity: 250) // example
-    }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         guard session.connectedPeers.contains(peerID) else {
-            print("❌ Peer not connected. Not processing data.")
+            LogManager.shared.logConnectionStatus("❌ Peer not connected. Not processing data from \(peerID.displayName).", level: .low)
             return
         }
 
         do {
             let payload = try JSONDecoder().decode(MetricPayload.self, from: data)
-           // print("📩 Successfully received and decoded payload: \(payload)")
+            LogManager.shared.log(.syncTransmission, level: .high, "Received data from \(peerID.displayName): \(payload)")
 
             DispatchQueue.main.async {
                 switch payload {
                 case .sendSystemMetrics:
-                    print("📡 Received .sendSystemMetrics from peer: \(peerID.displayName)")
+                    LogManager.shared.logConnectionStatus("Received .sendSystemMetrics from peer: \(peerID.displayName)", level: .medium)
                     RemoteSystemMonitor.shared.startSendingMetrics(type: 0)
                 case .sendProcessMetrics:
-                    print("📡 Received .sendProcessMetrics from peer: \(peerID.displayName)")
+                    LogManager.shared.logConnectionStatus("Received .sendProcessMetrics from peer: \(peerID.displayName)", level: .medium)
                     RemoteSystemMonitor.shared.startSendingMetrics(type: 1)
                 case .stopSending(let typeToStop):
-                    print("📡 Received .stopSending with type: \(typeToStop) from peer: \(peerID.displayName)")
+                    LogManager.shared.logConnectionStatus("Received .stopSending with type: \(typeToStop) from peer: \(peerID.displayName)", level: .medium)
                     RemoteSystemMonitor.shared.stopSendingMetrics(type: typeToStop)
                 case .system, .process:
                     self.onReceiveMetric?(payload)
                 case .logs(_):
-                    print("Logs!")
+                    LogManager.shared.logConnectionStatus("Logs message received from \(peerID.displayName).", level: .medium)
                 }
             }
 
         } catch {
-            print("❌ Failed to decode payload: \(error.localizedDescription)")
-            print("📏 Data size: \(data.count) bytes")
+            LogManager.shared.logConnectionStatus("❌ Failed to decode payload from \(peerID.displayName): \(error.localizedDescription)", level: .low)
             if let string = String(data: data, encoding: .utf8) {
-                print("🔎 Raw JSON string: \(string)")
-            } else {
-                print("🧨 Couldn't convert data to UTF-8 string.")
+                LogManager.shared.logConnectionStatus("🔎 Raw JSON string from \(peerID.displayName): \(string)", level: .low)
             }
         }
     }
-    
     
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
     }
@@ -230,17 +214,15 @@ extension MCConnectionManager: MCSessionDelegate {
     }
     
     func session(_ session: MCSession, didReceiveCertificate certificate: [Any]?, fromPeer peerID: MCPeerID, certificateHandler: @escaping (Bool) -> Void) {
-        print("📜 Received certificate from \(peerID.displayName)")
+        LogManager.shared.logConnectionStatus("📜 Received certificate from \(peerID.displayName).", level: .medium)
         certificateHandler(true)
     }
     
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: (any Error)?) {
         if let error = error {
-                print("❌ Error receiving resource \(resourceName) from \(peerID): \(error)")
-            } else {
-                print("✅ Finished receiving resource \(resourceName) from \(peerID)")
-            }
+            LogManager.shared.logConnectionStatus("❌ Error receiving resource \(resourceName) from \(peerID): \(error.localizedDescription)", level: .low)
+        } else {
+            LogManager.shared.logConnectionStatus("✅ Finished receiving resource \(resourceName) from \(peerID)", level: .medium)
+        }
     }
-    
-    
 }
