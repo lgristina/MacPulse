@@ -1,22 +1,29 @@
 import SwiftUI
 
+// MARK: - LogView
+
+/// A SwiftUI view that displays logs managed by `LogManager`.
+/// Users can filter logs by category using a segmented picker and view real-time updates.
 struct LogView: View {
+    /// Observes the shared singleton instance of `LogManager`.
     @ObservedObject private var logManager = LogManager.shared
 
-    // UI state to select category filter
+    /// The currently selected category to filter the logs displayed.
     @State private var selectedCategory: LogCategory = .errorAndDebug
 
+    /// Computed property to filter logs by the selected category.
     var filteredLogs: [LogEntry] {
         logManager.logs.filter { $0.category == selectedCategory }
     }
 
     var body: some View {
         VStack(alignment: .leading) {
+            // View Title
             Text("Log")
                 .font(.largeTitle)
                 .padding(.bottom, 10)
 
-            // Category Picker
+            // Picker for selecting the log category
             Picker("Category", selection: $selectedCategory) {
                 ForEach(LogCategory.allCases, id: \.self) { category in
                     Text(category.rawValue).tag(category)
@@ -25,7 +32,7 @@ struct LogView: View {
             .pickerStyle(SegmentedPickerStyle())
             .padding(.bottom, 10)
 
-            // Add a Spacer to push the logs down
+            // Log content or fallback if empty
             Spacer()
 
             if filteredLogs.isEmpty {
@@ -33,17 +40,21 @@ struct LogView: View {
                     .foregroundColor(.secondary)
             } else {
                 LogListView(logs: filteredLogs)
-                    .frame(maxHeight: .infinity)  // Make the log list take the remaining space
+                    .frame(maxHeight: .infinity)
             }
-            
-            Spacer()
 
+            Spacer()
         }
         .padding()
     }
 }
 
+// MARK: - LogListView
+
+/// Displays a scrollable and auto-updating list of log entries.
+/// Applies styling and highlights based on log level.
 struct LogListView: View {
+    /// The list of logs to be displayed.
     let logs: [LogEntry]
 
     var body: some View {
@@ -59,7 +70,7 @@ struct LogListView: View {
             }
             .background(backgroundColor)
             .cornerRadius(10)
-            // Auto-scroll to last log on new entry
+            // Automatically scroll to the latest entry when a new log appears
             .onChange(of: logs.count) {
                 if let last = logs.indices.last {
                     withAnimation {
@@ -69,7 +80,8 @@ struct LogListView: View {
             }
         }
     }
-    
+
+    /// Builds a single row of the log with appropriate font and background color.
     @ViewBuilder
     private func logRow(_ log: LogEntry) -> some View {
         Text(log.formatted)
@@ -79,15 +91,19 @@ struct LogListView: View {
             .background(rowBackgroundColor(for: log))
     }
 
+    /// Determines the background color based on the log’s verbosity level.
     private func rowBackgroundColor(for log: LogEntry) -> Color {
         switch log.level {
-        case .low:     return Color.red.opacity(0.1)
-        case .medium:  return Color.yellow.opacity(0.1)
-        case .high:    return Color.clear
+        case .low:
+            return Color.red.opacity(0.1)       // For errors
+        case .medium:
+            return Color.yellow.opacity(0.1)    // For warnings/info
+        case .high:
+            return Color.clear                  // For verbose/debug
         }
     }
-    
-    // Platform-specific background color
+
+    /// Provides platform-specific background color for the log container.
     private var backgroundColor: Color {
 #if os(macOS)
         return Color(NSColor.windowBackgroundColor)
