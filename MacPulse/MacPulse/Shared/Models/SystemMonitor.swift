@@ -74,7 +74,7 @@ class SystemMonitor: ObservableObject {
 
 
         // Log the collected metrics
-        LogManager.shared.log(.syncTransmission, level: .high, "Collected Metrics - CPU Usage: \(cpuUsage)% | Memory Usage: \(memoryUsage) GB | Disk Activity: \(diskActivity) GB")
+        //LogManager.shared.log(.syncTransmission, level: .high, "Collected Metrics - CPU Usage: \(cpuUsage)% | Memory Usage: \(memoryUsage) GB | Disk Activity: \(diskActivity) GB")
 
         // Print metrics for debugging (can be removed later)
         // print("📊 CPU: \(cpuUsage)% | 🖥️ Memory: \(memoryUsage) GB | 💾 Disk: \(diskActivity) GB")
@@ -131,7 +131,7 @@ class SystemMonitor: ObservableObject {
         guard totalTicks > 0 else { return 0.0 }
 
         // Log the calculated CPU usage
-        LogManager.shared.log(.syncConnection, level: .high, "CPU Usage: \(usedTicks / totalTicks * 100.0)%")
+        //LogManager.shared.log(.syncConnection, level: .high, "CPU Usage: \(usedTicks / totalTicks * 100.0)%")
     
         return ((usedTicks / totalTicks) * 100.0).rounded(toPlaces: 2)
 
