@@ -9,8 +9,8 @@ import SwiftUI
 
 // MARK: - Process Detail View
 
-// Displays detailed information for a single running process,
-// including PID, CPU usage, and memory usage.
+/// Displays detailed information for a single running process,
+/// including PID, CPU usage, and memory usage.
 struct ProcessDetailView: View {
     let process: CustomProcessInfo
 

@@ -9,9 +9,9 @@ import SwiftUI
 
 // MARK: - Landing View
 
-// Entry screen shown before monitoring starts.
-// On macOS, it allows the user to start monitoring directly.
-// On iOS, it displays discovered peers for connection.
+/// Entry screen shown before monitoring starts.
+/// On macOS, it allows the user to start monitoring directly.
+/// On iOS, it displays discovered peers for connection.
 struct LandingView: View {
     @Binding var hasStarted: Bool
     @EnvironmentObject var syncService: MCConnectionManager
@@ -20,13 +20,13 @@ struct LandingView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            // App logo
+            /// App logo
             Image("MacPulse")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 200, height: 200)
 
-            // Title text varies by platform
+            /// Title text varies by platform
 #if os(macOS)
             Text("Welcome to MacPulse")
                 .font(.title)
@@ -39,7 +39,7 @@ struct LandingView: View {
 
             Spacer()
 
-            // iOS-specific: list of available Mac peers to connect to
+            /// iOS-specific: list of available Mac peers to connect to
 #if os(iOS)
             if syncService.availablePeers.isEmpty {
                 Text("No peers found yet")
@@ -70,7 +70,7 @@ struct LandingView: View {
             }
 #endif
 
-            // macOS-specific: button to start monitoring
+            /// macOS-specific: button to start monitoring
 #if os(macOS)
             Button(action: {
                 hasStarted = true
@@ -87,10 +87,10 @@ struct LandingView: View {
             .padding(.bottom, 40)
 #endif
         }
-        // Animate UI changes when peer list updates
+        /// Animate UI changes when peer list updates
         .animation(.easeInOut, value: syncService.availablePeers)
 
-        // Start advertising or browsing when view appears
+        /// Start advertising or browsing when view appears
         .onAppear {
 #if os(macOS)
             syncService.startAdvertising()
@@ -99,7 +99,7 @@ struct LandingView: View {
 #endif
         }
 
-        // Stop browsing when leaving the view (iOS only)
+        /// Stop browsing when leaving the view (iOS only)
         .onDisappear {
 #if os(iOS)
             syncService.stopBrowsing()

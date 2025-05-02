@@ -9,7 +9,7 @@ import SwiftUI
 
 // MARK: - Settings View
 
-// View allowing users to customize alert thresholds and accessibility preferences
+/// View allowing users to customize alert thresholds and accessibility preferences
 struct SettingsView: View {
     // —— Notification thresholds (in %)
     @AppStorage("cpuThreshold")    private var cpuThreshold: Double    = 80
@@ -64,7 +64,7 @@ struct SettingsView: View {
 
 // MARK: - Conditional Color Inversion
 
-// Applies colorInvert() only if the invertColors toggle is true
+/// Applies colorInvert() only if the invertColors toggle is true
 private extension View {
     @ViewBuilder
     func colorInvertIfNeeded(_ invert: Bool) -> some View {

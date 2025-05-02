@@ -10,23 +10,23 @@ import Charts
 
 // MARK: - Models & Utility
 
-// Model representing overall disk info including used/free space
+/// Model representing overall disk info including used/free space
 struct DiskInfo {
     let total: Int64
     let free: Int64
     var used: Int64 { total - free }
 }
 
-// Model representing usage by directory or file category
+/// Model representing usage by directory or file category
 struct CategoryUsage: Identifiable {
     let id = UUID()
     let name: String
     let size: Int64
 }
 
-// Utility for querying disk metrics and performing size calculations
+/// Utility for querying disk metrics and performing size calculations
 class DiskUtility {
-    // Returns total and free disk bytes for the root volume
+    /// Returns total and free disk bytes for the root volume
     static func getDiskInfo() -> DiskInfo? {
         do {
             let attrs = try FileManager.default.attributesOfFileSystem(forPath: "/")
@@ -41,7 +41,7 @@ class DiskUtility {
         }
     }
 
-    // Returns the top `limit` largest subdirectories in the given path
+    /// Returns the top `limit` largest subdirectories in the given path
     static func getTopDirectories(path: String = "/", limit: Int = 5) -> [CategoryUsage] {
         let fm = FileManager.default
         guard let contents = try? fm.contentsOfDirectory(atPath: path) else { return [] }
@@ -58,7 +58,7 @@ class DiskUtility {
             .map { $0 }
     }
 
-    // Recursively sums file sizes for a directory (use off main thread)
+    /// Recursively sums file sizes for a directory (use off main thread)
     private static func directorySize(url: URL) -> Int64 {
         var total: Int64 = 0
         let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
@@ -77,7 +77,7 @@ class DiskUtility {
         return total
     }
 
-    // Converts byte count to human-readable file size string
+    /// Converts byte count to human-readable file size string
     static func formatBytes(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
@@ -85,7 +85,7 @@ class DiskUtility {
 
 // MARK: - Disk Detailed View
 
-// Displays total, used, and free disk space with top-level directory breakdown
+/// Displays total, used, and free disk space with top-level directory breakdown
 struct DiskDetailedView: View {
     @State private var diskInfo: DiskInfo?
     @State private var categories: [CategoryUsage] = []
@@ -97,7 +97,7 @@ struct DiskDetailedView: View {
                 .bold()
                 .padding(.top)
 
-            // Usage bar with dynamic fill based on used percentage
+            /// Usage bar with dynamic fill based on used percentage
             if let info = diskInfo {
                 VStack(spacing: 6) {
                     GeometryReader { geo in
@@ -119,7 +119,7 @@ struct DiskDetailedView: View {
                 }
             }
 
-            // List of largest top-level directories
+            /// List of largest top-level directories
             ScrollView {
                 LazyVStack(spacing: 12) {
                     ForEach(categories) { cat in
@@ -148,13 +148,13 @@ struct DiskDetailedView: View {
         .padding(.bottom)
     }
 
-    // Calculates fraction of total disk that is used
+    /// Calculates fraction of total disk that is used
     private func usageFraction(info: DiskInfo) -> CGFloat {
         guard info.total > 0 else { return 0 }
         return CGFloat(info.used) / CGFloat(info.total)
     }
 
-    // Loads disk info and top-level directory sizes
+    /// Loads disk info and top-level directory sizes
     private func loadData() {
         DispatchQueue.global(qos: .userInitiated).async {
             let info = DiskUtility.getDiskInfo()
@@ -169,7 +169,7 @@ struct DiskDetailedView: View {
 
 // MARK: - File Type Breakdown Extension
 
-// Groups files by extension and calculates total size for each
+/// Groups files by extension and calculates total size for each
 extension DiskUtility {
     static func getFileTypeBreakdown(path: String = "/", limit: Int = 5) async -> [CategoryUsage] {
         let fm = FileManager.default
@@ -200,7 +200,7 @@ extension DiskUtility {
 
 // MARK: - File Type Breakdown View
 
-// Displays disk usage grouped by file extensions
+/// Displays disk usage grouped by file extensions
 struct FileTypeBreakdownView: View {
     @State private var diskInfo: DiskInfo?
     @State private var breakdown: [CategoryUsage] = []
@@ -212,7 +212,7 @@ struct FileTypeBreakdownView: View {
                 .bold()
                 .padding(.top)
 
-            // Usage bar
+            /// Usage bar
             if let info = diskInfo {
                 VStack(spacing: 6) {
                     GeometryReader { geo in
@@ -233,7 +233,7 @@ struct FileTypeBreakdownView: View {
                 }
             }
 
-            // Breakdown list
+            /// Breakdown list
             List(breakdown) { item in
                 HStack {
                     Text(item.name.capitalized)
@@ -255,7 +255,7 @@ struct FileTypeBreakdownView: View {
         }
     }
 
-    // Helper for bar percentage
+    /// Helper for bar percentage
     private func usageFraction(info: DiskInfo) -> CGFloat {
         guard info.total > 0 else { return 0 }
         return CGFloat(info.used) / CGFloat(info.total)
@@ -264,7 +264,7 @@ struct FileTypeBreakdownView: View {
 
 // MARK: - Pie Chart View
 
-// Displays a two-slice pie chart of used vs free disk space
+/// Displays a two-slice pie chart of used vs free disk space
 struct DiskPieChartView: View {
     @State private var slices: [CategoryUsage] = []
     @State private var diskInfo: DiskInfo?
@@ -291,7 +291,7 @@ struct DiskPieChartView: View {
             .frame(height: 280)
             .padding(.horizontal)
 
-            // Strip showing used and free values
+            /// Strip showing used and free values
             if let info = diskInfo {
                 HStack {
                     Text("Used: \(DiskUtility.formatBytes(info.used))")

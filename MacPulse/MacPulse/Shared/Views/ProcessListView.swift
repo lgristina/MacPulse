@@ -2,20 +2,20 @@ import SwiftUI
 
 // MARK: - Process List View
 
-// Displays a list of running processes with sorting options by PID, CPU, or memory.
-// Data is fetched locally on macOS or remotely via Multipeer Connectivity on iOS.
+/// Displays a list of running processes with sorting options by PID, CPU, or memory.
+/// Data is fetched locally on macOS or remotely via Multipeer Connectivity on iOS.
 struct ProcessListView: View {
 #if os(macOS)
     @ObservedObject private var viewModel = ProcessMonitor.shared // Local system monitor
 #endif
     @ObservedObject var systemMonitor = RemoteSystemMonitor.shared // Remote monitor for iOS
 
-    // Sorting criteria options
+    /// Sorting criteria options
     enum SortCriteria {
         case pid, cpuUsage, memoryUsage
     }
 
-    // Tracks which sorting option is selected
+    /// Tracks which sorting option is selected
     @State private var sortCriteria: SortCriteria = .pid
 
     var body: some View {
@@ -79,7 +79,7 @@ struct ProcessListView: View {
 
     // MARK: - Sorting Function
 
-    // Sorts the process array based on the selected sort criteria
+    /// Sorts the process array based on the selected sort criteria
     private func sortedProcesses(for processes: [CustomProcessInfo]) -> [CustomProcessInfo] {
         switch sortCriteria {
         case .pid:
