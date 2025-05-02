@@ -12,23 +12,23 @@ class ProcessMonitor: ObservableObject {
     var timer: Timer?
     
     init() {
-        print("📊 Process monitoring started.")
+        LogManager.shared.log(.dataPersistence, level: .medium, "📊 Process monitoring started.")
         startMonitoring()
     }
     
     func startMonitoring() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
-            //print("Collecting process metrics!")
+            LogManager.shared.log(.dataPersistence, level: .low, "🌀 Collecting process metrics...")
             self.collectAndSaveProcesses()
         }
-        print("---- GETTING PROCESS METRICS! -----")
+        LogManager.shared.log(.dataPersistence, level: .medium, "▶️ Started periodic process collection every 5 seconds.")
     }
     
     func stopMonitoring() {
         timer?.invalidate()
         timer = nil // release the reference
-        print("🛑 Process monitoring stopped.")
+        LogManager.shared.log(.dataPersistence, level: .medium, "🛑 Process monitoring stopped.")
     }
     
     /// Conforms list of running processes to CustomProcessInfo structure
@@ -43,10 +43,13 @@ class ProcessMonitor: ObservableObject {
             )
         }
         if !processes.isEmpty {
+            LogManager.shared.log(.dataPersistence, level: .medium, "📥 Retrieved \(processes.count) process metrics.")
             Task { @MainActor in
                 self.runningProcesses = processes
                 DataManager.shared.saveProcessMetrics(processes: processes)
             }
+        } else {
+            LogManager.shared.log(.dataPersistence, level: .low, "⚠️ No processes retrieved during this cycle.")
         }
     }
     
@@ -63,13 +66,17 @@ class ProcessMonitor: ObservableObject {
         do {
             try task.run()
         } catch {
-            print("❌ Failed to fetch processes: \(error)")
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Failed to run /bin/ps: \(error)")
             return []
         }
         
         let output = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let result = String(data: output, encoding: .utf8) else { return [] }
-        
+
+        guard let result = String(data: output, encoding: .utf8) else {
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Failed to decode output from /bin/ps.")
+            return []
+        }
+
         let lines = result.split(separator: "\n").dropFirst()
         var processList: [CustomProcessInfo] = []
         
@@ -90,9 +97,10 @@ class ProcessMonitor: ObservableObject {
                 processList.append(process)
             }
         }
+        LogManager.shared.log(.dataPersistence, level: .low, "✅ Parsed \(processList.count) process entries from /bin/ps output.")
         return processList
-#else
-        // On iOS, process monitoring via /bin/ps is not supported.
+        #else
+        LogManager.shared.log(.dataPersistence, level: .low, "ℹ️ Process monitoring is not supported on iOS.")
         return []
 #endif
     }

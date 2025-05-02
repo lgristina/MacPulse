@@ -24,12 +24,14 @@ class DataManager {
     /// Initializes `DataManager` with a given CoreData context.
     private init(_modelContext: ModelContext) {
         self.modelContext = _modelContext
+        LogManager.shared.log(.dataPersistence, level: .low, "Initialized DataManager with main context")
     }
     
     /// Initializes `DataManager` for testing purposes with a mock context.
     @MainActor
     init(testingContext: ModelContext) {
         self.modelContext = testingContext
+        LogManager.shared.log(.dataPersistence, level: .low, "Initialized DataManager with testing context")
     }
     
     // MARK: - Saving Metrics
@@ -40,30 +42,33 @@ class DataManager {
     func saveProcessMetrics(processes: [CustomProcessInfo]) {
         do {
             for process in processes {
-                modelContext.insert(process) // Insert each process into CoreData
+                modelContext.insert(process)
             }
-            try modelContext.save() // Save the context with all the new metrics
+            try modelContext.save()
+            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved \(processes.count) process metrics.")
         } catch {
-            print("❌ Error saving process metrics: \(error)")
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Error saving process metrics: \(error.localizedDescription)")
         }
     }
-    
+
     /// Saves system metrics (CPU, memory, disk usage) to CoreData.
     ///
     /// - Parameters:
     ///   - cpu: The CPU usage value to save.
     ///   - memory: The memory usage value to save.
     ///   - disk: The disk activity value to save.
+    @MainActor
     func saveSystemMetrics(cpu: Double, memory: Double, disk: Double) {
         let newMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
         do {
-            modelContext.insert(newMetric) // Insert system metric into CoreData
-            try modelContext.save() // Save the new system metric
+            modelContext.insert(newSystemMetric)
+            try modelContext.save()
+            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved system metrics — CPU: \(cpu), Memory: \(memory), Disk: \(disk)")
         } catch {
-            print("❌ Error saving system metrics: \(error)")
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Error saving system metrics: \(error.localizedDescription)")
         }
     }
-    
+
     // MARK: - Pruning Old Metrics
     
     /// Prunes system metrics older than 10 minutes.
@@ -71,24 +76,21 @@ class DataManager {
     /// - Fetches all system metrics older than 10 minutes.
     /// - Deletes them and saves the changes to CoreData.
     func pruneOldSystemMetrics() {
-        let retentionPeriod = Calendar.current.date(byAdding: .minute, value: -10, to: Date())! // 10 minutes ago
-        let fetchDescriptor = FetchDescriptor<SystemMetric>(predicate: #Predicate { (metric: SystemMetric) in
+        let retentionPeriod = Calendar.current.date(byAdding: .minute, value: -10, to: Date())!
+        let fetchDescriptor = FetchDescriptor<SystemMetric>(predicate: #Predicate { metric in
             metric.timestamp < retentionPeriod
         })
-        
-        print("🕒 Pruning system metrics older than \(retentionPeriod)")
-        
+
+        LogManager.shared.log(.dataPersistence, level: .low, "🕒 Pruning process metrics older than \(retentionPeriod)")
+
         do {
-            let oldMetrics = try modelContext.fetch(fetchDescriptor) // Fetch old system metrics
-            print("Found \(oldMetrics.count) old system metrics.")
-            
-            for metric in oldMetrics {
-                modelContext.delete(metric) // Delete the old system metrics
-            }
-            try modelContext.save() // Save the pruned metrics
-            print("🗑️ Old system metrics pruned.")
+            let oldMetrics = try modelContext.fetch(fetchDescriptor)
+            LogManager.shared.log(.dataPersistence, level: .low, "Found \(oldMetrics.count) old system metrics to delete.")
+            oldMetrics.forEach { modelContext.delete($0) }
+            try modelContext.save()
+            LogManager.shared.log(.dataPersistence, level: .medium, "🗑️ System metrics pruning completed.")
         } catch {
-            print("❌ Error pruning system metrics: \(error)")
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Error pruning system metrics: \(error.localizedDescription)")
         }
     }
     
@@ -96,25 +98,24 @@ class DataManager {
     ///
     /// - Fetches all process metrics older than 1 minute.
     /// - Deletes them and saves the changes to CoreData.
+
+    @MainActor
     func pruneOldProcessMetrics() {
-        let retentionPeriod = Calendar.current.date(byAdding: .minute, value: -1, to: Date())! // 1 minute ago
-        let fetchDescriptor = FetchDescriptor<CustomProcessInfo>(predicate: #Predicate { (process: CustomProcessInfo) in
+        let retentionPeriod = Calendar.current.date(byAdding: .minute, value: -1, to: Date())!
+        let fetchDescriptor = FetchDescriptor<CustomProcessInfo>(predicate: #Predicate { process in
             process.timestamp < retentionPeriod
         })
-        
-        print("🕒 Pruning process metrics older than \(retentionPeriod)")
-        
+
+            LogManager.shared.log(.dataPersistence, level: .low, "🕒 Pruning process metrics older than \(retentionPeriod)")
+
         do {
-            let oldMetrics = try modelContext.fetch(fetchDescriptor) // Fetch old process metrics
-            print("Found \(oldMetrics.count) old process metrics.")
-            
-            for metric in oldMetrics {
-                modelContext.delete(metric) // Delete the old process metrics
-            }
-            try modelContext.save() // Save the pruned metrics
-            print("🗑️ Old process metrics pruned.")
+            let oldMetrics = try modelContext.fetch(fetchDescriptor)
+            LogManager.shared.log(.dataPersistence, level: .low, "Found \(oldMetrics.count) old process metrics to delete.")
+            oldMetrics.forEach { modelContext.delete($0) }
+            try modelContext.save()
+            LogManager.shared.log(.dataPersistence, level: .medium, "🗑️ Process metrics pruning completed.")
         } catch {
-            print("❌ Error pruning process metrics: \(error)")
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Error pruning process metrics: \(error.localizedDescription)")
         }
     }
     
@@ -126,21 +127,21 @@ class DataManager {
     func startPruningTimer() {
         pruningTimer?.invalidate() // Invalidate any existing timer
         pruningTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
-            print("🕒 Timer fired. Starting pruning...")
+            LogManager.shared.log(.dataPersistence, level: .low, "🕒 Timer fired. Starting pruning tasks...")
             Task { @MainActor in
-                self.pruneOldSystemMetrics() // Prune system metrics every 10 minutes
-                self.pruneOldProcessMetrics() // Prune process metrics every 1 minute
+                self.pruneOldSystemMetrics()
+                self.pruneOldProcessMetrics()
             }
         }
-        print("🕒 Pruning scheduled every 1 minute.")
+            LogManager.shared.log(.dataPersistence, level: .medium, "🕒 Pruning scheduled every 1 minute.")
     }
-    
+
     // MARK: - Debugging
     
     /// Prints the current count of system and process metrics in the database for debugging purposes.
     func databaseSizeInfo() {
         let systemCount = (try? modelContext.fetch(FetchDescriptor<SystemMetric>()))?.count ?? 0
         let processCount = (try? modelContext.fetch(FetchDescriptor<CustomProcessInfo>()))?.count ?? 0
-        print("📊 Database size: \(systemCount) system metrics, \(processCount) process metrics")
+            LogManager.shared.log(.dataPersistence, level: .medium, "📊 Database size — System: \(systemCount), Process: \(processCount)")
     }
 }

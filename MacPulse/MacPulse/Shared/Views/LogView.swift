@@ -25,14 +25,19 @@ struct LogView: View {
             .pickerStyle(SegmentedPickerStyle())
             .padding(.bottom, 10)
 
+            // Add a Spacer to push the logs down
+            Spacer()
+
             if filteredLogs.isEmpty {
                 Text("No logs yet.")
                     .foregroundColor(.secondary)
             } else {
                 LogListView(logs: filteredLogs)
+                    .frame(maxHeight: .infinity)  // Make the log list take the remaining space
             }
             
             Spacer()
+
         }
         .padding()
     }

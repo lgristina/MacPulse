@@ -20,12 +20,15 @@ struct ContentView: View {
     @EnvironmentObject var syncService: MCConnectionManager
     @Query private var items: [Item]
 
-#if os(macOS)
-    private static var systemMetrics = SystemMetricsDashboardMac()
-#else
-    private static var systemMetrics = SystemMetricsDashboardiOS()
-#endif
-    private static var processMetrics = ProcessListView()
+
+    #if os(macOS)
+    static var systemMetrics = SystemMetricsDashboardMac()
+    #else
+    static var systemMetrics = SystemMetricsDashboardiOS()
+    #endif
+
+    static var processMetrics = ProcessListView()
+
 
     let options: [Option] = [
         .init(title: "System", imageName: "gear"),
@@ -44,11 +47,11 @@ struct ContentView: View {
         }
         .frame(minWidth: 800, minHeight: 600)
         .task {
-            // Set verbosity high so info logs show
             LogManager.shared.verbosityLevelForErrorAndDebug = .high
-            LogManager.shared.verbosityLevelForSync = .high
-
-            LogManager.shared.logInfo(.errorAndDebug, "ContentView appeared - App Launched (macOS)")
+            LogManager.shared.verbosityLevelForSyncRetrieval = .high
+            LogManager.shared.verbosityLevelForSyncConnection = .high
+            LogManager.shared.verbosityLevelForSyncTransmission = .high
+            LogManager.shared.log(.errorAndDebug, level: LogVerbosityLevel.high, "ContentView appeared - App Launched (macOS)")
         }
 #else
         NavigationStack {
@@ -72,16 +75,16 @@ struct ContentView: View {
             .navigationTitle("MacPulse Monitor")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: Option.self) { option in
-                detailViewiOS(for: option)
+                DetailViewiOS(for: option)
             }
         }
         .environmentObject(syncService)
         .task {
             // Set verbosity high so info logs show
-            LogManager.shared.verbosityLevelForErrorAndDebug = .high
-            LogManager.shared.verbosityLevelForSync = .high
-
-            LogManager.shared.logInfo(.errorAndDebug, "ContentView appeared - App Launched (iOS)")
+            LogManager.shared.verbosityLevelForErrorAndDebug = LogVerbosityLevel.high
+            LogManager.shared.verbosityLevelForSyncRetrieval = LogVerbosityLevel.high
+            
+            LogManager.shared.log(.errorAndDebug,level: .high, "ContentView appearded = App Launched macOS")
         }
 #endif
     }
@@ -111,42 +114,41 @@ struct ContentView: View {
 
             Spacer()
 
-            // Add Test Log button
-            Button("Add Test Log") {
-                LogManager.shared.logInfo(.errorAndDebug, "Test log added at \(Date()) (macOS)")
-            }
+            
             .padding()
         }
     }
+}
 
-    struct detailViewiOS: View {
-        let option: Option
-        
-        init(for option: Option) {
-            self.option = option
-        }
 
-        var body: some View {
-            VStack {
-                if option.title == "System" {
-                    ContentView.systemMetrics
-                } else if option.title == "Process" {
-                    ContentView.processMetrics
-                } else if option.title == "Log" {
-                    LogView()
-                }
+struct DetailViewiOS: View {
+    let option: Option
 
-                Spacer()
+    init(for option: Option) {
+        self.option = option
+    }
 
-                // Add Test Log button
-                Button("Add Test Log") {
-                    LogManager.shared.logInfo(.errorAndDebug, "Test log added at \(Date()) (iOS)")
-                }
-                .padding()
+    @ViewBuilder
+    var body: some View {
+        VStack {
+            switch option.title {
+            case "System":
+                ContentView.systemMetrics
+            case "Process":
+                ContentView.processMetrics
+            case "Log":
+                LogView()
+            default:
+                Text("Unknown option")
             }
+
+            Spacer()
+
+
             .padding()
-            .navigationTitle(option.title)
         }
+        .padding()
+        .navigationTitle(option.title)
     }
 }
 
