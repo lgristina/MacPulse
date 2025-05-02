@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build and analyze MacPulse project
-    runs-on: macos-14 # macos-14 supports Xcode 16.x as of late 2024/early 2025
+    runs-on: macos-14
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -17,48 +17,23 @@ jobs:
       - name: Set Xcode Version to 16.2
         run: |
           sudo xcode-select -s /Applications/Xcode_16.2.app
-          xcodebuild -version # Verify the version
+          xcodebuild -version
 
-      - name: Install xcpretty (for better logs)
+      - name: Install xcpretty
         run: gem install xcpretty
 
-      - name: Find Project File
-        id: find_project
+      - name: Build and Analyze MacPulse-macOS
         run: |
-          project_file=$(find . -type d -name "MacPulse.xcodeproj" | head -n 1)
-          if [ -z "$project_file" ]; then
-            echo "No Xcode project file found!" && exit 1
-          fi
-          if [[ "$project_file" == *.xcworkspace ]]; then
-            filetype_parameter="workspace"
-          elif [[ "$project_file" == *.xcodeproj ]]; then
-            filetype_parameter="project"
-          else
-            echo "Invalid file type!" && exit 1
-          fi
-          echo "filetype_parameter=$filetype_parameter" >> $GITHUB_ENV
-          echo "project_file=$project_file" >> $GITHUB_ENV
+          xcodebuild clean build analyze \
+            -project MacPulse.xcodeproj \
+            -scheme MacPulse-macOS \
+            -destination 'platform=macOS,arch=arm64,name=My Mac' \
+            | xcpretty
 
-      - name: Get the Default Scheme
-        id: get_scheme
+      - name: Build and Analyze MacPulse-Monitor
         run: |
-          scheme_list=$(xcodebuild -"$filetype_parameter" "$project_file" -list -json | tr -d "\n")
-          default=$(echo "$scheme_list" | jq -r '.project.targets[0]')
-          if [ -z "$default" ]; then
-            echo "Could not determine default scheme!" && exit 1
-          fi
-          echo "Using default scheme: $default"
-          echo "$default" > "$GITHUB_WORKSPACE/default"
-
-      - name: Build and Analyze
-        run: |
-          scheme=$(cat "$GITHUB_WORKSPACE/default")
-          if [[ "$filetype_parameter" == "workspace" ]]; then
-            xcodebuild clean build analyze -workspace "$project_file" -scheme "$scheme" | xcpretty
-          else
-            xcodebuild clean build analyze -project "$project_file" -scheme "$scheme" | xcpretty
-          fi
-          exit_code=${PIPESTATUS[0]}
-          if [ $exit_code -ne 0 ]; then
-            echo "xcodebuild failed with exit code $exit_code" && exit $exit_code
-          fi
+          xcodebuild clean build analyze \
+            -project MacPulse.xcodeproj \
+            -scheme MacPulse-Monitor \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            | xcpretty
