@@ -7,18 +7,22 @@
 
 import SwiftUI
 
+// MARK: - Settings View
+
+// View allowing users to customize alert thresholds and accessibility preferences
 struct SettingsView: View {
-    // —— Notification thresholds (in %)
+    // Notification thresholds for system usage alerts
     @AppStorage("cpuThreshold")    private var cpuThreshold: Double    = 80
     @AppStorage("memoryThreshold") private var memoryThreshold: Double = 80
     @AppStorage("diskThreshold")   private var diskThreshold: Double   = 90
 
-    // —— Accessibility
+    // Accessibility settings
     @AppStorage("invertColors") private var invertColors: Bool = false
     @AppStorage("fontSize")     private var fontSize: Double  = 14
 
     var body: some View {
         Form {
+            // Notification settings section
             Section(header:
                 Text("Notification")
                     .font(.largeTitle)
@@ -43,6 +47,7 @@ struct SettingsView: View {
                 .padding(.vertical, 4)
             }
 
+            // Accessibility preferences section
             Section(header:
                 Text("Accessibility")
                     .font(.largeTitle)
@@ -59,17 +64,21 @@ struct SettingsView: View {
         }
         .frame(minWidth: 400)
         .padding()
-        // Conditionally invert all colors
-        .colorInvertIfNeeded(invertColors)
+        .colorInvertIfNeeded(invertColors) // Conditionally invert colors if setting is enabled
         .navigationTitle("Settings")
     }
 }
 
+// MARK: - Conditional Color Inversion
+
+// Applies colorInvert() only if the invertColors toggle is true
 private extension View {
-    /// Only applies colorInvert() when the toggle is on
     @ViewBuilder
     func colorInvertIfNeeded(_ invert: Bool) -> some View {
-        if invert { self.colorInvert() }
-        else     { self }
+        if invert {
+            self.colorInvert()
+        } else {
+            self
+        }
     }
 }
