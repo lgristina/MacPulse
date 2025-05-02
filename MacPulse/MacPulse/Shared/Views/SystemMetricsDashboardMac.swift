@@ -42,7 +42,7 @@ struct SystemMetricsDashboardMac: View {
                             MetricPanel(title: "Memory Usage", value: systemMonitor.memoryUsage, unit: "MB")
                         }
                         
-                        NavigationLink(destination: DiskDetailedView()) {
+                        NavigationLink(destination: DiskPieChartView()) {
                             MetricPanel(title: "Disk Activity", value: systemMonitor.diskActivity, unit: "GB")
                         }
                     }
@@ -51,20 +51,6 @@ struct SystemMetricsDashboardMac: View {
             }
         }
     }
-}
-
-struct DiskDetailedView: View {
-    @ObservedObject var systemMonitor = SystemMonitor.shared
-    @State var diskUsageData: [DiskActivityData] = []
-    
-    var body: some View {
-        Text("Disk Detailed View")
-    }
-}
-
-struct DiskActivityData: Identifiable {
-    let id = UUID()
-    
 }
 
 struct SystemMetricsDashboardMac_Previews: PreviewProvider {

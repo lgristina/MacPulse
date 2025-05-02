@@ -31,9 +31,10 @@ struct ContentView: View {
 
 
     let options: [Option] = [
-        .init(title: "System", imageName: "gear"),
+        .init(title: "System", imageName: "desktopcomputer"),
         .init(title: "Process", imageName: "cpu"),
         .init(title: "Log", imageName: "doc.text"),
+        .init(title: "Settings", imageName: "gear")
     ]
 
     @State private var selectedOption: Option? = Option(title: "System", imageName: "gear")
@@ -108,6 +109,8 @@ struct ContentView: View {
                 ContentView.processMetrics
             case "Log":
                 LogView()
+            case "Settings":
+                SettingsView()
             default:
                 Text("Select an option")
             }

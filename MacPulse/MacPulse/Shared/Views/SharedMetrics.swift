@@ -8,6 +8,25 @@
 import Charts
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+typealias PlatformColor = UIColor
+#elseif os(macOS)
+import AppKit
+typealias PlatformColor = NSColor
+#endif
+
+extension Color {
+    /// Matches the system’s background color on both iOS and macOS
+    static var cardBackground: Color {
+        #if os(iOS)
+        Color(PlatformColor.systemBackground)
+        #elseif os(macOS)
+        Color(PlatformColor.windowBackgroundColor)
+        #endif
+    }
+}
+
 // MARK: - Shared Protocol
 protocol UsageData: Identifiable {
     var time: Date { get }
@@ -78,14 +97,27 @@ struct DetailedUsageView<Data: UsageData>: View {
             .padding()
 
             ScrollView {
-                LazyVStack(alignment: .leading) {
+                LazyVStack(spacing: 12) {
                     ForEach(usageHistory.reversed(), id: \.id) { data in
                         HStack {
-                            Text("\(data.time, formatter: timeFormatter)")
+                            Text(data.time, formatter: timeFormatter)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                             Spacer()
-                            Text("\(data.value, specifier: "%.1f") \(unit)")
-                                .fontWeight(.bold)
+                            Text(String(format: "%.1f %@", data.value, unit))
+                                .font(.headline)
+                                .foregroundColor(lineColor)
                         }
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.cardBackground)
+                                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(lineColor.opacity(0.2), lineWidth: 1)
+                                )
+                        )
                         .padding(.horizontal)
                     }
                 }
