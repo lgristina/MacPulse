@@ -58,9 +58,24 @@ final class RemoteSystemMonitorTests: XCTestCase {
         monitor.configure(connectionManager: mockManager)
 
         let testProcesses = [
-            CustomProcessInfo(id: 1, timestamp: Date(), cpuUsage: 10.5, memoryUsage: 512),
-            CustomProcessInfo(id: 2, timestamp: Date(), cpuUsage: 25.0, memoryUsage: 1024)
+            CustomProcessInfo(
+                id: 1,
+                timestamp: Date(),
+                cpuUsage: 10.5,
+                memoryUsage: 512,
+                shortProcessName: "Proc1",
+                fullProcessName: "Full Process 1"
+            ),
+            CustomProcessInfo(
+                id: 2,
+                timestamp: Date(),
+                cpuUsage: 25.0,
+                memoryUsage: 1024,
+                shortProcessName: "Proc2",
+                fullProcessName: "Full Process 2"
+            )
         ]
+
         let testPayload = MetricPayload.process(testProcesses)
         
         // Simulate receiving the payload

@@ -150,3 +150,13 @@ class LogManager: ObservableObject {
         log(.syncRetrieval, level: level, "Data Retrieved: \(dataType) at \(retrievalTime)")
     }
 }
+
+#if DEBUG
+extension LogManager {
+    func clearLogs() {
+        DispatchQueue.main.async {
+            self.logs.removeAll()
+        }
+    }
+}
+#endif

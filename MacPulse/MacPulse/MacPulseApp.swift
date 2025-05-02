@@ -49,49 +49,21 @@ struct MacPulseApp: App {
         RemoteSystemMonitor.shared = RemoteSystemMonitor(connectionManager: manager)
     }
     
-//    var sharedModelContainer: ModelContainer = {
-//           let schema = Schema([
-//               SystemMetric.self,
-//               CustomProcessInfo.self
-//           ])
-//           
-//           let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-//           
-//           do {
-//               return try ModelContainer(for: schema, configurations: [modelConfiguration])
-//           } catch {
-//               fatalError("Could not create ModelContainer: \(error)")
-//           }
-//    }()
-    
     var sharedModelContainer: ModelContainer = {
-        // ⚠️ DEV ONLY – remove before release
-        let fileManager = FileManager.default
-        let supportDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let storeURL = supportDir.appendingPathComponent("default.store")
-
-        if fileManager.fileExists(atPath: storeURL.path) {
-            do {
-                try fileManager.removeItem(at: storeURL)
-                print("🧹 Deleted persistent store at \(storeURL.path)")
-            } catch {
-                print("❌ Failed to delete persistent store: \(error)")
-            }
-        }
-
-        let schema = Schema([
-            SystemMetric.self,
-            CustomProcessInfo.self
-        ])
-        
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-        
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
+           let schema = Schema([
+               SystemMetric.self,
+               CustomProcessInfo.self
+           ])
+           
+           let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+           
+           do {
+               return try ModelContainer(for: schema, configurations: [modelConfiguration])
+           } catch {
+               fatalError("Could not create ModelContainer: \(error)")
+           }
     }()
+    
     
     var body: some Scene {
         WindowGroup {
