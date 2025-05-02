@@ -14,10 +14,14 @@ enum LogVerbosityLevel: Int, Comparable {
 }
 
 // MARK: - Log Categories
-enum LogCategory: String, CaseIterable {
+enum LogCategory: String, CaseIterable, Codable {
     case errorAndDebug = "ErrorAndDebug"
-    case sync = "Sync"
+    case syncConnection = "SyncConnection"
+    case syncTransmission = "SyncTransmission"
+    case syncRetrieval = "SyncRetrieval"
+    case dataPersistence = "DataPersistence"
 }
+
 
 // MARK: - Log Entry Model
 struct LogEntry: Identifiable {
@@ -37,71 +41,96 @@ struct LogEntry: Identifiable {
 // MARK: - LogManager Singleton
 class LogManager: ObservableObject {
     static let shared = LogManager()
-
-    // OSLog instances for each category
+    
+    // Existing loggers for categories
     private let errorAndDebugLogger = Logger(subsystem: "com.MacPulse", category: "ErrorAndDebug")
-    private let syncLogger = Logger(subsystem: "com.MacPulse", category: "Sync")
+    private let syncConnectionLogger = Logger(subsystem: "com.MacPulse", category: "SyncConnection")
+    private let syncTransmissionLogger = Logger(subsystem: "com.MacPulse", category: "SyncTransmission")
+    private let syncRetrievalLogger = Logger(subsystem: "com.MacPulse", category: "SyncRetrieval")
+    private let dataPersistenceLogger = Logger(subsystem: "com.MacPulse", category: "DataPersistence")
 
-    // Published logs for UI
-    @Published private(set) var logs: [LogEntry] = []
 
-    // Configurable verbosity levels per category
+    // Verbosity levels per category
     var verbosityLevelForErrorAndDebug: LogVerbosityLevel = .medium
-    var verbosityLevelForSync: LogVerbosityLevel = .medium
+    var verbosityLevelForSyncConnection: LogVerbosityLevel = .medium
+    var verbosityLevelForSyncTransmission: LogVerbosityLevel = .medium
+    var verbosityLevelForSyncRetrieval: LogVerbosityLevel = .medium
+    var verbosityLevelForDataPersistence: LogVerbosityLevel = .medium
+
+    @Published private(set) var logs: [LogEntry] = []
 
     private init() {}
 
-    // MARK: - Public Logging Methods
+    // General log function, updated for new categories
     func log(_ category: LogCategory, level: LogVerbosityLevel, _ message: String) {
-        print("LogManager: Logging message for category \(category) level \(level): \(message)")
-        // Check verbosity
+        // Verbosity checks
         switch category {
         case .errorAndDebug:
             guard level <= verbosityLevelForErrorAndDebug else { return }
-        case .sync:
-            guard level <= verbosityLevelForSync else { return }
+        case .syncConnection:
+            guard level <= verbosityLevelForSyncConnection else { return }
+        case .syncTransmission:
+            guard level <= verbosityLevelForSyncTransmission else { return }
+        case .syncRetrieval:
+            guard level <= verbosityLevelForSyncRetrieval else { return }
+        case .dataPersistence:
+            guard level <= verbosityLevelForDataPersistence else {return}
         }
 
-        // OSLog output
+        // OSLog output based on category
         switch (category, level) {
-        case (.errorAndDebug, .low):
-            errorAndDebugLogger.error("\(message, privacy: .public)")
-        case (.errorAndDebug, .medium):
-            errorAndDebugLogger.warning("\(message, privacy: .public)")
-        case (.errorAndDebug, .high):
-            errorAndDebugLogger.info("\(message, privacy: .public)")
-        case (.sync, .low):
-            syncLogger.error("\(message, privacy: .public)")
-        case (.sync, .medium):
-            syncLogger.warning("\(message, privacy: .public)")
-        case (.sync, .high):
-            syncLogger.info("\(message, privacy: .public)")
+        case (.errorAndDebug, .low): errorAndDebugLogger.error("\(message, privacy: .public)")
+        case (.errorAndDebug, .medium): errorAndDebugLogger.warning("\(message, privacy: .public)")
+        case (.errorAndDebug, .high): errorAndDebugLogger.info("\(message, privacy: .public)")
+
+        case (.syncConnection, .low): syncConnectionLogger.error("\(message, privacy: .public)")
+        case (.syncConnection, .medium): syncConnectionLogger.warning("\(message, privacy: .public)")
+        case (.syncConnection, .high): syncConnectionLogger.info("\(message, privacy: .public)")
+
+        case (.syncTransmission, .low): syncTransmissionLogger.error("\(message, privacy: .public)")
+        case (.syncTransmission, .medium): syncTransmissionLogger.warning("\(message, privacy: .public)")
+        case (.syncTransmission, .high): syncTransmissionLogger.info("\(message, privacy: .public)")
+
+        case (.syncRetrieval, .low): syncRetrievalLogger.error("\(message, privacy: .public)")
+        case (.syncRetrieval, .medium): syncRetrievalLogger.warning("\(message, privacy: .public)")
+        case (.syncRetrieval, .high): syncRetrievalLogger.info("\(message, privacy: .public)")
+        
+        case (.dataPersistence, .low): dataPersistenceLogger.error("\(message, privacy: .public)")
+        case (.dataPersistence, .medium): dataPersistenceLogger.warning("\(message, privacy: .public)")
+        case (.dataPersistence, .high): dataPersistenceLogger.info("\(message, privacy: .public)")
+
         }
 
-        // Save locally (on main thread for UI)
+        // Save locally for UI/log display
         let entry = LogEntry(timestamp: Date(), category: category, level: level, message: message)
         DispatchQueue.main.async {
             self.logs.append(entry)
         }
     }
 
-    // Convenience methods
-    func logError(_ category: LogCategory, _ message: String) {
-        log(category, level: .low, "[ERROR] " + message)
+    // MARK: - Specialized logging convenience methods
+    
+    // Connection Info
+    func logConnectionStatus(_ status: String, level: LogVerbosityLevel = .medium) {
+        log(.syncConnection, level: level, "Connection Status: \(status)")
     }
-
-    func logWarning(_ category: LogCategory, _ message: String) {
-        log(category, level: .medium, "[WARNING] " + message)
+    
+    func logConnectionType(_ type: String, level: LogVerbosityLevel = .medium) {
+        log(.syncConnection, level: level, "Connection Type: \(type)")
     }
-
-    func logInfo(_ category: LogCategory, _ message: String) {
-        log(category, level: .high, "[INFO] " + message)
+    
+    // Data Transmission
+    func logDataSent(_ dataDescription: String, timestamp: Date = Date(), level: LogVerbosityLevel = .medium) {
+        log(.syncTransmission, level: level, "Data Sent: \(dataDescription) at \(timestamp)")
     }
-
-    // Clear logs if needed
-    func clearLogs() {
-        DispatchQueue.main.async {
-            self.logs.removeAll()
-        }
+    
+    func logDataReceived(_ dataDescription: String, timestamp: Date = Date(), level: LogVerbosityLevel = .medium) {
+        log(.syncTransmission, level: level, "Data Received: \(dataDescription) at \(timestamp)")
+    }
+    
+    // Data Retrieval
+    func logDataRetrieval(_ dataType: String, retrievalTime: Date = Date(), level: LogVerbosityLevel = .medium) {
+        log(.syncRetrieval, level: level, "Data Retrieved: \(dataType) at \(retrievalTime)")
     }
 }
+
