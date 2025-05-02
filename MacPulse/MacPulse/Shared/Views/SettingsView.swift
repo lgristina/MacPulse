@@ -11,20 +11,19 @@ import SwiftUI
 
 // View allowing users to customize alert thresholds and accessibility preferences
 struct SettingsView: View {
-    // Notification thresholds for system usage alerts
+    // —— Notification thresholds (in %)
     @AppStorage("cpuThreshold")    private var cpuThreshold: Double    = 80
     @AppStorage("memoryThreshold") private var memoryThreshold: Double = 80
     @AppStorage("diskThreshold")   private var diskThreshold: Double   = 90
 
-    // Accessibility settings
+    // —— Accessibility
     @AppStorage("invertColors") private var invertColors: Bool = false
-    @AppStorage("fontSize")     private var fontSize: Double  = 14
 
     var body: some View {
         Form {
             // Notification settings section
             Section(header:
-                Text("Notification")
+                Text("Notifications")
                     .font(.largeTitle)
                     .padding(.bottom, 10)
             ) {
@@ -54,12 +53,6 @@ struct SettingsView: View {
                     .padding(.bottom, 10)
             ) {
                 Toggle("Invert Colors", isOn: $invertColors)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Base Font Size: \(Int(fontSize)) pt")
-                    Slider(value: $fontSize, in: 10...24, step: 1)
-                }
-                .padding(.vertical, 4)
             }
         }
         .frame(minWidth: 400)
