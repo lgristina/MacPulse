@@ -12,19 +12,20 @@ struct ProcessListView: View {
 
     /// Sorting criteria options
     enum SortCriteria {
-        case pid, cpuUsage, memoryUsage
+        case shortProcessName, cpuUsage, memoryUsage
     }
-
-    /// Tracks which sorting option is selected
-    @State private var sortCriteria: SortCriteria = .pid
+    
+    // Property to track the selected sorting criteria
+    @State private var sortCriteria: SortCriteria = .shortProcessName
+    
 
     var body: some View {
         NavigationView {
             VStack {
                 // Sorting menu with options
                 Menu {
-                    Button("Sort by PID") {
-                        sortCriteria = .pid
+                    Button("Sort by Process Name") {
+                        sortCriteria = .shortProcessName
                     }
                     Button("Sort by CPU Usage") {
                         sortCriteria = .cpuUsage
@@ -52,8 +53,8 @@ struct ProcessListView: View {
                 List(sortedProcesses) { process in
                     NavigationLink(destination: ProcessDetailView(process: process)) {
                         VStack(alignment: .leading) {
-                            Text("PID: \(process.id)")
-                                .font(.headline)
+               Text("Process: \(process.shortProcessName)").font(.headline)
+
                             Text("CPU Usage: \(process.cpuUsage, specifier: "%.1f")%")
                                 .foregroundColor(.blue)
                             Text("Memory Usage: \(process.memoryUsage, specifier: "%.1f") MB")
@@ -82,8 +83,8 @@ struct ProcessListView: View {
     /// Sorts the process array based on the selected sort criteria
     private func sortedProcesses(for processes: [CustomProcessInfo]) -> [CustomProcessInfo] {
         switch sortCriteria {
-        case .pid:
-            return processes.sorted { $0.id < $1.id }
+        case .shortProcessName:
+            return processes.sorted { $0.shortProcessName < $1.shortProcessName }
         case .cpuUsage:
             return processes.sorted { $0.cpuUsage > $1.cpuUsage }
         case .memoryUsage:

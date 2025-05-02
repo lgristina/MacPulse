@@ -23,6 +23,13 @@ struct ProcessDetailView: View {
 
             // Process ID row
             HStack {
+                Text("Process name:")
+                    .font(.headline)
+                Spacer()
+                Text("\(process.fullProcessName)")
+            }
+            
+            HStack {
                 Text("Process ID:")
                     .font(.headline)
                 Spacer()
