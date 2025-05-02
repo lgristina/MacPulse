@@ -7,19 +7,26 @@
 
 import SwiftUI
 
-/// The settings view where users can adjust various thresholds and accessibility options.
+// MARK: - Settings View
+
+/// Provides sliders and toggles for adjusting system alert thresholds and accessibility settings.
 struct SettingsView: View {
-    // —— Notification thresholds (in %)
+    
+    // MARK: - Stored Properties
+
+    // Notification thresholds (in %)
     @AppStorage("cpuThreshold")    private var cpuThreshold: Double    = 80
     @AppStorage("memoryThreshold") private var memoryThreshold: Double = 80
     @AppStorage("diskThreshold")   private var diskThreshold: Double   = 90
 
-    // —— Accessibility
+    // Accessibility options
     @AppStorage("invertColors") private var invertColors: Bool = false
-    @AppStorage("fontSize")     private var fontSize: Double  = 14
+
+    // MARK: - View Body
 
     var body: some View {
         Form {
+            // MARK: Notification Settings
             Section(header:
                 Text("Notification")
                     .font(.largeTitle)
@@ -44,33 +51,29 @@ struct SettingsView: View {
                 .padding(.vertical, 4)
             }
 
+            // MARK: Accessibility Settings
             Section(header:
                 Text("Accessibility")
                     .font(.largeTitle)
                     .padding(.bottom, 10)
             ) {
                 Toggle("Invert Colors", isOn: $invertColors)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Base Font Size: \(Int(fontSize)) pt")
-                    Slider(value: $fontSize, in: 10...24, step: 1)
-                }
-                .padding(.vertical, 4)
             }
         }
         .frame(minWidth: 400)
         .padding()
-        // Conditionally invert all colors
-        .colorInvertIfNeeded(invertColors)
         .navigationTitle("Settings")
+        .colorInvertIfNeeded(invertColors)
     }
 }
 
+// MARK: - View Extension
+
 private extension View {
-    /// Only applies colorInvert() when the toggle is on
+    /// Conditionally applies `.colorInvert()` if accessibility toggle is enabled.
     @ViewBuilder
     func colorInvertIfNeeded(_ invert: Bool) -> some View {
         if invert { self.colorInvert() }
-        else     { self }
+        else      { self }
     }
 }

@@ -1,22 +1,36 @@
+//
+//  LogView.swift
+//  MacPulse
+//
+//  Created by [Your Name] on [Date].
+//
+
 import SwiftUI
 
+// MARK: - Main Log View
+
+/// Displays application logs filtered by category (e.g., Error, Debug, Sync).
+/// Allows users to inspect real-time logs with severity highlighting and category filtering.
 struct LogView: View {
+    /// Shared log manager instance to observe log updates.
     @ObservedObject private var logManager = LogManager.shared
 
-    // UI state to select category filter
+    /// Selected category filter (default: error and debug logs).
     @State private var selectedCategory: LogCategory = .errorAndDebug
 
+    /// Computed property that returns only the logs matching the selected category.
     var filteredLogs: [LogEntry] {
         logManager.logs.filter { $0.category == selectedCategory }
     }
 
     var body: some View {
         VStack(alignment: .leading) {
+            // MARK: - Header
             Text("Log")
                 .font(.largeTitle)
                 .padding(.bottom, 10)
 
-            // Category Picker
+            // MARK: - Category Picker
             Picker("Category", selection: $selectedCategory) {
                 ForEach(LogCategory.allCases, id: \.self) { category in
                     Text(category.rawValue).tag(category)
@@ -25,24 +39,26 @@ struct LogView: View {
             .pickerStyle(SegmentedPickerStyle())
             .padding(.bottom, 10)
 
-            // Add a Spacer to push the logs down
             Spacer()
 
+            // MARK: - Log Output
             if filteredLogs.isEmpty {
                 Text("No logs yet.")
                     .foregroundColor(.secondary)
             } else {
                 LogListView(logs: filteredLogs)
-                    .frame(maxHeight: .infinity)  // Make the log list take the remaining space
+                    .frame(maxHeight: .infinity)
             }
-            
-            Spacer()
 
+            Spacer()
         }
         .padding()
     }
 }
 
+// MARK: - Log List View
+
+/// Renders a scrollable list of log entries with severity-based styling.
 struct LogListView: View {
     let logs: [LogEntry]
 
@@ -59,7 +75,7 @@ struct LogListView: View {
             }
             .background(backgroundColor)
             .cornerRadius(10)
-            // Auto-scroll to last log on new entry
+            // Scrolls to the bottom automatically when a new log is added.
             .onChange(of: logs.count) {
                 if let last = logs.indices.last {
                     withAnimation {
@@ -69,7 +85,10 @@ struct LogListView: View {
             }
         }
     }
-    
+
+    // MARK: - Individual Log Row
+
+    /// Renders a single log entry using monospaced font and background color based on severity.
     @ViewBuilder
     private func logRow(_ log: LogEntry) -> some View {
         Text(log.formatted)
@@ -79,6 +98,7 @@ struct LogListView: View {
             .background(rowBackgroundColor(for: log))
     }
 
+    /// Highlights row background color based on log severity level.
     private func rowBackgroundColor(for log: LogEntry) -> Color {
         switch log.level {
         case .low:     return Color.red.opacity(0.1)
@@ -86,13 +106,13 @@ struct LogListView: View {
         case .high:    return Color.clear
         }
     }
-    
-    // Platform-specific background color
+
+    /// Sets platform-specific background color for the entire log list.
     private var backgroundColor: Color {
-#if os(macOS)
+        #if os(macOS)
         return Color(NSColor.windowBackgroundColor)
-#else
+        #else
         return Color(.systemGroupedBackground)
-#endif
+        #endif
     }
 }

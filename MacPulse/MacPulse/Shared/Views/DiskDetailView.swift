@@ -4,24 +4,30 @@
 //
 //  Created by Luca Gristina on 4/29/25.
 //
+
 import SwiftUI
 import Charts
 
-// MARK: – Models & Utility
+// MARK: - Disk Models & Utility
+
+/// Represents total and free disk space in bytes, with computed `used` space.
 struct DiskInfo {
     let total: Int64
     let free: Int64
     var used: Int64 { total - free }
 }
 
+/// Represents a category of disk usage, such as a folder or file type.
 struct CategoryUsage: Identifiable {
     let id = UUID()
     let name: String
     let size: Int64
 }
 
+/// Provides disk-related functionality such as space checks and size breakdowns.
 class DiskUtility {
-    /// Returns total & free bytes on "/"
+
+    /// Returns disk statistics (total and free space) for root volume.
     static func getDiskInfo() -> DiskInfo? {
         do {
             let attrs = try FileManager.default.attributesOfFileSystem(forPath: "/")
@@ -36,7 +42,7 @@ class DiskUtility {
         }
     }
 
-    /// Measures directory sizes at depth = 1, returns top `limit` entries
+    /// Returns sizes of top-level directories in the given path, sorted by size.
     static func getTopDirectories(path: String = "/", limit: Int = 5) -> [CategoryUsage] {
         let fm = FileManager.default
         guard let contents = try? fm.contentsOfDirectory(atPath: path) else { return [] }
@@ -53,7 +59,7 @@ class DiskUtility {
             .map { $0 }
     }
 
-    /// Recursively walk and sum file sizes (blocking—run off the main thread)
+    /// Recursively sums file sizes in a directory. Blocking—use off main thread.
     private static func directorySize(url: URL) -> Int64 {
         var total: Int64 = 0
         let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
@@ -65,19 +71,21 @@ class DiskUtility {
                     if res.isRegularFile == true, let sz = res.fileSize {
                         total += Int64(sz)
                     }
-                } catch { /* ignore permission errors */ }
+                } catch { /* Ignore permission errors */ }
             }
         }
         return total
     }
 
-    /// Human-readable bytes
+    /// Converts a byte value into a human-readable string (e.g., GB/MB).
     static func formatBytes(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
 }
 
-// MARK: – The Disk Detailed View
+// MARK: - Disk Detailed View (Directory Breakdown)
+
+/// Displays detailed information about storage usage and top-level directory sizes.
 struct DiskDetailedView: View {
     @State private var diskInfo: DiskInfo?
     @State private var categories: [CategoryUsage] = []
@@ -89,15 +97,13 @@ struct DiskDetailedView: View {
                 .bold()
                 .padding(.top)
 
-            // ——— Usage Bar ———
+            // Usage Bar
             if let info = diskInfo {
                 VStack(spacing: 6) {
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            // full bar
                             RoundedRectangle(cornerRadius: 6)
                                 .fill(Color.secondary.opacity(0.2))
-                            // used portion
                             RoundedRectangle(cornerRadius: 6)
                                 .fill(Color.blue)
                                 .frame(width: geo.size.width * usageFraction(info: info))
@@ -112,7 +118,7 @@ struct DiskDetailedView: View {
                 }
             }
 
-            // ——— Top Categories ———
+            // Top Directories
             ScrollView {
                 LazyVStack(spacing: 12) {
                     ForEach(categories) { cat in
@@ -141,11 +147,13 @@ struct DiskDetailedView: View {
         .padding(.bottom)
     }
 
+    /// Calculates the usage percentage to render the bar chart.
     private func usageFraction(info: DiskInfo) -> CGFloat {
         guard info.total > 0 else { return 0 }
         return CGFloat(info.used) / CGFloat(info.total)
     }
 
+    /// Fetches disk usage data and updates the view.
     private func loadData() {
         DispatchQueue.global(qos: .userInitiated).async {
             let info = DiskUtility.getDiskInfo()
@@ -158,46 +166,46 @@ struct DiskDetailedView: View {
     }
 }
 
+// MARK: - DiskUtility: File-Type Breakdown Extension
 
-// MARK: – DiskUtility extension for file-type breakdown
 extension DiskUtility {
-  /// Enumerates the entire filesystem under `path`, groups by file extension,
-  /// and returns the top `limit` categories by total size.
-  static func getFileTypeBreakdown(path: String = "/", limit: Int = 5) async -> [CategoryUsage] {
-    let fm = FileManager.default
-    let rootURL = URL(fileURLWithPath: path)
-    var map: [String: Int64] = [:]
-    let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
-    let opts: FileManager.DirectoryEnumerationOptions = [.skipsHiddenFiles, .skipsPackageDescendants]
+    /// Enumerates the file system and groups disk usage by file extension.
+    static func getFileTypeBreakdown(path: String = "/", limit: Int = 5) async -> [CategoryUsage] {
+        let fm = FileManager.default
+        let rootURL = URL(fileURLWithPath: path)
+        var map: [String: Int64] = [:]
+        let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
+        let opts: FileManager.DirectoryEnumerationOptions = [.skipsHiddenFiles, .skipsPackageDescendants]
 
-    if let enumerator = fm.enumerator(at: rootURL, includingPropertiesForKeys: keys, options: opts) {
-      for case let url as URL in enumerator {
-        do {
-          let res = try url.resourceValues(forKeys: Set(keys))
-          if res.isRegularFile == true {
-            let ext = url.pathExtension.lowercased().isEmpty ? "No Ext" : url.pathExtension.lowercased()
-            map[ext, default: 0] += Int64(res.fileSize ?? 0)
-          }
-        } catch { /* ignore permission errors */ }
-      }
+        if let enumerator = fm.enumerator(at: rootURL, includingPropertiesForKeys: keys, options: opts) {
+            for case let url as URL in enumerator {
+                do {
+                    let res = try url.resourceValues(forKeys: Set(keys))
+                    if res.isRegularFile == true {
+                        let ext = url.pathExtension.lowercased().isEmpty ? "No Ext" : url.pathExtension.lowercased()
+                        map[ext, default: 0] += Int64(res.fileSize ?? 0)
+                    }
+                } catch { /* Ignore permission errors */ }
+            }
+        }
+
+        return map
+            .map { CategoryUsage(name: $0.key, size: $0.value) }
+            .sorted(by: { $0.size > $1.size })
+            .prefix(limit)
+            .map { $0 }
     }
-
-    return map
-      .map { CategoryUsage(name: $0.key, size: $0.value) }
-      .sorted(by: { $0.size > $1.size })
-      .prefix(limit)
-      .map { $0 }
-  }
 }
 
-// MARK: – File-Type Breakdown View
+// MARK: - File-Type Breakdown View
+
+/// Displays disk usage grouped by file extension in a list format.
 struct FileTypeBreakdownView: View {
     @State private var diskInfo: DiskInfo?
     @State private var breakdown: [CategoryUsage] = []
 
     var body: some View {
         VStack(spacing: 20) {
-            // ——— Title & Usage Bar ———
             Text("Storage Detailed View")
                 .font(.largeTitle)
                 .bold()
@@ -223,7 +231,6 @@ struct FileTypeBreakdownView: View {
                 }
             }
 
-            // ——— File-Type Breakdown ———
             List(breakdown) { item in
                 HStack {
                     Text(item.name.capitalized)
@@ -238,81 +245,76 @@ struct FileTypeBreakdownView: View {
         }
         .padding(.bottom)
         .onAppear {
-            Task {  // async/await for file-type walk
-                // 1) Disk info is sync
+            Task {
                 diskInfo = DiskUtility.getDiskInfo()
-                // 2) File-type breakdown is async
                 breakdown = await DiskUtility.getFileTypeBreakdown(limit: 5)
             }
         }
     }
 
+    /// Calculates the usage ratio of used to total disk space.
     private func usageFraction(info: DiskInfo) -> CGFloat {
         guard info.total > 0 else { return 0 }
         return CGFloat(info.used) / CGFloat(info.total)
     }
 }
 
+// MARK: - Pie Chart View
 
-// MARK: – Pie-Chart View of Disk Usage
+/// Displays disk usage as a pie chart with "Used" vs "Free" slices.
 struct DiskPieChartView: View {
-  @State private var slices: [CategoryUsage] = []
-  @State private var diskInfo: DiskInfo?
+    @State private var slices: [CategoryUsage] = []
+    @State private var diskInfo: DiskInfo?
 
-  var body: some View {
-    VStack(spacing: 16) {
-      Text("Disk Usage Breakdown")
-        .font(.title2)
-        .bold()
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Disk Usage Breakdown")
+                .font(.title2)
+                .bold()
 
-      Chart(slices) { slice in
-        SectorMark(
-          angle: .value("Bytes", slice.size),
-          innerRadius: .ratio(0.5),
-          outerRadius: .ratio(1.0)
-        )
-        .foregroundStyle(by: .value("Category", slice.name))
-        .annotation(position: .overlay, alignment: .center) {
-          // you can also annotate with percentages here if you like:
-          Text(slice.name)
-            .font(.caption2)
+            Chart(slices) { slice in
+                SectorMark(
+                    angle: .value("Bytes", slice.size),
+                    innerRadius: .ratio(0.5),
+                    outerRadius: .ratio(1.0)
+                )
+                .foregroundStyle(by: .value("Category", slice.name))
+                .annotation(position: .overlay, alignment: .center) {
+                    Text(slice.name)
+                        .font(.caption2)
+                }
+            }
+            .chartLegend(.visible)
+            .frame(height: 280)
+            .padding(.horizontal)
+
+            if let info = diskInfo {
+                HStack {
+                    Text("Used: \(DiskUtility.formatBytes(info.used))")
+                    Spacer()
+                    Text("Free: \(DiskUtility.formatBytes(info.free))")
+                }
+                .font(.footnote)
+                .foregroundColor(.secondary)
+                .padding(.horizontal)
+            }
         }
-      }
-      .chartLegend(.visible)
-      .frame(height: 280)
-      .padding(.horizontal)
-
-      // ——— Value Strip ———
-      if let info = diskInfo {
-        HStack {
-          Text("Used: \(DiskUtility.formatBytes(info.used))")
-          Spacer()
-          Text("Free: \(DiskUtility.formatBytes(info.free))")
+        .padding(.top)
+        .onAppear {
+            Task {
+                let info = DiskUtility.getDiskInfo()
+                let built: [CategoryUsage] = {
+                    guard let i = info else { return [] }
+                    return [
+                        CategoryUsage(name: "Used", size: i.used),
+                        CategoryUsage(name: "Free", size: i.free)
+                    ]
+                }()
+                await MainActor.run {
+                    diskInfo = info
+                    slices = built
+                }
+            }
         }
-        .font(.footnote)
-        .foregroundColor(.secondary)
-        .padding(.horizontal)
-      }
     }
-    .padding(.top)
-    .onAppear {
-      Task {
-        // 1. Get raw numbers
-        let info = DiskUtility.getDiskInfo()
-        // 2. Build the two‐slice model
-        let built: [CategoryUsage] = {
-          guard let i = info else { return [] }
-          return [
-            CategoryUsage(name: "Used", size: i.used),
-            CategoryUsage(name: "Free", size: i.free)
-          ]
-        }()
-        // 3. Update state on the main actor
-        await MainActor.run {
-          diskInfo = info
-          slices = built
-        }
-      }
-    }
-  }
 }
