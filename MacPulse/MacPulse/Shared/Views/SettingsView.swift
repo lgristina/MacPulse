@@ -7,9 +7,8 @@
 
 import SwiftUI
 
-// MARK: - Settings View
 
-/// View allowing users to customize alert thresholds and accessibility preferences
+/// The settings view where users can adjust various thresholds and accessibility options.
 struct SettingsView: View {
     // —— Notification thresholds (in %)
     @AppStorage("cpuThreshold")    private var cpuThreshold: Double    = 80

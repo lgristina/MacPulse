@@ -61,6 +61,7 @@ struct ProcessListView: View {
                                 .foregroundColor(.green)
                         }
                         .padding(5)
+                        .frame(maxHeight: .infinity)
                     }
                 }
                 .navigationTitle("Running Processes")
@@ -74,7 +75,9 @@ struct ProcessListView: View {
                         print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
                     }
                 }
+                Spacer()
             }
+            .frame(maxHeight: .infinity)
         }
     }
 
