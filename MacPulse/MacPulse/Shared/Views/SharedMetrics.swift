@@ -1,10 +1,3 @@
-//
-//  SharedMetrics.swift
-//  MacPulse
-//
-//  Created by Austin Frank on 4/17/25.
-//
-
 import Charts
 import SwiftUI
 
@@ -16,8 +9,9 @@ import AppKit
 typealias PlatformColor = NSColor
 #endif
 
+// MARK: - Color Extension
 extension Color {
-    /// Matches the system’s background color on both iOS and macOS
+    /// Matches the system’s background color on both iOS and macOS.
     static var cardBackground: Color {
         #if os(iOS)
         Color(PlatformColor.systemBackground)
@@ -27,13 +21,14 @@ extension Color {
     }
 }
 
-// MARK: - Shared Protocol
+// MARK: - Shared Protocol for Usage Data
 protocol UsageData: Identifiable {
     var time: Date { get }
     var value: Double { get }
 }
 
 // MARK: - CPU & Memory Structs
+/// Struct for storing CPU usage data.
 struct CPUUsageData: UsageData {
     let id = UUID()
     let usage: Double
@@ -41,6 +36,7 @@ struct CPUUsageData: UsageData {
     var value: Double { usage }
 }
 
+/// Struct for storing Memory usage data.
 struct MemoryUsageData: UsageData {
     let id = UUID()
     let usage: Double
@@ -48,7 +44,8 @@ struct MemoryUsageData: UsageData {
     var value: Double { usage }
 }
 
-// MARK: - Metric Panel
+// MARK: - Metric Panel View
+/// A panel to display a single metric with a title, value, and unit.
 struct MetricPanel: View {
     let title: String
     let value: Double
@@ -70,6 +67,7 @@ struct MetricPanel: View {
 }
 
 // MARK: - Detailed Usage View
+/// A view that shows detailed usage data over time in a line chart.
 struct DetailedUsageView<Data: UsageData>: View {
     let title: String
     let unit: String
@@ -86,6 +84,7 @@ struct DetailedUsageView<Data: UsageData>: View {
                 .font(.largeTitle)
                 .padding(.bottom, 20)
 
+            // Line chart to display historical usage data
             Chart(usageHistory) {
                 LineMark(
                     x: .value("Time", $0.time),
@@ -96,6 +95,7 @@ struct DetailedUsageView<Data: UsageData>: View {
             .frame(height: 200)
             .padding()
 
+            // Scrollable list showing the historical data points
             ScrollView {
                 LazyVStack(spacing: 12) {
                     ForEach(usageHistory.reversed(), id: \.id) { data in
@@ -133,6 +133,7 @@ struct DetailedUsageView<Data: UsageData>: View {
         .padding()
     }
 
+    // Adds new data to the usage history and limits it to 50 entries.
     private func addUsage(_ usage: Double) {
         let newData = makeData(usage, Date())
         usageHistory.append(newData)
@@ -143,6 +144,7 @@ struct DetailedUsageView<Data: UsageData>: View {
 }
 
 // MARK: - Time Formatter
+/// A DateFormatter to format time for displaying in usage history.
 let timeFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.timeStyle = .medium
