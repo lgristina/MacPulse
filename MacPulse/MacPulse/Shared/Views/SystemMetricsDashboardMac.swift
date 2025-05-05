@@ -36,8 +36,8 @@ struct SystemMetricsDashboardMac: View {
                         }
                         
                         // Disk activity panel with navigation to a pie chart view
-                        NavigationLink(destination: DiskPieChartView()) {
-                            MetricPanel(title: "Disk Activity", value: systemMonitor.diskActivity, unit: "GB")
+                        NavigationLink(destination: DiskDetailedView()) {
+                            MetricPanel(title: "Disk Activity", value: systemMonitor.diskUsed, unit: "GB")
                         }
                     }
                 }

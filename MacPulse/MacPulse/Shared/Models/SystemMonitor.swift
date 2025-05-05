@@ -37,7 +37,10 @@ class SystemMonitor: ObservableObject {
     
     @Published var cpuUsage: Double = 0.0
     @Published var memoryUsage: Double = 0.0
-    @Published var diskActivity: Double = 0.0
+    @Published var diskUsed: Double = 0.0
+    @Published var diskFree: Double = 0.0
+    @Published var diskTotal: Double = 0.0
+    
     var timer: Timer?
     private var previousCPUInfo: host_cpu_load_info_data_t?
     private var interval: TimeInterval = 1.0
@@ -65,14 +68,18 @@ class SystemMonitor: ObservableObject {
     func collectMetrics() {
         cpuUsage = getCPUUsage()
         memoryUsage = getMemoryUsage()
-        diskActivity = getDiskUsage()
+        let stats = getDiskUsage()
+        diskTotal = stats.total
+        diskFree = stats.free
+        diskUsed = stats.used
+        
 
-        let metrics = SystemMetric(timestamp: Date(), cpuUsage: cpuUsage, memoryUsage: memoryUsage, diskActivity: diskActivity)
+        let metrics = SystemMetric(timestamp: Date(), cpuUsage: cpuUsage, memoryUsage: memoryUsage, diskActivity: diskUsed)
         lastMetrics = metrics
         
         Task { @MainActor in
             // Save the metrics to the data manager and log the action
-            DataManager.shared.saveSystemMetrics(cpu: cpuUsage, memory: memoryUsage, disk: diskActivity)
+            DataManager.shared.saveSystemMetrics(cpu: cpuUsage, memory: memoryUsage, disk: diskUsed)
             LogManager.shared.log(.dataPersistence, level: .medium, "System metrics saved to database.")
         }
     }
@@ -143,20 +150,21 @@ class SystemMonitor: ObservableObject {
 
     /// Retrieves the current disk usage.
     /// - Returns: The current used disk space in GB, rounded to 2 decimal places.
-    func getDiskUsage() -> Double {
-        let fileManager = FileManager.default
+    func getDiskUsage() -> (total: Double, free: Double, used: Double) {
+        
         do {
-            let attributes = try fileManager.attributesOfFileSystem(forPath: NSHomeDirectory())
-            
-            if let totalSpace = attributes[.systemSize] as? NSNumber,
-               let freeSpace = attributes[.systemFreeSize] as? NSNumber {
-                let usedSpace = totalSpace.doubleValue - freeSpace.doubleValue
-                let usedSpaceInGB = usedSpace / (1024 * 1024 * 1024) // Convert bytes to GB
-                return usedSpaceInGB.rounded(toPlaces: 2)
-            }
+            let attrs = try FileManager.default.attributesOfFileSystem(forPath: "/")
+            let totalBytes = (attrs[.systemSize]     as? NSNumber)?.doubleValue ?? 0
+            let freeBytes  = (attrs[.systemFreeSize] as? NSNumber)?.doubleValue ?? 0
+
+            let totalGB = (totalBytes / 1_073_741_824).rounded(toPlaces: 2)
+            let freeGB  = (freeBytes  / 1_073_741_824).rounded(toPlaces: 2)
+            let usedGB  = (totalGB - freeGB).rounded(toPlaces: 2)
+
+            return (total: totalGB, free: freeGB, used: usedGB)
         } catch {
             LogManager.shared.log(.syncRetrieval, level: .low, "Error retrieving disk usage: \(error)")
+            return (0, 0, 0)
         }
-        return -1
     }
 }
