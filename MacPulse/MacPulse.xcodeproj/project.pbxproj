@@ -42,7 +42,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				"Preview Content/Preview Assets.xcassets",
 				Shared/Views/SystemMetricsDashboardMac.swift,
 			);
 			target = 999CB06D2DBF15B6001F3421 /* MacPulse Monitor */;
@@ -475,8 +474,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"MacPulse/Preview Content\"";
 				DEVELOPMENT_TEAM = 65XPF774Z5;
+				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -517,8 +516,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"MacPulse/Preview Content\"";
 				DEVELOPMENT_TEAM = 65XPF774Z5;
+				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;

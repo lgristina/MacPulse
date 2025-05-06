@@ -1,12 +1,14 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import Darwin
 
 /// Monitors and records process-level CPU and memory usage.
 class ProcessMonitor: ObservableObject {
     
     static let shared = ProcessMonitor()
     @Published var runningProcesses: [CustomProcessInfo] = []
+    private var previousCpuTimes: [Int: TimeInterval] = [:]
     
     var timer: Timer?
     
@@ -47,10 +49,10 @@ class ProcessMonitor: ObservableObject {
     /// Uses `/bin/ps` to retrieve process info.
     /// - Returns: An array of `CustomProcessInfo` for each running process.
     func getRunningProcesses() -> [CustomProcessInfo] {
-#if os(macOS)
+    #if os(macOS)
         let task = Process()
         task.launchPath = "/bin/ps"
-        task.arguments = ["-axo", "pid,%cpu,rss,command"]
+        task.arguments = ["-axo", "pid,time,rss,command"]
         
         let pipe = Pipe()
         task.standardOutput = pipe
@@ -63,51 +65,68 @@ class ProcessMonitor: ObservableObject {
         }
         
         let output = pipe.fileHandleForReading.readDataToEndOfFile()
-
         guard let result = String(data: output, encoding: .utf8) else {
             LogManager.shared.log(.dataPersistence, level: .high, "❌ Failed to decode output from /bin/ps.")
             return []
         }
 
         let lines = result.split(separator: "\n").dropFirst()
+        var updatedCpuTimes: [Int: TimeInterval] = [:]
         var processList: [CustomProcessInfo] = []
         
         for line in lines {
             let components = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
             if components.count == 4,
                let pid = Int(components[0]),
-               let cpuUsage = Double(components[1]),
+               let timeInterval = parsePsTime(String(components[1])),
                let memoryUsageKB = Double(components[2]) {
-                
+
                 let memoryUsageMB = memoryUsageKB / 1024
                 let rawCommand = String(components[3])
-
-                // Truncate at "--" if present
                 let truncatedCommand = rawCommand.components(separatedBy: " -").first ?? rawCommand
-
-                // Trim extra whitespace (just in case)
                 let cleanedCommand = truncatedCommand.trimmingCharacters(in: .whitespacesAndNewlines)
+                let shortName = URL(fileURLWithPath: cleanedCommand).lastPathComponent.isEmpty ? "Unnamed Process" : URL(fileURLWithPath: cleanedCommand).lastPathComponent
 
-                let fullName = cleanedCommand
-                let shortName = URL(fileURLWithPath: fullName).lastPathComponent.isEmpty ? "Unnamed Process" : URL(fileURLWithPath: fullName).lastPathComponent
+                // CPU delta calculation
+                let previousTime = previousCpuTimes[pid] ?? 0
+                let delta = timeInterval - previousTime
+                let cpuUsage = (delta / 5.0) * 100 // assuming 5 second interval
+
+                updatedCpuTimes[pid] = timeInterval
+
                 let process = CustomProcessInfo(
                     id: pid,
                     timestamp: Date(),
                     cpuUsage: cpuUsage,
                     memoryUsage: memoryUsageMB,
                     shortProcessName: shortName,
-                    fullProcessName: fullName
+                    fullProcessName: cleanedCommand
                 )
-                
                 processList.append(process)
             }
         }
-        
+
+        // Update state
+        previousCpuTimes = updatedCpuTimes
+
         LogManager.shared.log(.dataPersistence, level: .low, "✅ Parsed \(processList.count) process entries from /bin/ps output.")
         return processList
-#else
+    #else
         LogManager.shared.log(.dataPersistence, level: .low, "ℹ️ Process monitoring is not supported on iOS.")
         return []
-#endif
+    #endif
+    }
+    
+    /// Parses CPU time from `ps` format ("MM:SS" or "HH:MM:SS") to seconds.
+    func parsePsTime(_ time: String) -> TimeInterval? {
+        let parts = time.split(separator: ":").map { Double($0) ?? 0 }
+        switch parts.count {
+        case 2:
+            return parts[0] * 60 + parts[1]            // MM:SS
+        case 3:
+            return parts[0] * 3600 + parts[1] * 60 + parts[2]  // HH:MM:SS
+        default:
+            return nil
+        }
     }
 }
