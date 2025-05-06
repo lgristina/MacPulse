@@ -54,7 +54,7 @@ struct ProcessListView: View {
                 let sortedProcesses = sortedProcesses(for: processes)
 
                 List(sortedProcesses) { process in
-                    NavigationLink(destination: ProcessDetailView(process: process)) {
+                    NavigationLink(destination: ProcessDetailView(processID: process.id)) {
                         VStack(alignment: .leading) {
                             Text("Process: \(process.shortProcessName)")
                                 .font(.headline)
