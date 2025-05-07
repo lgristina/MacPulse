@@ -12,10 +12,16 @@ import SwiftUI
 /// and provides a dropdown menu to sort the list by name, CPU, or memory usage.
 struct ProcessListView: View {
     #if os(macOS)
+    @Binding var selectedProcessID: Int?
     @ObservedObject private var viewModel = ProcessMonitor.shared
-    #endif
+    #else
     @ObservedObject var systemMonitor = RemoteSystemMonitor.shared
+    @State private var selectedProcessID: Int? = nil
+    #endif
+    
     @State private var hasInitialized = false
+    @State private var showingProcessDetail = false
+    @State private var currentProcessID: Int? = nil
 
     /// Sorting options for the process list.
     enum SortCriteria {
@@ -25,7 +31,7 @@ struct ProcessListView: View {
     @State private var sortCriteria: SortCriteria = .shortProcessName
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             // Sorting Dropdown Menu
             Menu {
                 Button("Sort by Process Name") { sortCriteria = .shortProcessName }
@@ -36,7 +42,13 @@ struct ProcessListView: View {
                     .font(.title2)
                     .padding()
             }
-
+            .frame(maxWidth: .infinity)
+            #if os(macOS)
+            .background(Color(nsColor: .windowBackgroundColor)) // macOS background
+            #else
+            .background(Color(uiColor: .systemBackground)) // iOS background
+            #endif
+            
             // Select correct source of processes depending on platform
             #if os(macOS)
             let processes = viewModel.runningProcesses
@@ -48,32 +60,68 @@ struct ProcessListView: View {
             let sortedProcesses = sortedProcesses(for: processes)
 
             List(sortedProcesses) { process in
+                #if os(macOS)
+                Button {
+                    currentProcessID = process.id
+                    showingProcessDetail = true
+                } label: {
+                    processRowContent(for: process)
+                }
+                .buttonStyle(.plain)
+                #else
                 NavigationLink(value: process.id) {
-                    VStack(alignment: .leading) {
-                        Text("Process: \(process.shortProcessName)")
-                            .font(.headline)
-                        Text("CPU Usage: \(process.cpuUsage, specifier: "%.1f")%")
-                            .foregroundColor(.blue)
-                        Text("Memory Usage: \(process.memoryUsage, specifier: "%.1f") MB")
-                            .foregroundColor(.green)
-                    }
-                    .padding(5)
+                    processRowContent(for: process)
+                }
+                #endif
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .layoutPriority(1) // Prioritize List height over Menu
+            .navigationTitle("Running Processes")
+            #if os(iOS)
+            .ignoresSafeArea(.container, edges: .bottom) // Maximize height on iOS
+            .navigationDestination(for: Int.self) { processID in
+                ProcessDetailView(processID: processID)
+            }
+            #endif
+            #if os(macOS)
+            .sheet(isPresented: $showingProcessDetail) {
+                if let id = currentProcessID {
+                    ProcessDetailView(processID: id)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity) // Ensure List fills available space
-            .navigationTitle("Running Processes")
+            #endif
             .onAppear {
                 if !hasInitialized {
                     hasInitialized = true
+                    #if os(iOS)
                     if let manager = RemoteSystemMonitor.shared.connectionManager {
                         manager.send(.stopSending(typeToStop: 0)) // Stop previous data stream
                         manager.send(.sendProcessMetrics) // Request new metrics
                     } else {
                         LogManager.shared.log(.errorAndDebug, level: LogVerbosityLevel.high, "⚠️ Connection manager not set on RemoteSystemMonitor.shared")
                     }
+                    #endif
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    // Extracted common row content
+    @ViewBuilder
+    private func processRowContent(for process: CustomProcessInfo) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Process: \(process.shortProcessName)")
+                .font(.headline)
+            Text("CPU Usage: \(process.cpuUsage, specifier: "%.1f")%")
+                .foregroundColor(.blue)
+                .font(.subheadline)
+            Text("Memory Usage: \(process.memoryUsage, specifier: "%.1f") MB")
+                .foregroundColor(.green)
+                .font(.subheadline)
+        }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 8)
     }
 
     /// Returns a new list of processes sorted according to the selected criteria.

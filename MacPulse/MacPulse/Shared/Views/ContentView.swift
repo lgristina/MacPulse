@@ -19,10 +19,10 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var syncService: MCConnectionManager
     @Query private var items: [Item]
-
-    static var systemMetrics = SystemMetricsDashboard()
-    static var processMetrics = ProcessListView()
-
+    #if os(macOS)
+    @State private var selectedProcessID: Int? = nil
+    #endif
+    
     let options: [Option] = [
         .init(title: "System", imageName: "desktopcomputer"),
         .init(title: "Process", imageName: "cpu"),
@@ -30,7 +30,7 @@ struct ContentView: View {
         .init(title: "Settings", imageName: "gear")
     ]
 
-    @State private var selectedOption: Option? = Option(title: "System", imageName: "gear")
+    @State private var selectedOption: Option? = Option(title: "System", imageName: "desktopcomputer")
 
     var body: some View {
 #if os(macOS)
@@ -60,7 +60,7 @@ struct ContentView: View {
                 let payload = MetricPayload.cpuUsageHistory(history)
                 syncService.send(payload)
 
-                LogManager.shared.log(.syncTransmission, level: .medium, "📤 Sent CPU usage history to peer.")
+                LogManager.shared.log(.syncTransmission, level: .medium, "📤 Sent CPU history to peer.")
             }
         }
 #else
@@ -87,17 +87,21 @@ struct ContentView: View {
             .navigationDestination(for: Option.self) { option in
                 DetailViewiOS(for: option)
             }
+            .navigationDestination(for: Int.self) { processID in
+                ProcessDetailView(processID: processID)
+            }
         }
         .environmentObject(syncService)
         .task {
             // Set verbosity high so info logs show
-            LogManager.shared.verbosityLevelForErrorAndDebug = LogVerbosityLevel.high
-            LogManager.shared.verbosityLevelForSyncRetrieval = LogVerbosityLevel.high
+            LogManager.shared.verbosityLevelForErrorAndDebug = .high
+            LogManager.shared.verbosityLevelForSyncRetrieval = .high
             
-            LogManager.shared.log(.errorAndDebug,level: .high, "ContentView appearded = App Launched macOS")
+            LogManager.shared.log(.errorAndDebug, level: .high, "ContentView appeared - App Launched (iOS)")
         }
 #endif
     }
+
     private var sidebar: some View {
         List(options, id: \.self, selection: $selectedOption) { option in
             NavigationLink(value: option) {
@@ -113,9 +117,11 @@ struct ContentView: View {
         VStack {
             switch selectedOption?.title {
             case "System":
-                ContentView.systemMetrics
+                SystemMetricsDashboard()
             case "Process":
-                ContentView.processMetrics
+                #if os(macOS)
+                ProcessListView(selectedProcessID: $selectedProcessID)
+                #endif
             case "Log":
                 LogView()
             case "Settings":
@@ -123,15 +129,11 @@ struct ContentView: View {
             default:
                 Text("Select an option")
             }
-
             Spacer()
-
-            
-            .padding()
         }
+        .padding()
     }
 }
-
 
 struct DetailViewiOS: View {
     let option: Option
@@ -145,9 +147,11 @@ struct DetailViewiOS: View {
         VStack {
             switch option.title {
             case "System":
-                ContentView.systemMetrics
+                SystemMetricsDashboard()
             case "Process":
-                ContentView.processMetrics
+                #if os(iOS)
+                ProcessListView()
+                #endif
             case "Log":
                 LogView()
             case "Settings":
@@ -155,11 +159,7 @@ struct DetailViewiOS: View {
             default:
                 Text("Unknown option")
             }
-
             Spacer()
-
-
-            .padding()
         }
         .padding()
         .navigationTitle(option.title)
