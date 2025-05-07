@@ -53,10 +53,13 @@ struct LandingView: View {
 
                     ForEach(syncService.availablePeers, id: \.displayName) { peer in
                         Button(action: {
+                            syncService.selectedPeer = peer
+                            LogManager.shared.logConnectionStatus("Found a peer: \(peer.displayName)", level: .medium)
                             // Send invite to selected peer and mark app as started
                             syncService.browser.invitePeer(peer, to: syncService.session, withContext: nil, timeout: 20)
                             hasStarted = true
                             syncService.sendInviteToPeer()
+                            
                         }) {
                             Text(peer.displayName)
                                 .frame(maxWidth: .infinity)

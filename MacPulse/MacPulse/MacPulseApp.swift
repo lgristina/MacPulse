@@ -42,12 +42,13 @@ struct MacPulseApp: App {
     @State private var hasStarted: Bool = false
     
     init() {
-
+        
         let peerName = getPeerName()
         let manager = MCConnectionManager(yourName: peerName)
         _syncService = StateObject(wrappedValue: manager)
         
-        RemoteSystemMonitor.shared = RemoteSystemMonitor(connectionManager: manager)
+        // Configure the singleton once when the app starts
+        RemoteSystemMonitor.shared.configure(connectionManager: manager)
     }
     
     var sharedModelContainer: ModelContainer = {
@@ -75,7 +76,6 @@ struct MacPulseApp: App {
                 }
             }
             .environmentObject(syncService)
-            // ← override SwiftUI’s colorScheme:
             .environment(\.colorScheme, invertColors ? .light : .dark)
         }
         .modelContainer(sharedModelContainer)

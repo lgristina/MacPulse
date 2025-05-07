@@ -11,6 +11,7 @@ class MCConnectionManager: NSObject, ObservableObject {
     var advertiser: MCNearbyServiceAdvertiser
     var browser: MCNearbyServiceBrowser
     var onReceiveMetric: ((MetricPayload) -> Void)?
+    var onRequestCpuHistory: (() -> Void)?
     
     @Published var availablePeers = [MCPeerID]()
     @Published var selectedPeer: MCPeerID?  // Store the selected peer
@@ -59,6 +60,7 @@ class MCConnectionManager: NSObject, ObservableObject {
     func startAdvertising() {
         advertiser.startAdvertisingPeer()
         LogManager.shared.logConnectionStatus("Started advertising.", level: .medium)
+        print(availablePeers)
     }
     
     func stopAdvertising() {
@@ -69,6 +71,7 @@ class MCConnectionManager: NSObject, ObservableObject {
     func startBrowsing() {
         browser.startBrowsingForPeers()
         LogManager.shared.logConnectionStatus("Started browsing.", level: .medium)
+        print(availablePeers)
     }
     
     func stopBrowsing() {
@@ -112,12 +115,6 @@ extension MCConnectionManager: MCNearbyServiceBrowserDelegate {
         DispatchQueue.main.async {
             if !self.availablePeers.contains(peerID) {
                 self.availablePeers.append(peerID)
-                
-                // Store the first available peer found
-                if self.selectedPeer == nil {
-                    self.selectedPeer = peerID
-                    LogManager.shared.logConnectionStatus("Found a peer: \(peerID.displayName)", level: .medium)
-                }
             }
         }
     }
@@ -190,11 +187,16 @@ extension MCConnectionManager: MCSessionDelegate {
                 case .sendProcessMetrics:
                     LogManager.shared.logConnectionStatus("Received .sendProcessMetrics from peer: \(peerID.displayName)", level: .medium)
                     RemoteSystemMonitor.shared.startSendingMetrics(type: 1)
+                case .sendCpuHistory:
+                    LogManager.shared.logConnectionStatus("Received .sendCpuHistory from peer: \(peerID.displayName)", level: .medium)
+                    self.onRequestCpuHistory?()
                 case .stopSending(let typeToStop):
                     LogManager.shared.logConnectionStatus("Received .stopSending with type: \(typeToStop) from peer: \(peerID.displayName)", level: .medium)
                     RemoteSystemMonitor.shared.stopSendingMetrics(type: typeToStop)
                 case .system, .process:
                     self.onReceiveMetric?(payload)
+                case .cpuUsageHistory(let history):
+                    self.onReceiveMetric?(.cpuUsageHistory(history))
                 case .logs(_):
                     LogManager.shared.logConnectionStatus("Logs message received from \(peerID.displayName).", level: .medium)
                 }

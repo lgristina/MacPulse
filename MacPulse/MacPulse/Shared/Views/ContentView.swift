@@ -20,15 +20,8 @@ struct ContentView: View {
     @EnvironmentObject var syncService: MCConnectionManager
     @Query private var items: [Item]
 
-
-    #if os(macOS)
-    static var systemMetrics = SystemMetricsDashboardMac()
-    #else
-    static var systemMetrics = SystemMetricsDashboardiOS()
-    #endif
-
+    static var systemMetrics = SystemMetricsDashboard()
     static var processMetrics = ProcessListView()
-
 
     let options: [Option] = [
         .init(title: "System", imageName: "desktopcomputer"),
@@ -53,6 +46,22 @@ struct ContentView: View {
             LogManager.shared.verbosityLevelForSyncConnection = .high
             LogManager.shared.verbosityLevelForSyncTransmission = .high
             LogManager.shared.log(.errorAndDebug, level: LogVerbosityLevel.high, "ContentView appeared - App Launched (macOS)")
+
+            // Register CPU history response handler for macOS
+            syncService.onRequestCpuHistory = {
+                guard !syncService.session.connectedPeers.isEmpty else {
+                    LogManager.shared.log(.syncTransmission, level: .low, "⚠️ No peers connected — cannot send CPU history.")
+                    return
+                }
+
+                SystemMonitor.shared.loadCPUHistory(from: modelContext)
+
+                let history = SystemMonitor.shared.cpuUsageHistory
+                let payload = MetricPayload.cpuUsageHistory(history)
+                syncService.send(payload)
+
+                LogManager.shared.log(.syncTransmission, level: .medium, "📤 Sent CPU usage history to peer.")
+            }
         }
 #else
         NavigationStack {
