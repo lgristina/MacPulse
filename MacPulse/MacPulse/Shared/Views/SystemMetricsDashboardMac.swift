@@ -1,9 +1,12 @@
 import SwiftUI
 import Charts
 
+
+
 /// Displays system performance metrics (CPU, Memory, and Disk activity) for the macOS dashboard.
 struct SystemMetricsDashboardMac: View {
     @ObservedObject var systemMonitor = SystemMonitor.shared
+    @Environment(\.modelContext) private var context
     
     var body: some View {
         NavigationStack {

@@ -75,8 +75,26 @@ struct DetailedUsageView<Data: UsageData>: View {
     let currentUsage: Double
     let usagePublisher: Published<Double>.Publisher
     let makeData: (Double, Date) -> Data
+    
+    @Environment(\.modelContext) private var context
 
     @State private var usageHistory: [Data] = []
+
+    init(
+        title: String,
+        unit: String,
+        lineColor: Color,
+        currentUsage: Double,
+        usagePublisher: Published<Double>.Publisher,
+        makeData: @escaping (Double, Date) -> Data
+    ) {
+        self.title = title
+        self.unit = unit
+        self.lineColor = lineColor
+        self.currentUsage = currentUsage
+        self.usagePublisher = usagePublisher
+        self.makeData = makeData
+    }
 
     var body: some View {
         VStack {
@@ -125,6 +143,15 @@ struct DetailedUsageView<Data: UsageData>: View {
             .frame(maxHeight: 300)
         }
         .onAppear {
+            if Data.self == CPUUsageData.self {
+                // Reload from Core Data every time the view appears
+                SystemMonitor.shared.loadCPUHistory(from: context)
+
+                // Rebind state to fresh Core Data results
+                usageHistory = SystemMonitor.shared.cpuUsageHistory as! [Data]
+            }
+
+            // Add the current value to live-update graph
             usageHistory.append(makeData(currentUsage, Date()))
         }
         .onReceive(usagePublisher) { newUsage in
@@ -133,11 +160,10 @@ struct DetailedUsageView<Data: UsageData>: View {
         .padding()
     }
 
-    // Adds new data to the usage history and limits it to 50 entries.
     private func addUsage(_ usage: Double) {
         let newData = makeData(usage, Date())
         usageHistory.append(newData)
-        if usageHistory.count > 50 {
+        if usageHistory.count > 50 { // Keep the history limited
             usageHistory.removeFirst()
         }
     }

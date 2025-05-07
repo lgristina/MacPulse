@@ -40,6 +40,9 @@ class SystemMonitor: ObservableObject {
     @Published var diskUsed: Double = 0.0
     @Published var diskFree: Double = 0.0
     @Published var diskTotal: Double = 0.0
+    @Published var cpuUsageHistory: [CPUUsageData] = []
+    
+    let launchTime: Date = Date()
     
     var timer: Timer?
     private var previousCPUInfo: host_cpu_load_info_data_t?
@@ -77,9 +80,9 @@ class SystemMonitor: ObservableObject {
         let metrics = SystemMetric(timestamp: Date(), cpuUsage: cpuUsage, memoryUsage: memoryUsage, diskActivity: diskUsed)
         lastMetrics = metrics
         
-        Task { @MainActor in
-            // Save the metrics to the data manager and log the action
-            DataManager.shared.saveSystemMetrics(cpu: cpuUsage, memory: memoryUsage, disk: diskUsed)
+        Task.detached {
+            await DataManager.shared.saveSystemMetrics(cpu: self.cpuUsage, memory: self.memoryUsage, disk: self.diskUsed)
+            
             LogManager.shared.log(.dataPersistence, level: .medium, "System metrics saved to database.")
         }
     }
@@ -165,6 +168,24 @@ class SystemMonitor: ObservableObject {
         } catch {
             LogManager.shared.log(.syncRetrieval, level: .low, "Error retrieving disk usage: \(error)")
             return (0, 0, 0)
+        }
+    }
+    
+    func loadCPUHistory(from context: ModelContext) {
+        let predicate = #Predicate<SystemMetric> { $0.timestamp >= launchTime }
+        let descriptor = FetchDescriptor<SystemMetric>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.timestamp, order: .forward)]
+        )
+
+        do {
+            let recentMetrics = try context.fetch(descriptor)
+            cpuUsageHistory = recentMetrics.map {
+                CPUUsageData(usage: $0.cpuUsage, time: $0.timestamp)
+            }
+            LogManager.shared.log(.syncRetrieval, level: .medium, "📈 Loaded \(cpuUsageHistory.count) metrics since launch.")
+        } catch {
+            LogManager.shared.log(.syncRetrieval, level: .high, "❌ Error loading CPU history: \(error)")
         }
     }
 }
