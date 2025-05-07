@@ -83,8 +83,11 @@ class MCConnectionManager: NSObject, ObservableObject {
     
     /// Deinitializes and stops advertising/browsing.
     deinit {
+        #if os(macOS)
         stopAdvertising()
+        #else
         stopBrowsing()
+        #endif
         LogManager.shared.logConnectionStatus("MCConnectionManager deinitialized.", level: .high)
     }
 
@@ -142,7 +145,6 @@ class MCConnectionManager: NSObject, ObservableObject {
             if paired {
                 let data = try JSONEncoder().encode(payload)
                 try session.send(data, toPeers: session.connectedPeers, with: .reliable)
-                LogManager.shared.log(.syncTransmission, level: .high, "Sent data: \(payload)")
             }
         } catch {
             LogManager.shared.log(.syncTransmission, level: .high, "Error sending data: \(error.localizedDescription)")
@@ -156,6 +158,7 @@ extension MCConnectionManager: MCNearbyServiceBrowserDelegate {
         DispatchQueue.main.async {
             if !self.availablePeers.contains(peerID) {
                 self.availablePeers.append(peerID)
+                LogManager.shared.log(.syncTransmission, level: .medium, "Found peer: \(peerID.displayName)")
             }
         }
     }

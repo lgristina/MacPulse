@@ -3,7 +3,7 @@ import SwiftData
 
 /// Represents information about a running process, including its CPU usage, memory usage, and names.
 @Model
-class CustomProcessInfo: Identifiable, CustomStringConvertible, Codable, ObservableObject {
+class CustomProcessInfo: Identifiable, CustomStringConvertible, Codable, Hashable {
     var id: Int  // Unique identifier for the process
     var timestamp: Date  // The timestamp when the process information was recorded
     var cpuUsage: Double  // CPU usage percentage

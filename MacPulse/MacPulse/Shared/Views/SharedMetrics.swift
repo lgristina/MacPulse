@@ -157,7 +157,7 @@ struct DetailedUsageView<Data: UsageData>: View {
                 if let manager = RemoteSystemMonitor.shared.connectionManager {
                     manager.send(.sendCpuHistory)  // Request system metrics data
                 } else {
-                    print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+                    LogManager.shared.log(.errorAndDebug, level: LogVerbosityLevel.high, "⚠️ Connection manager not set on RemoteSystemMonitor.shared")
                 }
                 
                 // Add the current value to live-update graph
@@ -177,10 +177,9 @@ struct DetailedUsageView<Data: UsageData>: View {
             #elseif os(iOS)
             if Data.self == CPUUsageData.self {
                 if let manager = RemoteSystemMonitor.shared.connectionManager {
-                    print("SENDING CPU HISTORY REQUEST")
                     manager.send(.sendCpuHistory)
                 } else {
-                    print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+                    LogManager.shared.log(.errorAndDebug, level: LogVerbosityLevel.high, "⚠️ Connection manager not set on RemoteSystemMonitor.shared")
                 }
                 usageHistory = RemoteSystemMonitor.shared.cpuUsageHistory as! [Data]
             }
