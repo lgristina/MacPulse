@@ -14,7 +14,7 @@ import UIKit
 /// All communication to/from the iOS side flows through this class.
 class RemoteSystemMonitor: ObservableObject {
     /// Shared singleton instance
-    static var shared = RemoteSystemMonitor(connectionManager: nil)
+    static let shared = RemoteSystemMonitor(connectionManager: nil)
     
     /// Current CPU usage from the remote Mac
     @Published var cpuUsage: Double = 0.0
@@ -35,7 +35,7 @@ class RemoteSystemMonitor: ObservableObject {
     @Published var processMetricTimer: Timer?
     
     /// Latest received remote process list
-    @Published var remoteProcesses: [CustomProcessInfo] = []
+    @Published var runningProcesses: [CustomProcessInfo] = []
     
     /// Manages the connection to the peer device (macOS app)
     var connectionManager: MCConnectionManager?
@@ -59,28 +59,7 @@ class RemoteSystemMonitor: ObservableObject {
         }
         LogManager.shared.log(.syncTransmission, level: .medium, "🔄 RemoteSystemMonitor reconfigured with new connection manager.")
     }
-    
-    /// Stops sending metrics based on the type:
-    /// - 0: system metrics
-    /// - 1: process metrics
-    func stopSendingMetrics(type: Int) {
-        switch type {
-        case 0:
-            systemMetricTimer?.invalidate()
-            systemMetricTimer = nil
-            LogManager.shared.log(.syncTransmission, level: .medium, "🛑 Stopped sending system metrics.")
-        case 1:
-            processMetricTimer?.invalidate()
-            processMetricTimer = nil
-            LogManager.shared.log(.syncTransmission, level: .medium, "🛑 Stopped sending process metrics.")
-        default:
-            LogManager.shared.log(.syncTransmission, level: .low, "⚠️ Attempted to stop unknown metric type: \(type).")
-        }
-    }
-    
-    
 
-    
     /// Updates the published properties with the latest data from the received payload.
     private func updateMetrics(from payload: MetricPayload) {
         DispatchQueue.main.async {
@@ -91,7 +70,7 @@ class RemoteSystemMonitor: ObservableObject {
                 self.diskActivity = metric.diskActivity
                 LogManager.shared.log(.syncTransmission, level: .low, "📈 Received system metrics: CPU \(metric.cpuUsage)%, Mem \(metric.memoryUsage)MB, Disk \(metric.diskActivity)%")
             case .process(let processes):
-                self.remoteProcesses = processes
+                self.runningProcesses = processes
                 LogManager.shared.log(.syncTransmission, level: .low, "📊 Received \(processes.count) remote process metrics.")
             case .cpuUsageHistory(let history):
                 self.cpuUsageHistory = history
@@ -124,6 +103,24 @@ class RemoteSystemMonitor: ObservableObject {
             LogManager.shared.log(.syncTransmission, level: .medium, "⏱️ Started sending process metrics every second.")
         default:
             LogManager.shared.log(.syncTransmission, level: .high, "❌ Invalid metric type requested: \(type).")
+        }
+    }
+    
+    /// Stops sending metrics based on the type:
+    /// - 0: system metrics
+    /// - 1: process metrics
+    func stopSendingMetrics(type: Int) {
+        switch type {
+        case 0:
+            systemMetricTimer?.invalidate()
+            systemMetricTimer = nil
+            LogManager.shared.log(.syncTransmission, level: .medium, "🛑 Stopped sending system metrics.")
+        case 1:
+            processMetricTimer?.invalidate()
+            processMetricTimer = nil
+            LogManager.shared.log(.syncTransmission, level: .medium, "🛑 Stopped sending process metrics.")
+        default:
+            LogManager.shared.log(.syncTransmission, level: .low, "⚠️ Attempted to stop unknown metric type: \(type).")
         }
     }
 }

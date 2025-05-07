@@ -84,8 +84,8 @@ final class RemoteSystemMonitorTests: XCTestCase {
         // Give time for DispatchQueue.main.async to execute
         let expectation = XCTestExpectation(description: "Wait for async update")
         DispatchQueue.main.async {
-            XCTAssertEqual(monitor.remoteProcesses.count, 2)
-            XCTAssertEqual(monitor.remoteProcesses[0].cpuUsage, 10.5)
+            XCTAssertEqual(monitor.runningProcesses.count, 2)
+            XCTAssertEqual(monitor.runningProcesses[0].cpuUsage, 10.5)
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 1.0)

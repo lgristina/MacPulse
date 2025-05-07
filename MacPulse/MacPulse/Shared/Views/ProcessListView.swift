@@ -15,6 +15,7 @@ struct ProcessListView: View {
     @ObservedObject private var viewModel = ProcessMonitor.shared
     #endif
     @ObservedObject var systemMonitor = RemoteSystemMonitor.shared
+    @State private var hasInitialized = false
 
     /// Sorting options for the process list.
     enum SortCriteria {
@@ -47,7 +48,7 @@ struct ProcessListView: View {
                 #if os(macOS)
                 let processes = viewModel.runningProcesses
                 #else
-                let processes = systemMonitor.remoteProcesses
+                let processes = systemMonitor.runningProcesses
                 #endif
 
                 // Display sorted list
@@ -69,24 +70,28 @@ struct ProcessListView: View {
                 }
                 .navigationTitle("Running Processes")
                 .onAppear {
-                    if let manager = RemoteSystemMonitor.shared.connectionManager {
-                        manager.send(.stopSending(typeToStop: 0)) // Stop previous data stream
-                        print("REQUESTING PROCESS METRICS!")
-                        manager.send(.sendProcessMetrics) // Request new metrics
-                    } else {
-                        print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+                    if !hasInitialized {
+                        hasInitialized = true
+                        if let manager = RemoteSystemMonitor.shared.connectionManager {
+                            manager.send(.stopSending(typeToStop: 0)) // Stop previous data stream
+                            print("REQUESTING PROCESS METRICS!")
+                            manager.send(.sendProcessMetrics) // Request new metrics
+                        } else {
+                            LogManager.shared.log(.errorAndDebug, level: LogVerbosityLevel.high, "⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+                        }
                     }
                 }
                 
-                .onAppear {
-                    // Stop sending previous data and request system metrics
-                    if let manager = RemoteSystemMonitor.shared.connectionManager {
-                        manager.send(.stopSending(typeToStop: 1))  // Stop sending process metrics
-                        manager.send(.sendSystemMetrics)  // Request system metrics data
-                    } else {
-                        print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
-                    }
-                }
+//                .onAppear {
+//                    // Stop sending previous data and request system metrics
+//                    if let manager = RemoteSystemMonitor.shared.connectionManager {
+//                        manager.send(.stopSending(typeToStop: 1))  // Stop sending process metrics
+//                        manager.send(.sendSystemMetrics)  // Request system metrics data
+//                    } else {
+//                        
+//                        print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+//                    }
+//                }
 
                 Spacer()
             }

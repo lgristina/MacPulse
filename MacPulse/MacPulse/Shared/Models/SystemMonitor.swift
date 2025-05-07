@@ -22,7 +22,7 @@ fileprivate func hostCPULoadInfo() -> host_cpu_load_info {
     }
     
     guard kerr == KERN_SUCCESS else {
-        print("❌ Failed to get CPU load")
+        LogManager.shared.log(.errorAndDebug, level: LogVerbosityLevel.high, "❌ Failed to get CPU load")
         return host_cpu_load_info()
     }
     
@@ -50,7 +50,6 @@ class SystemMonitor: ObservableObject {
     
     /// Initializes the system monitor and begins collecting metrics.
     init() {
-        print("🔄 Starting system monitoring...")
         LogManager.shared.logConnectionStatus("Started system monitoring.", level: .medium)
 
         // Schedule a timer to collect metrics every second
@@ -63,7 +62,6 @@ class SystemMonitor: ObservableObject {
     func stopMonitoring() {
         timer?.invalidate()
         timer = nil
-        print("🛑 Stopped system monitoring.")
         LogManager.shared.logConnectionStatus("Stopped system monitoring.", level: .medium)
     }
 

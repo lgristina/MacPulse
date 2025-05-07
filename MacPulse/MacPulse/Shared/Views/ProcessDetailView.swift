@@ -15,11 +15,16 @@ import SwiftUI
 /// Intended to be shown when a user selects a process from the process list view.
 struct ProcessDetailView: View {
     /// Custom model representing a system process and its associated metrics.
-    @ObservedObject var viewModel = ProcessMonitor.shared
+    #if os(macOS)
+    @ObservedObject var processes = ProcessMonitor.shared
+    #else
+    @ObservedObject var processes = RemoteSystemMonitor.shared
+    #endif
+    
     let processID: Int
 
     var body: some View {
-        if let process = viewModel.runningProcesses.first(where: { $0.id == processID }) {
+        if let process = processes.runningProcesses.first(where: { $0.id == processID }) {
             VStack(spacing: 15) {
                 // MARK: - Header
                 Text("Process Details")
