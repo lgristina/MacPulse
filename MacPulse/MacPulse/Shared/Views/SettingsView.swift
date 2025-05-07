@@ -12,8 +12,6 @@ import SwiftUI
 /// Provides sliders and toggles for adjusting system alert thresholds and accessibility settings.
 struct SettingsView: View {
     
-    // MARK: - Stored Properties
-
     // Notification thresholds (in %)
     @AppStorage("cpuThreshold")    private var cpuThreshold: Double    = 80
     @AppStorage("memoryThreshold") private var memoryThreshold: Double = 80
@@ -22,9 +20,8 @@ struct SettingsView: View {
     // Accessibility options
     @AppStorage("invertColors") private var invertColors: Bool = false
 
-    // MARK: - View Body
-
     var body: some View {
+        #if os(macOS)
         Form {
             // MARK: Notification Settings
             Section(header:
@@ -60,15 +57,59 @@ struct SettingsView: View {
                 Toggle("Invert Colors", isOn: $invertColors)
             }
         }
-        .frame(minWidth: 400)
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)   // allow Form to fill & scroll
         .navigationTitle("Settings")
         .colorInvertIfNeeded(invertColors)
+        .frame(minWidth: 400)                                // keep your macOS min-width only there
+        .padding()                                           // and macOS padding
+
+        #else
+        // iOS-only layout
+        ScrollView {
+            VStack(spacing: 32) {
+                // Notifications Section
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Notifications")
+                        .font(.title2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    ThresholdSlider(label: "CPU",    value: $cpuThreshold)
+                    ThresholdSlider(label: "Memory", value: $memoryThreshold)
+                    ThresholdSlider(label: "Disk",   value: $diskThreshold)
+                }
+
+                // Accessibility Section
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Accessibility")
+                        .font(.title2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Toggle("Invert Colors", isOn: $invertColors)
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("Settings")
+        .background(Color(UIColor.systemGroupedBackground))
+        .colorInvertIfNeeded(invertColors)
+        #endif
+    }
+}
+
+// MARK: - Reusable slider row for iOS
+private struct ThresholdSlider: View {
+    let label: String
+    @Binding var value: Double
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("\(label) Alert ≥ \(Int(value))%")
+            Slider(value: $value, in: 0...100, step: 1)
+        }
     }
 }
 
 // MARK: - View Extension
-
 private extension View {
     /// Conditionally applies `.colorInvert()` if accessibility toggle is enabled.
     @ViewBuilder

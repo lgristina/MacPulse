@@ -150,6 +150,8 @@ struct DetailViewiOS: View {
                 ContentView.processMetrics
             case "Log":
                 LogView()
+            case "Settings":
+                SettingsView()
             default:
                 Text("Unknown option")
             }
