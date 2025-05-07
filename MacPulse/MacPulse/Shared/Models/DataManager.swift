@@ -45,7 +45,7 @@ class DataManager {
                 modelContext.insert(process)
             }
             try modelContext.save()
-           // LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved \(processes.count) process metrics.")
+            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved \(processes.count) process metrics.")
         } catch {
             LogManager.shared.log(.dataPersistence, level: .high, "❌ Error saving process metrics: \(error.localizedDescription)")
         }
@@ -63,7 +63,7 @@ class DataManager {
         do {
             modelContext.insert(newSystemMetric)
             try modelContext.save()
-           // LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved system metrics — CPU: \(cpu), Memory: \(memory), Disk: \(disk)")
+            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved system metrics — CPU: \(cpu), Memory: \(memory), Disk: \(disk)")
         } catch {
             LogManager.shared.log(.dataPersistence, level: .high, "❌ Error saving system metrics: \(error.localizedDescription)")
         }

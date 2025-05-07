@@ -47,7 +47,6 @@ enum MetricPayload: Codable {
         case .sendSystemMetrics:
             try container.encode(PayloadType.sendSystemMetrics, forKey: .type)
         case .sendCpuHistory:
-            print("cpu history")
             try container.encode(PayloadType.sendCpuHistory, forKey: .type)
         case .sendProcessMetrics:
             try container.encode(PayloadType.sendProcessMetrics, forKey: .type)
@@ -78,7 +77,6 @@ enum MetricPayload: Codable {
         case .sendSystemMetrics:
             self = .sendSystemMetrics
         case .sendCpuHistory:
-            print("decode send cpu history")
             self = .sendCpuHistory
         case .sendProcessMetrics:
             self = .sendProcessMetrics

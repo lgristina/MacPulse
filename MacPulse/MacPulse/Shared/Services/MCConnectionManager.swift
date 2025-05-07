@@ -115,12 +115,6 @@ extension MCConnectionManager: MCNearbyServiceBrowserDelegate {
         DispatchQueue.main.async {
             if !self.availablePeers.contains(peerID) {
                 self.availablePeers.append(peerID)
-                
-                // Store the first available peer found
-                if self.selectedPeer == nil {
-                    self.selectedPeer = peerID
-                    LogManager.shared.logConnectionStatus("Found a peer: \(peerID.displayName)", level: .medium)
-                }
             }
         }
     }
