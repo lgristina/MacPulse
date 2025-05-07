@@ -18,77 +18,63 @@ struct SettingsView: View {
     @AppStorage("diskThreshold")   private var diskThreshold: Double   = 90
 
     // Accessibility options
-    @AppStorage("invertColors") private var invertColors: Bool = false
+    @AppStorage("invertColors")    private var invertColors: Bool     = false
 
     var body: some View {
         #if os(macOS)
+        // — macOS: native Form with empty‐row padding disabled
         Form {
-            // MARK: Notification Settings
             Section(header:
                 Text("Notification")
                     .font(.largeTitle)
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 8)
             ) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Alert when CPU ≥ \(Int(cpuThreshold))%")
-                    Slider(value: $cpuThreshold, in: 0...100, step: 1)
-                }
-                .padding(.vertical, 4)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Alert when Memory ≥ \(Int(memoryThreshold))%")
-                    Slider(value: $memoryThreshold, in: 0...100, step: 1)
-                }
-                .padding(.vertical, 4)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Alert when Disk ≥ \(Int(diskThreshold))%")
-                    Slider(value: $diskThreshold, in: 0...100, step: 1)
-                }
-                .padding(.vertical, 4)
+                ThresholdSlider(label: "CPU",    value: $cpuThreshold)
+                ThresholdSlider(label: "Memory", value: $memoryThreshold)
+                ThresholdSlider(label: "Disk",   value: $diskThreshold)
             }
 
-            // MARK: Accessibility Settings
             Section(header:
                 Text("Accessibility")
                     .font(.largeTitle)
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 8)
             ) {
                 Toggle("Invert Colors", isOn: $invertColors)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)   // allow Form to fill & scroll
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .scrollDisabled(true)                     // stop the Form from padding out empty rows
         .navigationTitle("Settings")
         .colorInvertIfNeeded(invertColors)
-        .frame(minWidth: 400)                                // keep your macOS min-width only there
-        .padding()                                           // and macOS padding
+        .frame(minWidth: 400)
+        .padding()
 
         #else
-        // iOS-only layout
-        ScrollView {
-            VStack(spacing: 32) {
-                // Notifications Section
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Notifications")
-                        .font(.title2)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+        // — iOS: simple VStack so everything always fits
+        VStack(alignment: .leading, spacing: 32) {
+            // 1) Notification sliders (static, not scrollable)
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Notifications")
+                    .font(.title2)
 
-                    ThresholdSlider(label: "CPU",    value: $cpuThreshold)
-                    ThresholdSlider(label: "Memory", value: $memoryThreshold)
-                    ThresholdSlider(label: "Disk",   value: $diskThreshold)
-                }
-
-                // Accessibility Section
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Accessibility")
-                        .font(.title2)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Toggle("Invert Colors", isOn: $invertColors)
-                }
+                ThresholdSlider(label: "CPU",    value: $cpuThreshold)
+                ThresholdSlider(label: "Memory", value: $memoryThreshold)
+                ThresholdSlider(label: "Disk",   value: $diskThreshold)
             }
-            .padding()
+            .padding(.horizontal)
+
+            // 2) Accessibility toggle (always visible)
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Accessibility")
+                    .font(.title2)
+
+                Toggle("Invert Colors", isOn: $invertColors)
+            }
+            .padding(.horizontal)
+
+            Spacer()   // pushes content up so there’s no bottom gap
         }
+        .padding(.top)
         .navigationTitle("Settings")
         .background(Color(UIColor.systemGroupedBackground))
         .colorInvertIfNeeded(invertColors)
@@ -96,7 +82,8 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - Reusable slider row for iOS
+
+/// A reusable slider + label row
 private struct ThresholdSlider: View {
     let label: String
     @Binding var value: Double
@@ -109,12 +96,12 @@ private struct ThresholdSlider: View {
     }
 }
 
-// MARK: - View Extension
+
+/// Conditionally invert colors across the entire view hierarchy
 private extension View {
-    /// Conditionally applies `.colorInvert()` if accessibility toggle is enabled.
     @ViewBuilder
     func colorInvertIfNeeded(_ invert: Bool) -> some View {
-        if invert { self.colorInvert() }
+        if invert { colorInvert() }
         else      { self }
     }
 }
