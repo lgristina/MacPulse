@@ -17,6 +17,10 @@ class DataManager {
     
     /// The CoreData context used to manage model objects.
     let modelContext: ModelContext
+    let backupContext: ModelContext
+    
+    // Tracks corruption detection
+    private var wasCorruptionDetectedLastSession: Bool = false
     
     /// Timer for periodic pruning of old metrics.
     private var pruningTimer: Timer?
@@ -24,13 +28,14 @@ class DataManager {
     /// Initializes `DataManager` with a given CoreData context.
     private init(_modelContext: ModelContext) {
         self.modelContext = _modelContext
-        LogManager.shared.log(.dataPersistence, level: .low, "Initialized DataManager with main context")
+        self.backupContext = MetricContainer.shared.backupContainer.mainContext
+        LogManager.shared.log(.dataPersistence, level: .low, "Initialized DataManager with main and backup context")
     }
-    
     /// Initializes `DataManager` for testing purposes with a mock context.
     @MainActor
     init(testingContext: ModelContext) {
         self.modelContext = testingContext
+        self.backupContext = testingContext
         LogManager.shared.log(.dataPersistence, level: .low, "Initialized DataManager with testing context")
     }
     
@@ -43,9 +48,11 @@ class DataManager {
         do {
             for process in processes {
                 modelContext.insert(process)
+                try mirrorInsert(process, into: backupContext)
             }
             try modelContext.save()
-            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved \(processes.count) process metrics.")
+            try backupContext.save()
+            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved \(processes.count) process metrics to both containers.")
         } catch {
             LogManager.shared.log(.dataPersistence, level: .high, "❌ Error saving process metrics: \(error.localizedDescription)")
         }
@@ -59,16 +66,42 @@ class DataManager {
     ///   - disk: The disk activity value to save.
     @MainActor
     func saveSystemMetrics(cpu: Double, memory: Double, disk: Double) {
-        let newSystemMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
+        let newMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
         do {
-            modelContext.insert(newSystemMetric)
+            // Insert the metric into the main context
+            modelContext.insert(newMetric)
             try modelContext.save()
-            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved system metrics — CPU: \(cpu), Memory: \(memory), Disk: \(disk)")
+            
+            // Insert the metric into the backup context
+            let backupMetric = SystemMetric(timestamp: newMetric.timestamp, cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
+            backupContext.insert(backupMetric)
+            try backupContext.save()
+
+            LogManager.shared.log(.backup, level: .medium, "✅ System metrics saved to main and backup.")
+
+            // Check the backup context by fetching and logging the count of system metrics in the backup context
+            let backupFetchRequest = FetchDescriptor<SystemMetric>()
+            let backupMetrics = try backupContext.fetch(backupFetchRequest)
+            LogManager.shared.log(.dataPersistence, level: .low, "Found \(backupMetrics.count) system metrics in the backup context.")
+            
         } catch {
-            LogManager.shared.log(.dataPersistence, level: .high, "❌ Error saving system metrics: \(error.localizedDescription)")
+            LogManager.shared.log(.backup, level: .high, "❌ Failed to save system metrics: \(error.localizedDescription)")
         }
     }
 
+
+
+    //  MARK: - Mirror Insert
+    
+    private func mirrorInsert<T: PersistentModel>(_ model: T, into backupContext: ModelContext) throws {
+        if let metric = model as? SystemMetric {
+            let copy = SystemMetric(timestamp: metric.timestamp, cpuUsage: metric.cpuUsage, memoryUsage: metric.memoryUsage, diskActivity: metric.diskActivity)
+            backupContext.insert(copy)
+        } else if let process = model as? CustomProcessInfo {
+            let copy = CustomProcessInfo(id: process.id, timestamp: process.timestamp, cpuUsage: process.cpuUsage, memoryUsage: process.memoryUsage, shortProcessName: process.shortProcessName, fullProcessName: process.fullProcessName)
+            backupContext.insert(copy)
+        }
+    }
     // MARK: - Pruning Old Metrics
     
     /// Prunes system metrics older than 10 minutes.
@@ -144,4 +177,111 @@ class DataManager {
         let processCount = (try? modelContext.fetch(FetchDescriptor<CustomProcessInfo>()))?.count ?? 0
             LogManager.shared.log(.dataPersistence, level: .medium, "📊 Database size — System: \(systemCount), Process: \(processCount)")
     }
+    
+    /// Attempts to restore from the backup context if corruption is detected in the model context.
+    func handlePotentialCorruption() {
+        do {
+            try modelContext.save() // Attempt to save the main context
+        } catch {
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Corruption detected: \(error.localizedDescription). Attempting to restore from backup.")
+            
+            // Perform restore from backup context
+            restoreFromBackup()
+        }
+    }
+
+    /// Restores data from the backup context to the main context.
+    private func restoreFromBackup() {
+        do {
+            let systemMetrics = try backupContext.fetch(FetchDescriptor<SystemMetric>())
+            let processMetrics = try backupContext.fetch(FetchDescriptor<CustomProcessInfo>())
+            
+            // Insert backup data into the main context
+            systemMetrics.forEach { modelContext.insert($0) }
+            processMetrics.forEach { modelContext.insert($0) }
+
+            // Save the restored data
+            try modelContext.save()
+            
+            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Restored data from backup context to main context.")
+        } catch {
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Failed to restore from backup: \(error.localizedDescription)")
+        }
+    }
+
+    @MainActor
+    func checkForCorruptionOnLaunch() {
+        // Check for corruption in the main and backup containers
+        let isCorrupted = checkForCorruption() // Implement your corruption detection logic here
+
+        if isCorrupted {
+            LogManager.shared.log(.backup, level: .high, "Corruption detected. Restoring backup.")
+            restoreBackup()
+            wasCorruptionDetectedLastSession = true
+        } else {
+            wasCorruptionDetectedLastSession = false
+        }
+    }
+    
+    @MainActor
+    func checkForCorruption() -> Bool {
+        do {
+            let context = modelContext
+            let descriptor = FetchDescriptor<SystemMetric>(sortBy: [SortDescriptor(\.timestamp, order: .reverse)])
+            _ = try context.fetch(descriptor).prefix(1)
+            return false // no corruption
+        } catch {
+            LogManager.shared.log(.backup, level: .high, "Corruption check failed: \(error.localizedDescription)")
+            return true // likely corruption
+        }
+    }
+    
+    @MainActor
+    func restoreBackup() {
+        let backupContext = backupContext
+        let mainContext = modelContext
+        
+        do {
+            let backupMetrics = try backupContext.fetch(FetchDescriptor<SystemMetric>())
+            let backupProcesses = try backupContext.fetch(FetchDescriptor<CustomProcessInfo>())
+
+            // Clear current data
+            try deleteAllData(in: mainContext)
+
+            // Copy backup data
+            for metric in backupMetrics {
+                let copy = try SystemMetric(from: metric as! Decoder)
+                mainContext.insert(copy)
+            }
+            for process in backupProcesses {
+                let copy = try CustomProcessInfo(from: process as! Decoder)
+                mainContext.insert(copy)
+            }
+
+            try mainContext.save()
+            LogManager.shared.log(.backup, level: .high, "Backup restored successfully.")
+        } catch {
+            LogManager.shared.log(.backup, level: .high, "Failed to restore from backup: \(error.localizedDescription)")
+        }
+    }
+    
+    func deleteAllData(in context: ModelContext) throws {
+        let metricDescriptor = FetchDescriptor<SystemMetric>()
+        let processDescriptor = FetchDescriptor<CustomProcessInfo>()
+
+        let metrics = try context.fetch(metricDescriptor)
+        let processes = try context.fetch(processDescriptor)
+
+        for metric in metrics {
+            context.delete(metric)
+        }
+
+        for process in processes {
+            context.delete(process)
+        }
+
+        try context.save()
+    }
+
+
 }

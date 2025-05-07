@@ -28,6 +28,7 @@ enum LogCategory: String, CaseIterable, Codable {
     case syncTransmission = "SyncTransmission"
     case syncRetrieval = "SyncRetrieval"
     case dataPersistence = "DataPersistence"
+    case backup = "Backup"
 }
 
 // MARK: - Log Entry Model
@@ -62,6 +63,7 @@ class LogManager: ObservableObject {
     private let syncTransmissionLogger = Logger(subsystem: "com.MacPulse", category: "SyncTransmission")
     private let syncRetrievalLogger = Logger(subsystem: "com.MacPulse", category: "SyncRetrieval")
     private let dataPersistenceLogger = Logger(subsystem: "com.MacPulse", category: "DataPersistence")
+    private let backupLogger = Logger(subsystem: "com.MacPulse", category: "Backup")
 
     // MARK: - Verbosity Level Settings (per category)
     var verbosityLevelForErrorAndDebug: LogVerbosityLevel = .medium
@@ -69,6 +71,7 @@ class LogManager: ObservableObject {
     var verbosityLevelForSyncTransmission: LogVerbosityLevel = .medium
     var verbosityLevelForSyncRetrieval: LogVerbosityLevel = .medium
     var verbosityLevelForDataPersistence: LogVerbosityLevel = .medium
+    var verbosityLevelForBackup: LogVerbosityLevel = .medium
 
     /// Stores logs that pass verbosity filters for UI or debugging
     @Published private(set) var logs: [LogEntry] = []
@@ -91,6 +94,7 @@ class LogManager: ObservableObject {
         case .syncTransmission: guard level <= verbosityLevelForSyncTransmission else { return }
         case .syncRetrieval: guard level <= verbosityLevelForSyncRetrieval else { return }
         case .dataPersistence: guard level <= verbosityLevelForDataPersistence else { return }
+        case .backup: guard level <= verbosityLevelForBackup else { return }
         }
 
         // OSLog output
@@ -114,7 +118,15 @@ class LogManager: ObservableObject {
         case (.dataPersistence, .low): dataPersistenceLogger.error("\(message, privacy: .public)")
         case (.dataPersistence, .medium): dataPersistenceLogger.warning("\(message, privacy: .public)")
         case (.dataPersistence, .high): dataPersistenceLogger.info("\(message, privacy: .public)")
+        
+        case (.backup, .low):
+            backupLogger.error("\(message, privacy: .public)")
+        case (.backup, .medium):
+            backupLogger.warning("\(message, privacy: .public)")
+        case (.backup, .high):
+            backupLogger.info("\(message, privacy: .public)")
         }
+        
 
         // Add to local log storage
         let entry = LogEntry(timestamp: Date(), category: category, level: level, message: message)

@@ -49,6 +49,10 @@ struct MacPulseApp: App {
         
         // Configure the singleton once when the app starts
         RemoteSystemMonitor.shared.configure(connectionManager: manager)
+        
+        // Check for corruption and restore from backup if necessary
+        DataManager.shared.checkForCorruptionOnLaunch()
+
     }
     
     var sharedModelContainer: ModelContainer = {
