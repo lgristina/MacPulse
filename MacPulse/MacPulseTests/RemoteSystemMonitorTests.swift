@@ -164,15 +164,4 @@ final class RemoteSystemMonitorTests: XCTestCase {
         
         wait(for: [expectation], timeout: 2.0)
     }
-
-//    func testStartSendingInvalidMetric() {
-//        let mockManager = MockConnectionManager(yourName: "test")
-//        let monitor = RemoteSystemMonitor(connectionManager: mockManager)
-//        
-//        // Trigger an invalid metric type (other than 0 or 1)
-//        monitor.startSendingMetrics(type: 999)
-//        
-//        // Check if invalid log was triggered
-//        XCTAssertTrue(mockManager.didLogInvalidMetric)
-//    }
 }

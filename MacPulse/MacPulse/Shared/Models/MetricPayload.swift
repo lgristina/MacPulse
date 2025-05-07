@@ -6,8 +6,10 @@ import Foundation
 enum MetricPayload: Codable {
     case system(SystemMetric)
     case process([CustomProcessInfo])
-    case logs([String]) // Placeholder for now
+  //  case cpuUsageHistory([CPUUsageData])
+    case logs([String])
     case sendSystemMetrics
+   // case sendCpuHistory
     case sendProcessMetrics
     case stopSending(typeToStop: Int)
     
@@ -16,7 +18,13 @@ enum MetricPayload: Codable {
     }
     
     enum PayloadType: String, Codable {
-        case system, process, logs, sendSystemMetrics, sendProcessMetrics, stopSending
+        case system, process,
+         //    cpuUsageHistory,
+             logs,
+             sendSystemMetrics,
+          //   sendCpuHistory,
+             sendProcessMetrics,
+             stopSending
     }
     
     // MARK: - Encoding
@@ -30,11 +38,17 @@ enum MetricPayload: Codable {
         case .process(let customProcessInfo):
             try container.encode(PayloadType.process, forKey: .type)
             try container.encode(customProcessInfo, forKey: .payload)
+//        case .cpuUsageHistory(let history):
+////            try container.encode(PayloadType.cpuUsageHistory, forKey: .type)
+////            try container.encode(history, forKey: .payload)
         case .logs(let logs):
             try container.encode(PayloadType.logs, forKey: .type)
             try container.encode(logs, forKey: .payload)
         case .sendSystemMetrics:
             try container.encode(PayloadType.sendSystemMetrics, forKey: .type)
+//        case .sendCpuHistory:
+//            print("cpu history")
+//            try container.encode(PayloadType.sendCpuHistory, forKey: .type)
         case .sendProcessMetrics:
             try container.encode(PayloadType.sendProcessMetrics, forKey: .type)
         case .stopSending(let typeToStop):
@@ -55,11 +69,17 @@ enum MetricPayload: Codable {
         case .process:
             let processes = try container.decode([CustomProcessInfo].self, forKey: .payload)
             self = .process(processes)
+//        case .cpuUsageHistory:
+//            let history = try container.decode([CPUUsageData].self, forKey: .payload)
+//            self = .cpuUsageHistory(history)
         case .logs:
             let logs = try container.decode([String].self, forKey: .payload)
             self = .logs(logs)
         case .sendSystemMetrics:
             self = .sendSystemMetrics
+//        case .sendCpuHistory:
+//            print("decode send cpu history")
+//            self = .sendCpuHistory
         case .sendProcessMetrics:
             self = .sendProcessMetrics
         case .stopSending:

@@ -77,6 +77,16 @@ struct ProcessListView: View {
                         print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
                     }
                 }
+                
+                .onAppear {
+                    // Stop sending previous data and request system metrics
+                    if let manager = RemoteSystemMonitor.shared.connectionManager {
+                        manager.send(.stopSending(typeToStop: 1))  // Stop sending process metrics
+                        manager.send(.sendSystemMetrics)  // Request system metrics data
+                    } else {
+                        print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+                    }
+                }
 
                 Spacer()
             }
