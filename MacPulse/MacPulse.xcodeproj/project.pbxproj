@@ -42,7 +42,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Shared/Views/SystemMetricsDashboardMac.swift,
 			);
 			target = 999CB06D2DBF15B6001F3421 /* MacPulse Monitor */;
 		};

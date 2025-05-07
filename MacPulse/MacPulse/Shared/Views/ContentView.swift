@@ -20,15 +20,8 @@ struct ContentView: View {
     @EnvironmentObject var syncService: MCConnectionManager
     @Query private var items: [Item]
 
-
-    #if os(macOS)
     static var systemMetrics = SystemMetricsDashboard()
-    #else
-    static var systemMetrics = SystemMetricsDashboard()
-    #endif
-
     static var processMetrics = ProcessListView()
-
 
     let options: [Option] = [
         .init(title: "System", imageName: "desktopcomputer"),
