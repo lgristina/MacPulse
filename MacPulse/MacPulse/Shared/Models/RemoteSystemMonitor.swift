@@ -20,7 +20,7 @@ class RemoteSystemMonitor: ObservableObject {
     @Published var cpuUsage: Double = 0.0
     
     /// Historical CPU usage values received from the Mac
-   // @Published var cpuUsageHistory: [CPUUsageData] = []
+    @Published var cpuUsageHistory: [CPUUsageData] = []
     
     /// Current memory usage from the remote Mac
     @Published var memoryUsage: Double = 0.0
@@ -93,9 +93,9 @@ class RemoteSystemMonitor: ObservableObject {
             case .process(let processes):
                 self.remoteProcesses = processes
                 LogManager.shared.log(.syncTransmission, level: .low, "📊 Received \(processes.count) remote process metrics.")
-//            case .cpuUsageHistory(let history):
-//                self.cpuUsageHistory = history
-//                LogManager.shared.log(.syncTransmission, level: .low, "📈 Received cpu history!")
+            case .cpuUsageHistory(let history):
+                self.cpuUsageHistory = history
+                LogManager.shared.log(.syncTransmission, level: .low, "📈 Received cpu history!")
             default:
                 LogManager.shared.log(.syncTransmission, level: .low, "ℹ️ Received unknown metric payload.")
             }

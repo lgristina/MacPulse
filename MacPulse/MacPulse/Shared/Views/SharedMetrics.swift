@@ -152,17 +152,17 @@ struct DetailedUsageView<Data: UsageData>: View {
                 usageHistory = SystemMonitor.shared.cpuUsageHistory as! [Data]
             }
             #elseif os(iOS)
-//            if Data.self == CPUUsageData.self {
-//                // Request history from Mac
-//                if let manager = RemoteSystemMonitor.shared.connectionManager {
-//                    manager.send(.sendCpuHistory)  // Request system metrics data
-//                } else {
-//                    print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
-//                }
-//                
-//                // Add the current value to live-update graph
-//                usageHistory = RemoteSystemMonitor.shared.cpuUsageHistory as! [Data]
-//            }
+            if Data.self == CPUUsageData.self {
+                // Request history from Mac
+                if let manager = RemoteSystemMonitor.shared.connectionManager {
+                    manager.send(.sendCpuHistory)  // Request system metrics data
+                } else {
+                    print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+                }
+                
+                // Add the current value to live-update graph
+                usageHistory = RemoteSystemMonitor.shared.cpuUsageHistory as! [Data]
+            }
             #endif
             // Add the current value to live-update graph
             usageHistory.append(makeData(currentUsage, Date()))
@@ -175,27 +175,27 @@ struct DetailedUsageView<Data: UsageData>: View {
                 usageHistory = SystemMonitor.shared.cpuUsageHistory as! [Data]
             }
             #elseif os(iOS)
-//            if Data.self == CPUUsageData.self {
-//                if let manager = RemoteSystemMonitor.shared.connectionManager {
-//                    print("SENDING CPU HISTORY REQUEST")
-//                    manager.send(.sendCpuHistory)
-//                } else {
-//                    print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
-//                }
-//                usageHistory = RemoteSystemMonitor.shared.cpuUsageHistory as! [Data]
-//            }
+            if Data.self == CPUUsageData.self {
+                if let manager = RemoteSystemMonitor.shared.connectionManager {
+                    print("SENDING CPU HISTORY REQUEST")
+                    manager.send(.sendCpuHistory)
+                } else {
+                    print("⚠️ Connection manager not set on RemoteSystemMonitor.shared")
+                }
+                usageHistory = RemoteSystemMonitor.shared.cpuUsageHistory as! [Data]
+            }
             #endif
 
             usageHistory.append(makeData(currentUsage, Date()))
         }
 
-//        #if os(iOS)
-//        .onReceive(RemoteSystemMonitor.shared.$cpuUsageHistory) { history in
-//            if Data.self == CPUUsageData.self {
-//                usageHistory = history as! [Data]
-//            }
-//        }
-//        #endif
+        #if os(iOS)
+        .onReceive(RemoteSystemMonitor.shared.$cpuUsageHistory) { history in
+            if Data.self == CPUUsageData.self {
+                usageHistory = history as! [Data]
+            }
+        }
+        #endif
 
         .onReceive(usagePublisher) { newUsage in
             addUsage(newUsage)

@@ -193,16 +193,16 @@ extension MCConnectionManager: MCSessionDelegate {
                 case .sendProcessMetrics:
                     LogManager.shared.logConnectionStatus("Received .sendProcessMetrics from peer: \(peerID.displayName)", level: .medium)
                     RemoteSystemMonitor.shared.startSendingMetrics(type: 1)
-//                case .sendCpuHistory:
-//                    LogManager.shared.logConnectionStatus("Received .sendCpuHistory from peer: \(peerID.displayName)", level: .medium)
-//                    self.onRequestCpuHistory?()
+                case .sendCpuHistory:
+                    LogManager.shared.logConnectionStatus("Received .sendCpuHistory from peer: \(peerID.displayName)", level: .medium)
+                    self.onRequestCpuHistory?()
                 case .stopSending(let typeToStop):
                     LogManager.shared.logConnectionStatus("Received .stopSending with type: \(typeToStop) from peer: \(peerID.displayName)", level: .medium)
                     RemoteSystemMonitor.shared.stopSendingMetrics(type: typeToStop)
                 case .system, .process:
                     self.onReceiveMetric?(payload)
-//                case .cpuUsageHistory(let history):
-//                    self.onReceiveMetric?(.cpuUsageHistory(history))
+                case .cpuUsageHistory(let history):
+                    self.onReceiveMetric?(.cpuUsageHistory(history))
                 case .logs(_):
                     LogManager.shared.logConnectionStatus("Logs message received from \(peerID.displayName).", level: .medium)
                 }

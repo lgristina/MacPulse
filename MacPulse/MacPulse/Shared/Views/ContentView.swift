@@ -22,9 +22,9 @@ struct ContentView: View {
 
 
     #if os(macOS)
-    static var systemMetrics = SystemMetricsDashboardMac()
+    static var systemMetrics = SystemMetricsDashboard()
     #else
-    static var systemMetrics = SystemMetricsDashboardiOS()
+    static var systemMetrics = SystemMetricsDashboard()
     #endif
 
     static var processMetrics = ProcessListView()
