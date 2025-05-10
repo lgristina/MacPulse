@@ -4,16 +4,21 @@
 //
 //  Created by Marguerite McGahay on 4/20/25.
 //
+
 import XCTest
 @testable import MacPulse
+import SwiftData
 
 final class SystemMonitorTests: XCTestCase {
 
     var systemMonitor: SystemMonitor!
+    var mockContext: ModelContext!
+
     
     override func setUpWithError() throws {
         super.setUp()
         systemMonitor = SystemMonitor.shared
+           
     }
 
     override func tearDownWithError() throws {
@@ -29,14 +34,21 @@ final class SystemMonitorTests: XCTestCase {
         // Assert: Memory usage should be 0.0 before starting monitoring
         XCTAssertEqual(systemMonitor.memoryUsage, 0.0, "Initial memory usage should be 0.0.")
         
-        // Act: Start the monitoring process
-        systemMonitor.collectMetrics() // Or wait for the timer to start and gather metrics
+        // Act: Start the monitoring process and collect metrics
+        let expectation = XCTestExpectation(description: "Memory usage should increase after monitoring starts")
         
-        // Assert: Memory usage should change once the monitoring starts
-        XCTAssertGreaterThan(systemMonitor.memoryUsage, 0.0, "Memory usage should increase after monitoring starts.")
+        systemMonitor.collectMetrics() // Collect metrics manually or wait for the timer to start
+        
+        // Assert: Memory usage should change after some time
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            XCTAssertGreaterThan(self.systemMonitor.memoryUsage, 0.0, "Memory usage should increase after monitoring starts.")
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 3.0)
     }
 
-
+    
     func testCollectMetrics() throws {
         // Simulate collecting metrics by manually calling collectMetrics
         systemMonitor.collectMetrics()
@@ -44,7 +56,8 @@ final class SystemMonitorTests: XCTestCase {
         // Check if the values are greater than or equal to 0, assuming the system has some usage
         XCTAssertGreaterThanOrEqual(systemMonitor.cpuUsage, 0.0, "CPU usage should be a positive value.")
         XCTAssertGreaterThanOrEqual(systemMonitor.memoryUsage, 0.0, "Memory usage should be a positive value.")
-        XCTAssertGreaterThanOrEqual(systemMonitor.diskUsed, 0.0, "Disk activity should be a positive value.")
+        XCTAssertGreaterThanOrEqual(systemMonitor.diskUsed, 0.0, "Disk usage should be a positive value.")
+
     }
 
     func testStopMonitoring() throws {
@@ -64,16 +77,11 @@ final class SystemMonitorTests: XCTestCase {
         XCTAssertNotEqual(info.cpu_ticks.0, 0, "System CPU ticks should not be 0.")
         XCTAssertNotEqual(info.cpu_ticks.1, 0, "User CPU ticks should not be 0.")
         XCTAssertNotEqual(info.cpu_ticks.2, 0, "Idle CPU ticks should not be 0.")
-
-        // Instead of directly comparing the nice CPU ticks to non-zero, assert it's within a reasonable range
         XCTAssertGreaterThanOrEqual(info.cpu_ticks.3, 0, "Nice CPU ticks should be greater than or equal to 0.")
-
-        // Ensure the count is greater than 0
         XCTAssertGreaterThan(info.cpu_ticks.0, 0, "System CPU tick count should be greater than 0.")
     }
     #endif
 
-    
     #if os(macOS)
     func testHostCPULoadInfoMockedData() {
         // Create a mock `host_cpu_load_info` struct with some test data
