@@ -19,6 +19,9 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var syncService: MCConnectionManager
     @Query private var items: [Item]
+    #if os(macOS)
+    @State private var selectedProcessID: Int? = nil
+    #endif
     
     let options: [Option] = [
         .init(title: "System", imageName: "desktopcomputer"),
@@ -84,8 +87,8 @@ struct ContentView: View {
             .navigationDestination(for: Option.self) { option in
                 DetailViewiOS(for: option)
             }
-            .navigationDestination(for: CustomProcessInfo.self) { process in
-                ProcessDetailView(process: process)
+            .navigationDestination(for: Int.self) { processID in
+                ProcessDetailView(processID: processID)
             }
         }
         .environmentObject(syncService)
@@ -117,7 +120,7 @@ struct ContentView: View {
                 SystemMetricsDashboard()
             case "Process":
                 #if os(macOS)
-                ProcessListView()
+                ProcessListView(selectedProcessID: $selectedProcessID)
                 #endif
             case "Log":
                 LogView()
