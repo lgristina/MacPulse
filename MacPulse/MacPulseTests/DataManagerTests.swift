@@ -18,7 +18,7 @@ final class DataManagerTests: XCTestCase {
     var container: ModelContainer!
     var context: ModelContext!
     var mockLogManager: MockLogManager!
-        
+    
     
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -29,6 +29,9 @@ final class DataManagerTests: XCTestCase {
         context = ModelContext(container)
         
         dataManager = DataManager(testingContext: context)
+        
+        // Initialize the MockLogManager here
+        mockLogManager = MockLogManager()
     }
     
     // Mocked CryptoHelper for testing
@@ -43,10 +46,14 @@ final class DataManagerTests: XCTestCase {
         }
     }
     
-    // Create a mock class or helper for testing purposes
     class MockLogManager: LogManager {
         var loggedMessages: [String] = []
         
+        // Make sure the initializer is accessible (internal is default in Swift)
+        override init() {
+            self.loggedMessages = []
+        }
+
         func log(_ level: LogVerbosityLevel, message: String) {
             // Capture the log message instead of writing it to the console
             loggedMessages.append("\(level): \(message)")
@@ -57,29 +64,30 @@ final class DataManagerTests: XCTestCase {
         }
     }
 
-
+    
+    
     override func tearDownWithError() throws {
         dataManager = nil
         container = nil
         context = nil
         try super.tearDownWithError()
     }
-
+    
     func testSaveProcessMetrics() {
         let process = CustomProcessInfo(id: 1, timestamp: Date(), cpuUsage: 10.0, memoryUsage: 100.0, shortProcessName: "Test", fullProcessName: "TestProcess")
-
+        
         // Assuming symmetricKey is already defined and is a valid SymmetricKey
         let symmetricKey: SymmetricKey = SymmetricKey(size: .bits256)
         let keyData = symmetricKey.withUnsafeBytes { Data($0) }
         let keyString = keyData.base64EncodedString()
-
+        
         do {
             // Encrypt the process name
             let encryptedProcessName = try CryptoHelper.encrypt(process.fullProcessName, with: keyString)
-
+            
             // Create a new process with the encrypted name
             let encryptedProcess = CustomProcessInfo(id: process.id, timestamp: process.timestamp, cpuUsage: process.cpuUsage, memoryUsage: process.memoryUsage, shortProcessName: process.shortProcessName, fullProcessName: encryptedProcessName)
-
+            
             // Assert that the process name is encrypted (not the same as original)
             XCTAssertNotEqual(process.fullProcessName, encryptedProcessName, "Process name was not encrypted correctly.")
         } catch {
@@ -138,7 +146,7 @@ final class DataManagerTests: XCTestCase {
             XCTFail("Error during encryption, saving or fetching process: \(error)")
         }
     }
-
+    
     func testPruningOldData() {
         // Simulate data saving and pruning logic
         let process = CustomProcessInfo(id: 1, timestamp: Date().addingTimeInterval(-3600), cpuUsage: 10.0, memoryUsage: 100.0, shortProcessName: "OldProcess", fullProcessName: "OldProcessName")
@@ -185,6 +193,5 @@ final class DataManagerTests: XCTestCase {
         dataManager.pruningTimer?.invalidate()
         super.tearDown()
     }
-
-    
+ 
 }

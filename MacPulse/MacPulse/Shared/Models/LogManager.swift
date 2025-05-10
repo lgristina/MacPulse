@@ -76,7 +76,7 @@ class LogManager: ObservableObject {
     /// Stores logs that pass verbosity filters for UI or debugging
     @Published private(set) var logs: [LogEntry] = []
 
-    private init() {}
+    init() {}
 
     // MARK: - General Logging Function
 

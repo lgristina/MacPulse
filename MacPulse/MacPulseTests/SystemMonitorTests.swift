@@ -107,4 +107,34 @@ final class SystemMonitorTests: XCTestCase {
     }
     #endif
     
+    func testGetMemoryUsageReturnsNonNegativeValue() {
+        let memoryUsage = systemMonitor.getMemoryUsage()
+        XCTAssertGreaterThanOrEqual(memoryUsage, 0.0, "Memory usage should not be negative.")
+    }
+
+    func testGetCPUUsageReturnsValueBetween0And100() {
+        let cpuUsage = systemMonitor.getCPUUsage()
+        XCTAssert(cpuUsage >= 0.0 && cpuUsage <= 100.0, "CPU usage should be between 0 and 100%.")
+    }
+
+    func testGetTotalMemoryGBReturnsReasonableValue() {
+        let totalRAM = systemMonitor.getTotalMemoryGB()
+        XCTAssertGreaterThan(totalRAM, 1.0, "Total memory should be greater than 1 GB.")
+        XCTAssertLessThan(totalRAM, 1024.0, "Total memory should be less than 1 TB.")
+    }
+
+    func testMemoryUsagePercentageIsInRange() {
+        let percent = systemMonitor.getMemoryUsagePercent()
+        XCTAssert(percent >= 0.0 && percent <= 100.0, "Memory usage percent should be in the range 0–100.")
+    }
+
+    func testStartAndStopMonitoring() {
+        systemMonitor.startMonitoring()
+        XCTAssertNotNil(systemMonitor.timer, "Timer should not be nil after startMonitoring is called.")
+        
+        systemMonitor.stopMonitoring()
+        XCTAssertNil(systemMonitor.timer, "Timer should be nil after stopMonitoring is called.")
+    }
+
+    
 }
