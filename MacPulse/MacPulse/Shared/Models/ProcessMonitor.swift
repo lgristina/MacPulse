@@ -34,14 +34,14 @@ class ProcessMonitor: ObservableObject {
     
     /// Collects current running process metrics and persists them.
     func collectAndSaveProcesses() {
-        let processes = getRunningProcesses()
-        if !processes.isEmpty {
-            LogManager.shared.log(.dataPersistence, level: .medium, "📥 Retrieved \(processes.count) process metrics.")
+        runningProcesses = getRunningProcesses()
+        if !runningProcesses.isEmpty {
+            LogManager.shared.log(.dataPersistence, level: .medium, "📥 Retrieved \(runningProcesses.count) process metrics.")
             
             // Serialize processes into JSON data
             do {
                 // Serialize the processes array into JSON data
-                let jsonData = try JSONEncoder().encode(processes)
+                let jsonData = try JSONEncoder().encode(runningProcesses)
                 guard let jsonString = String(data: jsonData, encoding: .utf8) else {
                     throw NSError(domain: "ProcessMonitor", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert process data to string."])
                 }

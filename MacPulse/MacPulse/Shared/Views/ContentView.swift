@@ -19,9 +19,6 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var syncService: MCConnectionManager
     @Query private var items: [Item]
-    #if os(macOS)
-    @State private var selectedProcessID: Int? = nil
-    #endif
     
     let options: [Option] = [
         .init(title: "System", imageName: "desktopcomputer"),
@@ -120,7 +117,7 @@ struct ContentView: View {
                 SystemMetricsDashboard()
             case "Process":
                 #if os(macOS)
-                ProcessListView(selectedProcessID: $selectedProcessID)
+                ProcessListView()
                 #endif
             case "Log":
                 LogView()
