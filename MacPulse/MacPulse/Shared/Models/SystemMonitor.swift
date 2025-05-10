@@ -50,8 +50,7 @@ class SystemMonitor: ObservableObject {
     private var previousCPUInfo: host_cpu_load_info_data_t?
     private var interval: TimeInterval = 1.0
     
-    /// Initializes the system monitor and begins collecting metrics.
-    init() {
+    func startMonitoring() {
         LogManager.shared.logConnectionStatus("Started system monitoring.", level: .medium)
 
         // Schedule a timer to collect metrics every second
@@ -59,7 +58,6 @@ class SystemMonitor: ObservableObject {
             self.collectMetrics()
         }
     }
-
     /// Stops the system monitoring by invalidating the timer.
     func stopMonitoring() {
         timer?.invalidate()
@@ -84,7 +82,6 @@ class SystemMonitor: ObservableObject {
         Task.detached {
             await DataManager.shared.saveSystemMetrics(cpu: self.cpuUsage, memory: self.memoryUsage, disk: self.diskUsed)
             
-            LogManager.shared.log(.dataPersistence, level: .medium, "System metrics saved to database.")
         }
     }
 

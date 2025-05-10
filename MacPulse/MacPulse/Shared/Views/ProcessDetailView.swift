@@ -14,53 +14,61 @@ import SwiftUI
 ///
 /// Intended to be shown when a user selects a process from the process list view.
 struct ProcessDetailView: View {
-    /// The specific process being shown in detail.
-    let process: CustomProcessInfo
+    /// Custom model representing a system process and its associated metrics.
+    #if os(macOS)
+    @ObservedObject var processes = ProcessMonitor.shared
+    #else
+    @ObservedObject var processes = RemoteSystemMonitor.shared
+    #endif
+    
+    let processID: Int
 
     var body: some View {
-        VStack(spacing: 15) {
-            // MARK: - Header
-            Text("Process Details")
-                .font(.largeTitle)
-                .bold()
-
-            // MARK: - Process Name
-            HStack {
-                Text("Process name:")
-                    .font(.headline)
+        if let process = processes.runningProcesses.first(where: { $0.id == processID }) {
+            VStack(spacing: 15) {
+                // MARK: - Header
+                Text("Process Details")
+                    .font(.largeTitle)
+                    .bold()
+                
+                // MARK: - Process Name
+                HStack {
+                    Text("Process name:")
+                        .font(.headline)
+                    Spacer()
+                    Text("\(process.fullProcessName)")
+                }
+                
+                // MARK: - Process ID
+                HStack {
+                    Text("Process ID:")
+                        .font(.headline)
+                    Spacer()
+                    Text("\(process.id)")
+                }
+                
+                // MARK: - CPU Usage
+                HStack {
+                    Text("CPU Usage:")
+                        .font(.headline)
+                    Spacer()
+                    Text("\(process.cpuUsage, specifier: "%.2f")%")
+                        .foregroundColor(.blue)
+                }
+                
+                // MARK: - Memory Usage
+                HStack {
+                    Text("Memory Usage:")
+                        .font(.headline)
+                    Spacer()
+                    Text("\(process.memoryUsage, specifier: "%.2f") MB")
+                        .foregroundColor(.green)
+                }
+                
                 Spacer()
-                Text(process.fullProcessName)
             }
-
-            // MARK: - Process ID
-            HStack {
-                Text("Process ID:")
-                    .font(.headline)
-                Spacer()
-                Text("\(process.id)")
-            }
-
-            // MARK: - CPU Usage
-            HStack {
-                Text("CPU Usage:")
-                    .font(.headline)
-                Spacer()
-                Text("\(process.cpuUsage, specifier: "%.2f")%")
-                    .foregroundColor(.blue)
-            }
-
-            // MARK: - Memory Usage
-            HStack {
-                Text("Memory Usage:")
-                    .font(.headline)
-                Spacer()
-                Text("\(process.memoryUsage, specifier: "%.2f") MB")
-                    .foregroundColor(.green)
-            }
-
-            Spacer()
+            .padding()
+            .navigationTitle("Process \(process.id)")
         }
-        .padding()
-        .navigationTitle("Process \(process.id)")
     }
 }

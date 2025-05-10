@@ -37,7 +37,7 @@ func getPeerName() -> String {
 @main
 struct MacPulseApp: App {
     @AppStorage("invertColors") private var invertColors: Bool = false
-    @AppStorage("hasStarted") private var hasStarted: Bool = false
+    @State private var hasStarted: Bool = false
     @StateObject private var syncService: MCConnectionManager
     @StateObject private var notifier = ThresholdNotifier()
 

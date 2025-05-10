@@ -106,7 +106,7 @@ class DataManager {
             backupContext.insert(backupMetric)
             try backupContext.save()
 
-            LogManager.shared.log(.backup, level: .medium, "✅ System metrics saved to main and backup.")
+           LogManager.shared.log(.backup, level: .medium, "✅ System metrics saved to main and backup.")
         } catch {
             LogManager.shared.log(.backup, level: .high, "❌ Failed to save system metrics: \(error.localizedDescription)")
         }

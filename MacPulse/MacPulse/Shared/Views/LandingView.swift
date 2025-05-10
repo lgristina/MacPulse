@@ -73,6 +73,7 @@ struct LandingView: View {
             #if os(macOS)
             Button(action: {
                 hasStarted = true
+                SystemMonitor.shared.startMonitoring()
             }) {
                 Text("Start Monitoring")
                     .accessibilityIdentifier("Start Monitoring")

@@ -40,23 +40,18 @@ class ProcessMonitor: ObservableObject {
             
             // Serialize processes into JSON data
             do {
-                // Serialize the processes array into JSON data
                 let jsonData = try JSONEncoder().encode(runningProcesses)
                 guard let jsonString = String(data: jsonData, encoding: .utf8) else {
                     throw NSError(domain: "ProcessMonitor", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert process data to string."])
                 }
                 
-                // Retrieve the encryption key securely
                 guard let encryptionKey = KeyManager.getEncryptionKey() else {
                     throw NSError(domain: "ProcessMonitor", code: -1, userInfo: [NSLocalizedDescriptionKey: "Encryption key is missing."])
                 }
                 
-                // Encrypt the JSON string using the encryption key
                 let encryptedProcesses = try CryptoHelper.encrypt(jsonString, with: encryptionKey)
                 
-                // Save the encrypted data
                 Task { @MainActor in
-                    // You can save the encrypted string to your storage or perform necessary actions here
                     DataManager.shared.saveEncryptedProcessMetrics(encryptedProcesses)
                 }
             } catch {
@@ -66,8 +61,6 @@ class ProcessMonitor: ObservableObject {
             LogManager.shared.log(.dataPersistence, level: .low, "⚠️ No processes retrieved during this cycle.")
         }
     }
-
-
 
     /// Uses `/bin/ps` to retrieve process info.
     /// - Returns: An array of `CustomProcessInfo` for each running process.
@@ -96,6 +89,9 @@ class ProcessMonitor: ObservableObject {
         let lines = result.split(separator: "\n").dropFirst()
         var updatedCpuTimes: [Int: TimeInterval] = [:]
         var processList: [CustomProcessInfo] = []
+
+        // Detect if this is the first time collecting CPU times
+        let isFirstRun = previousCpuTimes.isEmpty
         
         for line in lines {
             let components = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
@@ -110,10 +106,13 @@ class ProcessMonitor: ObservableObject {
                 let cleanedCommand = truncatedCommand.trimmingCharacters(in: .whitespacesAndNewlines)
                 let shortName = URL(fileURLWithPath: cleanedCommand).lastPathComponent.isEmpty ? "Unnamed Process" : URL(fileURLWithPath: cleanedCommand).lastPathComponent
 
-                // CPU delta calculation
-                let previousTime = previousCpuTimes[pid] ?? 0
-                let delta = timeInterval - previousTime
-                let cpuUsage = (delta / 5.0) * 100 // assuming 5 second interval
+                // CPU delta calculation: only do this if it's not the first run
+                var cpuUsage: Double = 0.0
+                if !isFirstRun {
+                    let previousTime = previousCpuTimes[pid] ?? 0
+                    let delta = timeInterval - previousTime
+                    cpuUsage = (delta / 5.0) * 100
+                }
 
                 updatedCpuTimes[pid] = timeInterval
 
@@ -129,7 +128,7 @@ class ProcessMonitor: ObservableObject {
             }
         }
 
-        // Update state
+        // Update stored CPU times for use in the next cycle
         previousCpuTimes = updatedCpuTimes
 
         LogManager.shared.log(.dataPersistence, level: .low, "✅ Parsed \(processList.count) process entries from /bin/ps output.")

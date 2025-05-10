@@ -12,15 +12,16 @@ import SwiftUI
 /// and provides a dropdown menu to sort the list by name, CPU, or memory usage.
 struct ProcessListView: View {
     #if os(macOS)
+    @Binding var selectedProcessID: Int?
     @ObservedObject private var viewModel = ProcessMonitor.shared
-    @State private var preloadView: AnyView? = nil
     #else
     @ObservedObject var systemMonitor = RemoteSystemMonitor.shared
+    @State private var selectedProcessID: Int? = nil
     #endif
     
     @State private var hasInitialized = false
     @State private var showingProcessDetail = false
-    @State private var currentProcess: CustomProcessInfo? = nil
+    @State private var currentProcessID: Int? = nil
 
     /// Sorting options for the process list.
     enum SortCriteria {
@@ -61,7 +62,7 @@ struct ProcessListView: View {
             List(sortedProcesses) { process in
                 #if os(macOS)
                 Button {
-                    currentProcess = process
+                    currentProcessID = process.id
                     showingProcessDetail = true
                 } label: {
                     processRowContent(for: process)
@@ -78,44 +79,30 @@ struct ProcessListView: View {
             .navigationTitle("Running Processes")
             #if os(iOS)
             .ignoresSafeArea(.container, edges: .bottom) // Maximize height on iOS
-            .navigationDestination(for: CustomProcessInfo.self) { process in
-                ProcessDetailView(process: process)
+            .navigationDestination(for: Int.self) { processID in
+                ProcessDetailView(processID: processID)
             }
             #endif
             #if os(macOS)
             .sheet(isPresented: $showingProcessDetail) {
-                if let process = currentProcess {
-                    ProcessDetailView(process: process)
+                if let id = currentProcessID {
+                    ProcessDetailView(processID: id)
                 }
             }
             #endif
             .onAppear {
                 if !hasInitialized {
                     hasInitialized = true
-
                     #if os(iOS)
                     if let manager = RemoteSystemMonitor.shared.connectionManager {
-                        manager.send(.stopSending(typeToStop: 0))
-                        manager.send(.sendProcessMetrics)
+                        manager.send(.stopSending(typeToStop: 0)) // Stop previous data stream
+                        manager.send(.sendProcessMetrics) // Request new metrics
                     } else {
-                        LogManager.shared.log(.errorAndDebug, level: .high, "⚠️ Connection manager not set on RemoteSystemMonitor.shared")
-                    }
-                    #endif
-
-                    #if os(macOS)
-                    if preloadView == nil, let first = sortedProcesses.first {
-                        preloadView = AnyView(ProcessDetailView(process: first))
+                        LogManager.shared.log(.errorAndDebug, level: LogVerbosityLevel.high, "⚠️ Connection manager not set on RemoteSystemMonitor.shared")
                     }
                     #endif
                 }
             }
-            #if os(macOS)
-            if let preloadView {
-                preloadView
-                    .frame(width: 0, height: 0)
-                    .opacity(0)
-            }
-            #endif
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
