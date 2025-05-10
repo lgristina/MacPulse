@@ -1,5 +1,7 @@
 import Foundation
 import SwiftData
+import CryptoKit
+
 
 /// This file manages the saving and pruning of system and process metrics in CoreData.
 /// It defines two thresholds for pruning:
@@ -19,6 +21,11 @@ class DataManager {
     let modelContext: ModelContext
     let backupContext: ModelContext
     
+    private var encryptionKey: SymmetricKey
+    
+    let symmetricKey = SymmetricKey(size: .bits256) // 256-bit key
+
+    
     // Tracks corruption detection
     private var wasCorruptionDetectedLastSession: Bool = false
     
@@ -29,13 +36,25 @@ class DataManager {
     private init(_modelContext: ModelContext) {
         self.modelContext = _modelContext
         self.backupContext = MetricContainer.shared.backupContainer.mainContext
-        LogManager.shared.log(.dataPersistence, level: .low, "Initialized DataManager with main and backup context")
+       
+        // Load the encryption key from the Keychain
+        let keyName = "com.example.app.encryptionKey"
+
+        if let loadedKeyData = KeychainHelper.loadKey(keyName),
+           let loadedKey = try? SymmetricKey(data: loadedKeyData) {
+            self.encryptionKey = loadedKey
+        } else {
+            let newKey = SymmetricKey(size: .bits256)
+            self.encryptionKey = newKey
+            KeychainHelper.saveKey(newKey, forKey: keyName)
+        }
     }
     /// Initializes `DataManager` for testing purposes with a mock context.
     @MainActor
     init(testingContext: ModelContext) {
         self.modelContext = testingContext
         self.backupContext = testingContext
+        self.encryptionKey = SymmetricKey(size: .bits256)
         LogManager.shared.log(.dataPersistence, level: .low, "Initialized DataManager with testing context")
     }
     
@@ -47,6 +66,10 @@ class DataManager {
     func saveProcessMetrics(processes: [CustomProcessInfo]) {
         do {
             for process in processes {
+                // Encrypt the process name
+                let encryptedName = CryptoHelper.encrypt(process.fullProcessName, with: encryptionKey)
+                process.fullProcessName = encryptedName
+                
                 modelContext.insert(process)
                 try mirrorInsert(process, into: backupContext)
             }
@@ -68,40 +91,83 @@ class DataManager {
     func saveSystemMetrics(cpu: Double, memory: Double, disk: Double) {
         let newMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
         do {
-            // Insert the metric into the main context
             modelContext.insert(newMetric)
             try modelContext.save()
             
-            // Insert the metric into the backup context
             let backupMetric = SystemMetric(timestamp: newMetric.timestamp, cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
             backupContext.insert(backupMetric)
             try backupContext.save()
 
             LogManager.shared.log(.backup, level: .medium, "✅ System metrics saved to main and backup.")
-
-            // Check the backup context by fetching and logging the count of system metrics in the backup context
-            let backupFetchRequest = FetchDescriptor<SystemMetric>()
-            let backupMetrics = try backupContext.fetch(backupFetchRequest)
-            LogManager.shared.log(.dataPersistence, level: .low, "Found \(backupMetrics.count) system metrics in the backup context.")
-            
         } catch {
             LogManager.shared.log(.backup, level: .high, "❌ Failed to save system metrics: \(error.localizedDescription)")
         }
     }
 
+//    func saveSystemMetrics(cpu: Double, memory: Double, disk: Double) {
+//        let newMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
+//        do {
+//            // Insert the metric into the main context
+//            modelContext.insert(newMetric)
+//            try modelContext.save()
+//            
+//            // Insert the metric into the backup context
+//            let backupMetric = SystemMetric(timestamp: newMetric.timestamp, cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
+//            backupContext.insert(backupMetric)
+//            try backupContext.save()
+//
+//            LogManager.shared.log(.backup, level: .medium, "✅ System metrics saved to main and backup.")
+//
+//            // Check the backup context by fetching and logging the count of system metrics in the backup context
+//            let backupFetchRequest = FetchDescriptor<SystemMetric>()
+//            let backupMetrics = try backupContext.fetch(backupFetchRequest)
+//            LogManager.shared.log(.dataPersistence, level: .low, "Found \(backupMetrics.count) system metrics in the backup context.")
+//            
+//        } catch {
+//            LogManager.shared.log(.backup, level: .high, "❌ Failed to save system metrics: \(error.localizedDescription)")
+//        }
+//    }
+
+    // MARK: - Fetch and Decrypt Process Metrics
+    func fetchProcessMetrics() {
+        do {
+            let fetchDescriptor = FetchDescriptor<CustomProcessInfo>()
+            let processes = try modelContext.fetch(fetchDescriptor)
+            
+            for process in processes {
+                // Decrypt the process name
+                if let decryptedName = CryptoHelper.decrypt(process.fullProcessName, with: encryptionKey) {
+                    process.fullProcessName = decryptedName
+                }
+            }
+            // Continue with using the decrypted processes
+        } catch {
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Error fetching process metrics: \(error.localizedDescription)")
+        }
+    }
 
 
     //  MARK: - Mirror Insert
-    
     private func mirrorInsert<T: PersistentModel>(_ model: T, into backupContext: ModelContext) throws {
-        if let metric = model as? SystemMetric {
+        if let process = model as? CustomProcessInfo {
+            do {
+                // Try encrypting the process name
+                let encryptedProcessName = try CryptoHelper.encrypt(process.fullProcessName, with: symmetricKey)
+                
+                // Create the copy of the process with the encrypted name
+                let copy = CustomProcessInfo(id: process.id, timestamp: process.timestamp, cpuUsage: process.cpuUsage, memoryUsage: process.memoryUsage, shortProcessName: process.shortProcessName, fullProcessName: encryptedProcessName)
+                backupContext.insert(copy)
+            } catch {
+                // Handle encryption error
+                LogManager.shared.log(.dataPersistence, level: .high, "❌ Encryption failed for process name: \(error.localizedDescription)")
+                throw error // Rethrow the error to propagate it
+            }
+        } else if let metric = model as? SystemMetric {
             let copy = SystemMetric(timestamp: metric.timestamp, cpuUsage: metric.cpuUsage, memoryUsage: metric.memoryUsage, diskActivity: metric.diskActivity)
-            backupContext.insert(copy)
-        } else if let process = model as? CustomProcessInfo {
-            let copy = CustomProcessInfo(id: process.id, timestamp: process.timestamp, cpuUsage: process.cpuUsage, memoryUsage: process.memoryUsage, shortProcessName: process.shortProcessName, fullProcessName: process.fullProcessName)
             backupContext.insert(copy)
         }
     }
+
     // MARK: - Pruning Old Metrics
     
     /// Prunes system metrics older than 10 minutes.
