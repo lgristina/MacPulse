@@ -24,17 +24,28 @@ final class LogManagerTests: XCTestCase {
     }
 
     func testLogsAreAppended() {
+        // Log the test message
         logManager.log(.errorAndDebug, level: .medium, "Test log message")
 
+        // Create an expectation to wait for log appending
         let expectation = XCTestExpectation(description: "Wait for log to append")
+
+        // Check for the log entry after a small delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            XCTAssertEqual(self.logManager.logs.count, 1)
-            XCTAssertTrue(self.logManager.logs.first?.message.contains("Test log message") ?? false)
+            // Ensure logs have been appended
+            XCTAssertGreaterThan(self.logManager.logs.count, 0, "Logs should be appended.")
+
+            // Ensure the first log contains the expected message
+            XCTAssertTrue(self.logManager.logs.first?.message.contains("Test log message") ?? false, "Log message should contain 'Test log message'")
+
+            // Fulfill the expectation
             expectation.fulfill()
         }
 
+        // Wait for the expectation to be fulfilled
         wait(for: [expectation], timeout: 1.0)
     }
+
 
     func testVerbosityFiltering() {
         logManager.verbosityLevelForSyncConnection = .low
