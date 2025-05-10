@@ -43,7 +43,7 @@ struct SystemMetricsDashboard: View {
                                 usagePublisher: systemMonitor.$memoryUsage,
                                 makeData: { MemoryUsageData(usage: $0, time: $1) }
                             )) {
-                                MetricPanel(title: "Memory Usage", value: systemMonitor.memoryUsage, unit: "MB")
+                                MetricPanel(title: "Memory Usage", value: systemMonitor.memoryUsage, unit: "GB")
                             }
 
                             // Disk Activity panel (can be expanded with more details)
@@ -80,7 +80,7 @@ struct SystemMetricsDashboard: View {
                             usagePublisher: systemMonitor.$memoryUsage,
                             makeData: { MemoryUsageData(usage: $0, time: $1) }
                         )) {
-                            MetricPanel(title: "Memory Usage", value: systemMonitor.memoryUsage, unit: "MB")
+                            MetricPanel(title: "Memory Usage", value: systemMonitor.memoryUsage, unit: "GB")
                         }
                     }
                 }

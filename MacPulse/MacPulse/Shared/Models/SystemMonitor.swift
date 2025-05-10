@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import Darwin
 
 // Extend Double to round to N decimal places efficiently
 extension Double {
@@ -37,6 +38,7 @@ class SystemMonitor: ObservableObject {
     
     @Published var cpuUsage: Double = 0.0
     @Published var memoryUsage: Double = 0.0
+    @Published var memoryUsagePercent: Double = 0.0
     @Published var diskUsed: Double = 0.0
     @Published var diskFree: Double = 0.0
     @Published var diskTotal: Double = 0.0
@@ -69,6 +71,7 @@ class SystemMonitor: ObservableObject {
     func collectMetrics() {
         cpuUsage = getCPUUsage()
         memoryUsage = getMemoryUsage()
+        memoryUsagePercent = getMemoryUsagePercent()
         let stats = getDiskUsage()
         diskTotal = stats.total
         diskFree = stats.free
@@ -185,5 +188,31 @@ class SystemMonitor: ObservableObject {
         } catch {
             LogManager.shared.log(.syncRetrieval, level: .high, "❌ Error loading CPU history: \(error)")
         }
+    }
+    
+    func getTotalMemoryGB() -> Double {
+        // Query the "hw.memsize" sysctl for total bytes of RAM
+        var size: UInt64 = 0
+        var len = MemoryLayout<UInt64>.size
+        let result = sysctlbyname("hw.memsize", &size, &len, nil, 0)
+        guard result == 0 else {
+            LogManager.shared.log(.syncRetrieval, level: .low,
+                                  "Error retrieving total memory (sysctl returned \(result))")
+            return -1
+        }
+        // Convert bytes to GB
+        let gb = Double(size) / 1_073_741_824
+        return gb.rounded(toPlaces: 2)
+    }
+
+    /// Calculates the current memory usage as a percentage of total RAM.
+    /// - Returns: Used RAM as a percentage (0–100), rounded to 2 decimal places.
+    func getMemoryUsagePercent() -> Double {
+        let usedGB = getMemoryUsage()      // your existing GB-used function
+        let totalGB = getTotalMemoryGB()   // newly added
+        guard totalGB > 0 else { return 0 }
+        
+        let percent = (usedGB / totalGB) * 100
+        return percent.rounded(toPlaces: 2)
     }
 }

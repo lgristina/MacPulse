@@ -1,10 +1,3 @@
-//
-//  LandingView.swift
-//  MacPulse
-//
-//  Created by Austin Frank on 4/22/25.
-//
-
 import SwiftUI
 
 /// The initial screen presented to users on both macOS and iOS.
@@ -26,16 +19,19 @@ struct LandingView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 200, height: 200)
+                .accessibilityIdentifier("MacPulse")
 
             // MARK: - Title Text
             #if os(macOS)
             Text("Welcome to MacPulse")
                 .font(.title)
                 .padding()
+                .accessibilityIdentifier("Welcome to MacPulse")
             #elseif os(iOS)
             Text("Monitor a Mac from your iPhone or iPad")
                 .font(.title2)
                 .padding()
+                .accessibilityIdentifier("Monitor a Mac from your iPhone or iPad")
             #endif
 
             Spacer()
@@ -59,7 +55,6 @@ struct LandingView: View {
                             syncService.browser.invitePeer(peer, to: syncService.session, withContext: nil, timeout: 20)
                             hasStarted = true
                             syncService.sendInviteToPeer()
-                            
                         }) {
                             Text(peer.displayName)
                                 .frame(maxWidth: .infinity)
@@ -80,6 +75,7 @@ struct LandingView: View {
                 hasStarted = true
             }) {
                 Text("Start Monitoring")
+                    .accessibilityIdentifier("Start Monitoring")
             }
             .font(.headline)
             .padding()
@@ -89,9 +85,9 @@ struct LandingView: View {
             .cornerRadius(12)
             .padding(.horizontal, 40)
             .padding(.bottom, 40)
+            .accessibilityAddTraits(.isButton)
             #endif
         }
-
         // MARK: - Lifecycle & Animations
         .animation(.easeInOut, value: syncService.availablePeers)
         .onAppear {

@@ -13,8 +13,8 @@ import SwiftUI
 struct SettingsView: View {
     
     // Notification thresholds (in %)
-    @AppStorage("cpuThreshold")    private var cpuThreshold: Double    = 80
-    @AppStorage("memoryThreshold") private var memoryThreshold: Double = 80
+    @AppStorage("cpuThreshold")    private var cpuThreshold: Double    = 50
+    @AppStorage("memoryThreshold") private var memoryThreshold: Double = 50
     @AppStorage("diskThreshold")   private var diskThreshold: Double   = 90
 
     // Accessibility options
