@@ -57,6 +57,7 @@ final class SystemMonitorTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(systemMonitor.cpuUsage, 0.0, "CPU usage should be a positive value.")
         XCTAssertGreaterThanOrEqual(systemMonitor.memoryUsage, 0.0, "Memory usage should be a positive value.")
         XCTAssertGreaterThanOrEqual(systemMonitor.diskUsed, 0.0, "Disk usage should be a positive value.")
+
     }
 
     func testStopMonitoring() throws {

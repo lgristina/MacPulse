@@ -7,9 +7,10 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
+import Combine
 
 // MARK: – Color Inversion Modifier
-/// Conditionally inverts all colors in the view hierarchy
 struct InvertColorsModifier: ViewModifier {
     let isInverted: Bool
     func body(content: Content) -> some View {
@@ -24,50 +25,57 @@ struct InvertColorsModifier: ViewModifier {
 }
 
 func getPeerName() -> String {
-#if os(macOS)
+    #if os(macOS)
     return Host.current().localizedName ?? "MacPulse"
-#elseif os(iOS)
+    #elseif os(iOS)
     return UIDevice.current.name
-#else
+    #else
     return "MacPulse"
-#endif
+    #endif
 }
 
 @main
 struct MacPulseApp: App {
-    
     @AppStorage("invertColors") private var invertColors: Bool = false
-    
+    @AppStorage("hasStarted") private var hasStarted: Bool = false
     @StateObject private var syncService: MCConnectionManager
-    @State private var hasStarted: Bool = false
-    
+    @StateObject private var notifier = ThresholdNotifier()
+
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor(UserNotificationDelegate.self)
+    private var notificationDelegate: UserNotificationDelegate
+    #endif
+
     init() {
-        
+        // Reset persisted hasStarted when requested by UI tests
+        if ProcessInfo.processInfo.arguments.contains("--reset-hasStarted") {
+            UserDefaults.standard.removeObject(forKey: "hasStarted")
+        }
+
         let peerName = getPeerName()
         let manager = MCConnectionManager(yourName: peerName)
         _syncService = StateObject(wrappedValue: manager)
-        
-        // Configure the singleton once when the app starts
+
         RemoteSystemMonitor.shared.configure(connectionManager: manager)
-        
-        // Check for corruption and restore from backup if necessary
         DataManager.shared.checkForCorruptionOnLaunch()
 
+        #if os(iOS)
+        UNUserNotificationCenter.current().delegate = notificationDelegate
+        #endif
+        NotificationManager.requestPermission()
     }
-    
+
     var sharedModelContainer: ModelContainer = {
-           let schema = Schema([
-               SystemMetric.self,
-               CustomProcessInfo.self
-           ])
-           
-           let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-           
-           do {
-               return try ModelContainer(for: schema, configurations: [modelConfiguration])
-           } catch {
-               fatalError("Could not create ModelContainer: \(error)")
-           }
+        let schema = Schema([
+            SystemMetric.self,
+            CustomProcessInfo.self
+        ])
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        do {
+            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+        } catch {
+            fatalError("Could not create ModelContainer: \(error)")
+        }
     }()
 
     var body: some Scene {
