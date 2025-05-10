@@ -84,8 +84,8 @@ struct ContentView: View {
             .navigationDestination(for: Option.self) { option in
                 DetailViewiOS(for: option)
             }
-            .navigationDestination(for: Int.self) { processID in
-                ProcessDetailView(processID: processID)
+            .navigationDestination(for: CustomProcessInfo.self) { process in
+                ProcessDetailView(process: process)
             }
         }
         .environmentObject(syncService)
