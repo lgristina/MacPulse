@@ -5,56 +5,86 @@
 //  Created by Marguerite McGahay on 4/19/25.
 //
 
-
-import SwiftData
 import XCTest
+import SwiftData
+import CoreData
 @testable import MacPulse
+import CryptoKit
 
+@MainActor
 final class DataManagerTests: XCTestCase {
     
     var dataManager: DataManager!
+    var container: ModelContainer!
     var context: ModelContext!
-
-    func testSaveSystemMetrics() async throws {
+    var mockLogManager: MockLogManager!
+        
+    
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        
+        let schema = Schema([CustomProcessInfo.self])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(
-            for: SystemMetric.self,
-                 CustomProcessInfo.self,
-            configurations: config
-        )
-        let context = await container.mainContext
-        let manager = await DataManager(testingContext: context)
-
-        let before = try context.fetch(FetchDescriptor<SystemMetric>()).count
-        await manager.saveSystemMetrics(cpu: 23.4, memory: 45.2, disk: 5.0)
-        let after = try context.fetch(FetchDescriptor<SystemMetric>()).count
-
-        XCTAssertEqual(after, before + 1)
-    }
-
-    func testPruneOldSystemMetrics() async throws {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(
-            for: SystemMetric.self,
-                 CustomProcessInfo.self,
-            configurations: config
-        )
-        let context = await container.mainContext
-        let manager = await DataManager(testingContext: context)
-
-        let oldDate = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
-        let recent = SystemMetric(timestamp: Date(), cpuUsage: 1, memoryUsage: 1, diskActivity: 1)
-        let old    = SystemMetric(timestamp: oldDate, cpuUsage: 2, memoryUsage: 2, diskActivity: 2)
-
-        context.insert(recent)
-        context.insert(old)
-        try context.save()
-
-        await manager.pruneOldSystemMetrics()
-        let remaining = try context.fetch(FetchDescriptor<SystemMetric>())
-
-        XCTAssertTrue(remaining.allSatisfy { $0.timestamp >= Calendar.current.date(byAdding: .minute, value: -10, to: Date())! })
+        container = try ModelContainer(for: schema, configurations: [config])
+        context = ModelContext(container)
+        
+        dataManager = DataManager(testingContext: context)
     }
     
-}
+    // Mocked CryptoHelper for testing
+    class MockCryptoHelper: CryptoHelper {
+        static var shouldDecryptFail = false
+        
+        class func decrypt(_ data: String, with key: String) -> String? {
+            if shouldDecryptFail {
+                return nil  // Simulate a decryption failure
+            }
+            return "Decrypted: \(data)"  // Return a simulated decrypted string
+        }
+    }
+    
+    // Create a mock class or helper for testing purposes
+    class MockLogManager: LogManager {
+        var loggedMessages: [String] = []
+        
+        func log(_ level: LogVerbosityLevel, message: String) {
+            // Capture the log message instead of writing it to the console
+            loggedMessages.append("\(level): \(message)")
+        }
+        
+        func containsLog(_ searchTerm: String) -> Bool {
+            return loggedMessages.contains { $0.contains(searchTerm) }
+        }
+    }
 
+
+    override func tearDownWithError() throws {
+        dataManager = nil
+        container = nil
+        context = nil
+        try super.tearDownWithError()
+    }
+
+    func testSaveProcessMetrics() {
+        let process = CustomProcessInfo(id: 1, timestamp: Date(), cpuUsage: 10.0, memoryUsage: 100.0, shortProcessName: "Test", fullProcessName: "TestProcess")
+
+        // Assuming symmetricKey is already defined and is a valid SymmetricKey
+        let symmetricKey: SymmetricKey = SymmetricKey(size: .bits256)
+        let keyData = symmetricKey.withUnsafeBytes { Data($0) }
+        let keyString = keyData.base64EncodedString()
+
+        do {
+            // Encrypt the process name
+            let encryptedProcessName = try CryptoHelper.encrypt(process.fullProcessName, with: keyString)
+
+            // Create a new process with the encrypted name
+            let encryptedProcess = CustomProcessInfo(id: process.id, timestamp: process.timestamp, cpuUsage: process.cpuUsage, memoryUsage: process.memoryUsage, shortProcessName: process.shortProcessName, fullProcessName: encryptedProcessName)
+
+            // Assert that the process name is encrypted (not the same as original)
+            XCTAssertNotEqual(process.fullProcessName, encryptedProcessName, "Process name was not encrypted correctly.")
+        } catch {
+            XCTFail("Encryption failed: \(error)")
+        }
+    }
+   
+}

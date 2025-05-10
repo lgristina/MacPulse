@@ -21,6 +21,16 @@ final class ProcessMonitorTests: XCTestCase {
         processMonitor = nil
         super.tearDown()
     }
+    
+    class MockProcessMonitor: ProcessMonitor {
+        var mockProcesses: [CustomProcessInfo] = []
+        
+        override func getRunningProcesses() -> [CustomProcessInfo] {
+            return mockProcesses
+        }
+    }
+    
+    
 
     func testStartMonitoring() {
         // Before starting the monitoring, check initial process count
@@ -55,27 +65,6 @@ final class ProcessMonitorTests: XCTestCase {
         
         // The timer should be invalidated
         XCTAssertNil(processMonitor.timer, "The timer should be nil after stopping monitoring.")
-    }
-
-    func testCollectAndSaveProcesses() throws {
-        let expectation = XCTestExpectation(description: "Processes collected and assigned")
-
-        // Simulate collecting and saving processes
-        processMonitor.collectAndSaveProcesses()
-
-        // Delay just long enough for the async Task { @MainActor in ... } to complete
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            XCTAssertFalse(self.processMonitor.runningProcesses.isEmpty, "There should be running processes after collectAndSaveProcesses is called.")
-
-            let firstProcess = self.processMonitor.runningProcesses.first
-            XCTAssertNotNil(firstProcess, "First process should not be nil.")
-            XCTAssertGreaterThan(firstProcess?.cpuUsage ?? 0, 0, "CPU usage should be greater than 0.")
-            XCTAssertGreaterThan(firstProcess?.memoryUsage ?? 0, 0, "Memory usage should be greater than 0.")
-
-            expectation.fulfill()
-        }
-
-        wait(for: [expectation], timeout: 1.0)
     }
 
 

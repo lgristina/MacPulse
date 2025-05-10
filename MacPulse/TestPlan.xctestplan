@@ -20,7 +20,6 @@
       }
     },
     {
-      "enabled" : false,
       "target" : {
         "containerPath" : "container:MacPulse.xcodeproj",
         "identifier" : "778521552D7FBF6300C057AF",

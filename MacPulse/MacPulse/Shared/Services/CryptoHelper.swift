@@ -7,20 +7,32 @@
 
 import Foundation
 import CryptoKit
-class CryptoHelper {
+import CryptoKit
 
-    static func encrypt(_ string: String, with key: SymmetricKey) -> String {
-        let data = string.data(using: .utf8)!
-        let sealedBox = try! AES.GCM.seal(data, using: key)
-        return sealedBox.combined!.base64EncodedString()
+class CryptoHelper {
+    static func encrypt(_ string: String, with keyString: String) throws -> String {
+        guard let keyData = Data(base64Encoded: keyString) else {
+            throw NSError(domain: "CryptoHelper", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid key"])
+        }
+
+        let symmetricKey = SymmetricKey(data: keyData)
+        
+        // Convert the string to Data
+        let dataToEncrypt = Data(string.utf8)
+        
+        // Encrypt data
+        let sealedBox = try AES.GCM.seal(dataToEncrypt, using: symmetricKey)
+        
+        // Return the encrypted data as a base64 encoded string
+        return sealedBox.combined?.base64EncodedString() ?? ""
     }
 
     static func decrypt(_ string: String, with key: SymmetricKey) -> String? {
         guard let data = Data(base64Encoded: string),
-              let sealedBox = try? AES.GCM.SealedBox(combined: data) else {
+              let sealedBox = try? AES.GCM.SealedBox(combined: data),
+              let decryptedData = try? AES.GCM.open(sealedBox, using: key) else {
             return nil
         }
-        let decryptedData = try! AES.GCM.open(sealedBox, using: key)
         return String(data: decryptedData, encoding: .utf8)
     }
 }

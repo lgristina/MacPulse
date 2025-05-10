@@ -30,14 +30,14 @@ class DataManager {
     private var wasCorruptionDetectedLastSession: Bool = false
     
     /// Timer for periodic pruning of old metrics.
-    private var pruningTimer: Timer?
+    public var pruningTimer: Timer?
     
     /// Initializes `DataManager` with a given CoreData context.
     private init(_modelContext: ModelContext) {
         self.modelContext = _modelContext
         self.backupContext = MetricContainer.shared.backupContainer.mainContext
        
-        // Load the encryption key from the Keychain
+       // Load the encryption key from the Keychain
         let keyName = "com.example.app.encryptionKey"
 
         if let loadedKeyData = KeychainHelper.loadKey(keyName),
@@ -66,20 +66,28 @@ class DataManager {
     func saveProcessMetrics(processes: [CustomProcessInfo]) {
         do {
             for process in processes {
+                // Check if the process already exists in the context
+                let descriptor = FetchDescriptor<CustomProcessInfo>()
+                let existingProcesses = try modelContext.fetch(descriptor)
+                if existingProcesses.contains(where: { $0.id == process.id }) {
+                    continue  // Skip if this process is already in the context
+                }
+                
                 // Encrypt the process name
-                let encryptedName = CryptoHelper.encrypt(process.fullProcessName, with: encryptionKey)
+                let encryptedName = try CryptoHelper.encrypt(process.fullProcessName, with: "someEncryptionKey")
                 process.fullProcessName = encryptedName
                 
+                // Insert the process into the context
                 modelContext.insert(process)
-                try mirrorInsert(process, into: backupContext)
             }
+            
+            // Commit the changes to persistent storage
             try modelContext.save()
-            try backupContext.save()
-            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Saved \(processes.count) process metrics to both containers.")
         } catch {
-            LogManager.shared.log(.dataPersistence, level: .high, "❌ Error saving process metrics: \(error.localizedDescription)")
+            print("Failed to save process metrics: \(error)")
         }
     }
+
 
     /// Saves system metrics (CPU, memory, disk usage) to CoreData.
     ///
@@ -104,29 +112,6 @@ class DataManager {
         }
     }
 
-//    func saveSystemMetrics(cpu: Double, memory: Double, disk: Double) {
-//        let newMetric = SystemMetric(timestamp: Date(), cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
-//        do {
-//            // Insert the metric into the main context
-//            modelContext.insert(newMetric)
-//            try modelContext.save()
-//            
-//            // Insert the metric into the backup context
-//            let backupMetric = SystemMetric(timestamp: newMetric.timestamp, cpuUsage: cpu, memoryUsage: memory, diskActivity: disk)
-//            backupContext.insert(backupMetric)
-//            try backupContext.save()
-//
-//            LogManager.shared.log(.backup, level: .medium, "✅ System metrics saved to main and backup.")
-//
-//            // Check the backup context by fetching and logging the count of system metrics in the backup context
-//            let backupFetchRequest = FetchDescriptor<SystemMetric>()
-//            let backupMetrics = try backupContext.fetch(backupFetchRequest)
-//            LogManager.shared.log(.dataPersistence, level: .low, "Found \(backupMetrics.count) system metrics in the backup context.")
-//            
-//        } catch {
-//            LogManager.shared.log(.backup, level: .high, "❌ Failed to save system metrics: \(error.localizedDescription)")
-//        }
-//    }
 
     // MARK: - Fetch and Decrypt Process Metrics
     func fetchProcessMetrics() {
@@ -151,11 +136,15 @@ class DataManager {
     private func mirrorInsert<T: PersistentModel>(_ model: T, into backupContext: ModelContext) throws {
         if let process = model as? CustomProcessInfo {
             do {
+                let keyData = symmetricKey.withUnsafeBytes { Data($0) }
+                let keyString = keyData.base64EncodedString()
                 // Try encrypting the process name
-                let encryptedProcessName = try CryptoHelper.encrypt(process.fullProcessName, with: symmetricKey)
-                
+                let encryptedProcessName = try CryptoHelper.encrypt(process.fullProcessName, with: keyString)
+                    
                 // Create the copy of the process with the encrypted name
                 let copy = CustomProcessInfo(id: process.id, timestamp: process.timestamp, cpuUsage: process.cpuUsage, memoryUsage: process.memoryUsage, shortProcessName: process.shortProcessName, fullProcessName: encryptedProcessName)
+                
+                // Insert the copy into the backup context
                 backupContext.insert(copy)
             } catch {
                 // Handle encryption error
@@ -257,7 +246,7 @@ class DataManager {
     }
 
     /// Restores data from the backup context to the main context.
-    private func restoreFromBackup() {
+    func restoreFromBackup() {
         do {
             let systemMetrics = try backupContext.fetch(FetchDescriptor<SystemMetric>())
             let processMetrics = try backupContext.fetch(FetchDescriptor<CustomProcessInfo>())
@@ -350,4 +339,23 @@ class DataManager {
     }
 
 
+    func saveEncryptedProcessMetrics(_ encryptedData: String) {
+        // Get the URL for the Documents directory
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Failed to get Documents directory path.")
+            return
+        }
+        
+        // Define the file path where the encrypted data will be saved
+        let fileURL = documentsDirectory.appendingPathComponent("encryptedProcessMetrics.txt")
+        
+        do {
+            // Write the encrypted data to the file
+            try encryptedData.write(to: fileURL, atomically: true, encoding: .utf8)
+            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Successfully saved encrypted process data to file: \(fileURL.path)")
+        } catch {
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Failed to save encrypted process data: \(error.localizedDescription)")
+        }
+    }
+    
 }

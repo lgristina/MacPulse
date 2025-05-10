@@ -84,4 +84,5 @@ struct MacPulseApp: App {
         }
         .modelContainer(sharedModelContainer)
     }
+    
 }

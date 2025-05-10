@@ -37,15 +37,38 @@ class ProcessMonitor: ObservableObject {
         let processes = getRunningProcesses()
         if !processes.isEmpty {
             LogManager.shared.log(.dataPersistence, level: .medium, "📥 Retrieved \(processes.count) process metrics.")
-            Task { @MainActor in
-                self.runningProcesses = processes
-                DataManager.shared.saveProcessMetrics(processes: processes)
+            
+            // Serialize processes into JSON data
+            do {
+                // Serialize the processes array into JSON data
+                let jsonData = try JSONEncoder().encode(processes)
+                guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                    throw NSError(domain: "ProcessMonitor", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert process data to string."])
+                }
+                
+                // Retrieve the encryption key securely
+                guard let encryptionKey = KeyManager.getEncryptionKey() else {
+                    throw NSError(domain: "ProcessMonitor", code: -1, userInfo: [NSLocalizedDescriptionKey: "Encryption key is missing."])
+                }
+                
+                // Encrypt the JSON string using the encryption key
+                let encryptedProcesses = try CryptoHelper.encrypt(jsonString, with: encryptionKey)
+                
+                // Save the encrypted data
+                Task { @MainActor in
+                    // You can save the encrypted string to your storage or perform necessary actions here
+                    DataManager.shared.saveEncryptedProcessMetrics(encryptedProcesses)
+                }
+            } catch {
+                LogManager.shared.log(.dataPersistence, level: .high, "⚠️ Failed to encrypt process metrics: \(error.localizedDescription)")
             }
         } else {
             LogManager.shared.log(.dataPersistence, level: .low, "⚠️ No processes retrieved during this cycle.")
         }
     }
-    
+
+
+
     /// Uses `/bin/ps` to retrieve process info.
     /// - Returns: An array of `CustomProcessInfo` for each running process.
     func getRunningProcesses() -> [CustomProcessInfo] {

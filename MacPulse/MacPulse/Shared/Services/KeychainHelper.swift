@@ -25,10 +25,13 @@ struct KeychainHelper {
         let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
 
         guard status == errSecSuccess else {
-            print("Failed to load key with status: \(status)")
+        
+            LogManager.shared.log(.dataPersistence, level: .low, "Failed to load key '\(key)' with status: \(status)")
             return nil
         }
-
+        
+        LogManager.shared.log(.dataPersistence, level: .high, "Successfully loaded key '\(key)' from Keychain.")
+        
         return dataTypeRef as? Data
     }
 
@@ -42,6 +45,8 @@ struct KeychainHelper {
             kSecAttrService as String: service
         ]
         SecItemDelete(deleteQuery as CFDictionary)
+        LogManager.shared.log(.dataPersistence, level: .medium, "Deleted existing key (if any) for '\(keyName)'.")
+
 
         // Then add new item
         let addQuery: [String: Any] = [
@@ -52,9 +57,11 @@ struct KeychainHelper {
         ]
 
         let status = SecItemAdd(addQuery as CFDictionary, nil)
-
+        
         if status != errSecSuccess {
-            print("Failed to save key with status: \(status)")
-        }
+                    LogManager.shared.log(.dataPersistence, level: .low, "Failed to save key '\(keyName)' with status: \(status)")
+                } else {
+                    LogManager.shared.log(.dataPersistence, level: .high, "Successfully saved key '\(keyName)' to Keychain.")
+                }
     }
 }

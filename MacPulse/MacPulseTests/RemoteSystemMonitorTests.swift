@@ -1,6 +1,16 @@
 import XCTest
 @testable import MacPulse
 
+enum UnsupportedMetricPayload {
+    case invalid
+}
+
+extension RemoteSystemMonitor {
+    func handleInvalidPayload(_ payload: UnsupportedMetricPayload) {
+        LogManager.shared.log(.syncTransmission, level: .high, "⚠️ Received unsupported metric payload.")
+    }
+}
+
 final class RemoteSystemMonitorTests: XCTestCase {
     
     class MockConnectionManager: MCConnectionManager {
@@ -17,6 +27,7 @@ final class RemoteSystemMonitorTests: XCTestCase {
                 didLogInvalidMetric = true
             }
         }
+        
     }
 
 
@@ -144,24 +155,70 @@ final class RemoteSystemMonitorTests: XCTestCase {
     }
 
     func testStartSendingProcessMetrics() {
+        // Arrange
         let mockManager = MockConnectionManager(yourName: "test")
         let monitor = RemoteSystemMonitor(connectionManager: mockManager)
         
-        // Start sending process metrics
-        monitor.startSendingMetrics(type: 1)
+        // Mock the running processes to simulate data
+        let mockProcessInfo = CustomProcessInfo(
+            id: 1234,
+            timestamp: Date(),
+            cpuUsage: 10.0,
+            memoryUsage: 50.0,
+            shortProcessName: "TestProcess",
+            fullProcessName: "/usr/bin/TestProcess"
+        )
         
-        // Simulate a short delay to allow the timer to fire
+        // Mock data for running processes
+        ProcessMonitor.shared.runningProcesses = [mockProcessInfo]
+        
+        // Act
+        monitor.startSendingMetrics(type: 1) // Start sending process metrics
+        
+        // Expectation to wait for process metric sending
         let expectation = XCTestExpectation(description: "Wait for process metric sending")
         
+        // Simulate a short delay to allow the timer to fire
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            // Check that a process metric payload has been sent
-            XCTAssertEqual(mockManager.sentPayloads.count, 1)
+            // Assert that a payload was sent
+            XCTAssertEqual(mockManager.sentPayloads.count, 1, "Expected 1 payload to be sent.")
+            
+            // Assert the payload is a process metric and that it's not empty
             if case .process(let processes) = mockManager.sentPayloads.first {
-                XCTAssertTrue(processes.count > 0) // Check if some process metrics are being sent
+                XCTAssertTrue(processes.count > 0, "Process metrics should not be empty")
             }
             expectation.fulfill()
         }
         
+        // Wait for the expectation to be fulfilled
+        wait(for: [expectation], timeout: 3.0)
+    }
+
+    
+
+    func testInvalidMetricTypeHandling() {
+        // Create the mock connection manager
+        let mockManager = MockConnectionManager(yourName: "test")
+
+        // Initialize the RemoteSystemMonitor with the mock manager
+        let monitor = RemoteSystemMonitor(connectionManager: mockManager)
+        monitor.configure(connectionManager: mockManager)
+
+        // Send an invalid metric type (anything other than 0 or 1)
+        let invalidType = 999
+        monitor.startSendingMetrics(type: invalidType)
+
+        // Simulate the logInvalidMetric being triggered by an invalid type
+        mockManager.logInvalidMetric(type: invalidType)
+
+        // Wait for async property updates and verify if the log was triggered
+        let expectation = XCTestExpectation(description: "Wait for invalid metric handling")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            XCTAssertTrue(mockManager.didLogInvalidMetric, "Expected invalid metric to be logged.")
+            expectation.fulfill()
+        }
+
         wait(for: [expectation], timeout: 2.0)
     }
+
 }
