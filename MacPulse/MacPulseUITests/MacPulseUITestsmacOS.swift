@@ -281,7 +281,7 @@ class MacPulseUITestsmacOS: XCTestCase {
         XCTAssertTrue(app.sliders["DiskThresholdSlider"].exists)
 
         // Invert‐colors toggle
-        XCTAssertTrue(app.checkBoxes["Invert Colors"].exists)
+        XCTAssertTrue(app.switches["InvertColorToggle"].exists)
     }
 
     func testSettingsToggleInvertColorsChangesState() throws {
