@@ -61,7 +61,7 @@ class RemoteSystemMonitor: ObservableObject {
     }
 
     /// Updates the published properties with the latest data from the received payload.
-    private func updateMetrics(from payload: MetricPayload) {
+    func updateMetrics(from payload: MetricPayload) {
         DispatchQueue.main.async {
             switch payload {
             case .system(let metric):

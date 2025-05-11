@@ -23,8 +23,9 @@ class CryptoHelper {
         // Encrypt data
         let sealedBox = try AES.GCM.seal(dataToEncrypt, using: symmetricKey)
         
-        // Return the encrypted data as a base64 encoded string
+        // `.combined` is guaranteed to be non-nil when using `AES.GCM.seal`, so this fallback is for extra safety
         return sealedBox.combined?.base64EncodedString() ?? ""
+
     }
 
     static func decrypt(_ string: String, with key: SymmetricKey) -> String? {

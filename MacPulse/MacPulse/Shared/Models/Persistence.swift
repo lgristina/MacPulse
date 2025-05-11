@@ -24,7 +24,7 @@ struct MetricContainer {
         }
     }
 
-    private static var backupStoreURL: URL {
+    static var backupStoreURL: URL {
         let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         return supportDir.appendingPathComponent("BackupMetricContainer.sqlite")
     }

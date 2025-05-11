@@ -29,8 +29,8 @@ final class RemoteSystemMonitorTests: XCTestCase {
         }
         
     }
-
-
+    
+    
     func testSystemMetricUpdate() {
         let mockManager = MockConnectionManager(yourName: "test")
         let monitor = RemoteSystemMonitor(connectionManager: mockManager)
@@ -60,14 +60,14 @@ final class RemoteSystemMonitorTests: XCTestCase {
         
         wait(for: [expectation], timeout: 1.0)
     }
-
+    
     func testProcessMetricUpdate() {
         let mockManager = MockConnectionManager(yourName: "test")
         let monitor = RemoteSystemMonitor(connectionManager: mockManager)
         
         // Reconfigure so onReceiveMetric closure is assigned
         monitor.configure(connectionManager: mockManager)
-
+        
         let testProcesses = [
             CustomProcessInfo(
                 id: 1,
@@ -86,12 +86,12 @@ final class RemoteSystemMonitorTests: XCTestCase {
                 fullProcessName: "Full Process 2"
             )
         ]
-
+        
         let testPayload = MetricPayload.process(testProcesses)
         
         // Simulate receiving the payload
         mockManager.onReceiveMetric?(testPayload)
-
+        
         // Give time for DispatchQueue.main.async to execute
         let expectation = XCTestExpectation(description: "Wait for async update")
         DispatchQueue.main.async {
@@ -101,7 +101,7 @@ final class RemoteSystemMonitorTests: XCTestCase {
         }
         wait(for: [expectation], timeout: 1.0)
     }
-
+    
     func testStartStopSystemMetricTimer() {
         let mockManager = MockConnectionManager(yourName: "test")
         let monitor = RemoteSystemMonitor(connectionManager: mockManager)
@@ -129,11 +129,11 @@ final class RemoteSystemMonitorTests: XCTestCase {
         monitor.stopSendingMetrics(type: 1)
         XCTAssertNil(monitor.processMetricTimer)
     }
-
+    
     func testStartSendingSystemMetrics() {
         let mockManager = MockConnectionManager(yourName: "test")
         let monitor = RemoteSystemMonitor(connectionManager: mockManager)
-
+        
         // Start sending system metrics
         monitor.startSendingMetrics(type: 0)
         
@@ -153,7 +153,7 @@ final class RemoteSystemMonitorTests: XCTestCase {
         
         wait(for: [expectation], timeout: 2.0)
     }
-
+    
     func testStartSendingProcessMetrics() {
         // Arrange
         let mockManager = MockConnectionManager(yourName: "test")
@@ -193,32 +193,68 @@ final class RemoteSystemMonitorTests: XCTestCase {
         // Wait for the expectation to be fulfilled
         wait(for: [expectation], timeout: 3.0)
     }
-
     
-
+    
+    
     func testInvalidMetricTypeHandling() {
         // Create the mock connection manager
         let mockManager = MockConnectionManager(yourName: "test")
-
+        
         // Initialize the RemoteSystemMonitor with the mock manager
         let monitor = RemoteSystemMonitor(connectionManager: mockManager)
         monitor.configure(connectionManager: mockManager)
-
+        
         // Send an invalid metric type (anything other than 0 or 1)
         let invalidType = 999
         monitor.startSendingMetrics(type: invalidType)
-
+        
         // Simulate the logInvalidMetric being triggered by an invalid type
         mockManager.logInvalidMetric(type: invalidType)
-
+        
         // Wait for async property updates and verify if the log was triggered
         let expectation = XCTestExpectation(description: "Wait for invalid metric handling")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             XCTAssertTrue(mockManager.didLogInvalidMetric, "Expected invalid metric to be logged.")
             expectation.fulfill()
         }
-
+        
         wait(for: [expectation], timeout: 2.0)
     }
-
+    
+    func testCpuUsageHistoryUpdate() {
+        let mockManager = MockConnectionManager(yourName: "test")
+        let monitor = RemoteSystemMonitor(connectionManager: mockManager)
+        monitor.configure(connectionManager: mockManager)
+        
+        let historyData = [
+            CPUUsageData(usage: 10.0, time: Date()),
+            CPUUsageData(usage: 20.0, time: Date()),
+            CPUUsageData(usage: 30.0, time: Date())
+        ]
+        let payload = MetricPayload.cpuUsageHistory(historyData)
+        
+        let expectation = XCTestExpectation(description: "Wait for CPU usage history update")
+        mockManager.onReceiveMetric?(payload)
+        
+        DispatchQueue.main.async {
+            XCTAssertEqual(monitor.cpuUsageHistory.count, 3)
+            XCTAssertEqual(monitor.cpuUsageHistory.map(\.usage), [10.0, 20.0, 30.0])
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 1.0)
+    }
+    func testUnknownMetricPayload() {
+        let json = """
+        {
+            "type": "custom",
+            "payload": { "foo": "bar" }
+        }
+        """.data(using: .utf8)!
+        
+        XCTAssertThrowsError(try JSONDecoder().decode(MetricPayload.self, from: json)) { error in
+            // Optional: Inspect error if needed
+            print("Caught expected decoding error: \(error)")
+        }
+    }
 }

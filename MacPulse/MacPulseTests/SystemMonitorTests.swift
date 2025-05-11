@@ -26,7 +26,47 @@ final class SystemMonitorTests: XCTestCase {
         systemMonitor = nil
         super.tearDown()
     }
+    
+    class MockModelContext {
+        var mockMetrics: [SystemMetric] = []
+        
+        // This method mimics the fetch behavior of the real ModelContext
+        func fetch<T>(_ descriptor: FetchDescriptor<T>) throws -> [T] {
+            if let systemMetricDescriptor = descriptor as? FetchDescriptor<SystemMetric> {
+                return mockMetrics as! [T]
+            }
+            throw NSError(domain: "MockModelContext", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unknown descriptor type"])
+        }
+    }
 
+    
+    class MockConnectionManager: MCConnectionManager {
+        var sentPayloads: [MetricPayload] = []
+        var didLogInvalidMetric = false
+        var mockReceivedMetric: ((MetricPayload) -> Void)?
+        
+        // Override send method to capture sent payloads
+        override func send(_ payload: MetricPayload) {
+            sentPayloads.append(payload)
+        }
+        
+        // Override onReceiveMetric closure to simulate receiving metrics
+        override var onReceiveMetric: ((MetricPayload) -> Void)? {
+            get {
+                return mockReceivedMetric
+            }
+            set {
+                mockReceivedMetric = newValue
+            }
+        }
+        
+        // Simulate the logging mechanism for invalid metric types
+        func logInvalidMetric(type: Int) {
+            if type != 0 && type != 1 {
+                didLogInvalidMetric = true
+            }
+        }
+    }
     func testInitialMemoryUsage() throws {
         // Arrange: Make sure memory usage is initialized to 0.0
         systemMonitor.memoryUsage = 0.0
@@ -135,6 +175,6 @@ final class SystemMonitorTests: XCTestCase {
         systemMonitor.stopMonitoring()
         XCTAssertNil(systemMonitor.timer, "Timer should be nil after stopMonitoring is called.")
     }
-
     
+
 }

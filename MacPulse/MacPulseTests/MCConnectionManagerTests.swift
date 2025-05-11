@@ -9,7 +9,7 @@ import XCTest
 import MultipeerConnectivity
 
 final class MCConnectionManagerTests: XCTestCase {
-
+    
     func testStartAndStopAdvertising() {
         let manager = MCConnectionManager(yourName: "Tester")
         
@@ -22,7 +22,7 @@ final class MCConnectionManagerTests: XCTestCase {
         manager.syncAvailable = false
         XCTAssertFalse(manager.syncAvailable)
     }
-
+    
     func testSendInviteWithoutSelectedPeerLogsWarning() {
         let manager = MCConnectionManager(yourName: "Tester")
         manager.selectedPeer = nil
@@ -32,7 +32,7 @@ final class MCConnectionManagerTests: XCTestCase {
         
         // You would normally use a mock log manager or expectation
     }
-
+    
     func testInitialState() {
         let manager = MCConnectionManager(yourName: "Tester")
         XCTAssertFalse(manager.paired)
@@ -42,37 +42,37 @@ final class MCConnectionManagerTests: XCTestCase {
     
     func testStartAndStopBrowsing() {
         let manager = MCConnectionManager(yourName: "Tester")
-
+        
         // Start browsing
         manager.startBrowsing()
-
+        
         // Create an expectation to wait for the discovery of a peer
         let expectation = self.expectation(description: "Peer discovered")
-
+        
         // Simulate a peer being discovered after a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             // Manually simulate the delegate method being called when a peer is discovered
             let mockPeerID = MCPeerID(displayName: "MockPeer")
             manager.session.delegate?.session(manager.session, peer: mockPeerID, didChange: .connected)
-
+            
             // Check that at least one peer is discovered
             XCTAssertGreaterThan(manager.availablePeers.count, 0, "Should have available peers after browsing.")
-
+            
             // Fulfill the expectation to continue the test
             expectation.fulfill()
         }
-
+        
         // Wait for the expectation to be fulfilled
         waitForExpectations(timeout: 2.0, handler: nil)
-
+        
         // Stop browsing
         manager.stopBrowsing()
-
+        
         // Ensure no peers are available after stopping browsing
         XCTAssertEqual(manager.availablePeers.count, 0, "Should have no available peers after stopping browsing.")
     }
-
-
+    
+    
     func testReceivedPeerInvitation() {
         let manager = MCConnectionManager(yourName: "Tester")
         
@@ -84,8 +84,8 @@ final class MCConnectionManagerTests: XCTestCase {
             XCTAssertNotNil(session)
         })
     }
-
-
+    
+    
     func testReceiveDataFromPeer() {
         let manager = MCConnectionManager(yourName: "Tester")
         
@@ -98,7 +98,7 @@ final class MCConnectionManagerTests: XCTestCase {
         // Assert the payload is processed as expected
         // You could use an expectation to verify the data is passed to the `onReceiveMetric` closure
     }
-
+    
     func testPairedStatusAfterConnection() {
         let manager = MCConnectionManager(yourName: "Tester")
         
@@ -121,7 +121,7 @@ final class MCConnectionManagerTests: XCTestCase {
         // Wait for the expectation to be fulfilled
         waitForExpectations(timeout: 2.0, handler: nil)
     }
-
+    
     func testInvitationAcceptanceAndRejection() {
         let manager = MCConnectionManager(yourName: "Tester")
         let mockPeer = MCPeerID(displayName: "Peer1")
@@ -141,5 +141,6 @@ final class MCConnectionManagerTests: XCTestCase {
         
         waitForExpectations(timeout: 1)
     }
+ 
     
 }
