@@ -40,6 +40,8 @@ struct SettingsView: View {
                     .padding(.bottom, 8)
             ) {
                 Toggle("Invert Colors", isOn: $invertColors)
+                    .accessibilityIdentifier("InvertColorToggle")
+                    .toggleStyle(.switch)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -91,7 +93,9 @@ private struct ThresholdSlider: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("\(label) Alert ≥ \(Int(value))%")
+                .accessibilityIdentifier("\(label)ThresholdLabel")
             Slider(value: $value, in: 0...100, step: 1)
+                .accessibilityIdentifier("\(label)ThresholdSlider")
         }
     }
 }

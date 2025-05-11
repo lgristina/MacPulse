@@ -55,6 +55,7 @@ struct MetricPanel: View {
         VStack {
             Text(title)
                 .font(.headline)
+                .accessibilityIdentifier("\(title) Title")
             Text("\(value, specifier: "%.1f")\(unit)")
                 .font(.largeTitle)
                 .bold()
@@ -63,6 +64,9 @@ struct MetricPanel: View {
         .frame(width: 150, height: 120)
         .background(
             RoundedRectangle(cornerRadius: 0.5).fill(Color.gray.opacity(0.2)))
+        .accessibilityAddTraits(.isButton)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("\(title) Panel")
     }
 }
 

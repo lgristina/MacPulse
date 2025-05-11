@@ -36,6 +36,7 @@ struct SystemMetricsDashboard: View {
                             )) {
                                 MetricPanel(title: "CPU Usage", value: systemMonitor.cpuUsage, unit: "%")
                             }
+                            .accessibilityIdentifier("CPU Usage Panel")
 
                             NavigationLink(destination: DetailedUsageView<MemoryUsageData>(
                                 title: "Memory Usage", unit: "MB", lineColor: .green,
@@ -45,11 +46,13 @@ struct SystemMetricsDashboard: View {
                             )) {
                                 MetricPanel(title: "Memory Usage", value: systemMonitor.memoryUsage, unit: "GB")
                             }
+                            .accessibilityIdentifier("Memory Usage Panel")
 
                             // Disk Activity panel (can be expanded with more details)
                             NavigationLink(destination: DiskDetailedView()) {
-                                MetricPanel(title: "Disk Activity", value: systemMonitor.diskUsed, unit: "GB")
+                                MetricPanel(title: "Disk Usage", value: systemMonitor.diskUsed, unit: "GB")
                             }
+                            .accessibilityIdentifier("Disk Usage Panel")
                         }
                     }
                     .padding()

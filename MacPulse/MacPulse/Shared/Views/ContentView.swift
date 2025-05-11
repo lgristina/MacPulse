@@ -108,6 +108,7 @@ struct ContentView: View {
                 Label(option.title, systemImage: option.imageName)
             }
             .accessibilityIdentifier(option.title)
+            .accessibilityAddTraits(.isButton)
         }
         .navigationTitle("MacPulse")
     }

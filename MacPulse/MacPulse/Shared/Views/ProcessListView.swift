@@ -43,6 +43,7 @@ struct ProcessListView: View {
                     .padding()
             }
             .frame(maxWidth: .infinity)
+            .accessibilityIdentifier("SortByMenu")
             #if os(macOS)
             .background(Color(nsColor: .windowBackgroundColor)) // macOS background
             #else
@@ -77,6 +78,7 @@ struct ProcessListView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .layoutPriority(1) // Prioritize List height over Menu
             .navigationTitle("Running Processes")
+            .accessibilityIdentifier("ProcessList")
             #if os(iOS)
             .ignoresSafeArea(.container, edges: .bottom) // Maximize height on iOS
             .navigationDestination(for: Int.self) { processID in

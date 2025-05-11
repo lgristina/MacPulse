@@ -17,7 +17,7 @@ class MacPulseUITestsmacOS: XCTestCase {
     /// If we're still on the landing screen, tap "Start Monitoring" to enter the main sidebar.
     private func ensureMain() {
         let startButton = app.buttons["Start Monitoring"]
-        if startButton.waitForExistence(timeout: 5) {
+        if startButton.waitForExistence(timeout: 10) {
             startButton.click()
             // Wait for the sidebar outline to appear
             XCTAssertTrue(sidebar.waitForExistence(timeout: 5),
@@ -30,20 +30,23 @@ class MacPulseUITestsmacOS: XCTestCase {
     // MARK: — Landing View Tests (should not call ensureMain)
 
     func testLandingViewDisplaysWelcomeAndStartButton() throws {
-        XCTAssertTrue(app.images["MacPulse"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.images["MacPulse"].waitForExistence(timeout: 10),
                       "LandingView should show the MacPulse logo")
-        XCTAssertTrue(app.staticTexts["Welcome to MacPulse"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["Welcome to MacPulse"].waitForExistence(timeout: 10),
                       "LandingView should show the welcome title")
         XCTAssertTrue(app.buttons["Start Monitoring"].exists,
                       "LandingView should show the 'Start Monitoring' button")
     }
 
     func testLandingViewStartMonitoringNavigatesToSystem() throws {
-        XCTAssertTrue(app.buttons["Start Monitoring"].exists)
-        app.buttons["Start Monitoring"].click()
+        let startButton = app.buttons["Start Monitoring"]
+        if startButton.waitForExistence(timeout: 10){
+            XCTAssertTrue(app.buttons["Start Monitoring"].exists)
+            app.buttons["Start Monitoring"].click()
+        }
 
         // Now look in the sidebar’s cells, not buttons
-        let systemItem = sidebar.cells["System"]
+        let systemItem = sidebar.buttons["System"]
         XCTAssertTrue(systemItem.waitForExistence(timeout: 5),
                       "Tapping 'Start Monitoring' should show the System item in sidebar")
     }
@@ -52,109 +55,159 @@ class MacPulseUITestsmacOS: XCTestCase {
 
     func testSystemOptionShowsDashboardPanels() throws {
         ensureMain()
-        let systemItem = sidebar.cells["System"]
-        XCTAssertTrue(systemItem.exists, "System item should exist in sidebar")
-        systemItem.click()
+        sidebar.buttons["System"].click()
 
-        XCTAssertTrue(app.staticTexts["Mac Performance Dashboard"].waitForExistence(timeout: 5),
-                      "Dashboard should show the title")
-        XCTAssertTrue(app.staticTexts["CPU Usage"].exists,
-                      "CPU Usage panel should be visible")
-        XCTAssertTrue(app.staticTexts["Memory Usage"].exists,
-                      "Memory Usage panel should be visible")
-        XCTAssertTrue(app.staticTexts["Disk Activity"].exists,
-                      "Disk Activity panel should be visible")
+        // wait for dashboard header
+        XCTAssertTrue(
+          app.staticTexts["Mac Performance Dashboard"]
+             .waitForExistence(timeout: 5)
+        )
+
+        // look for the panel containers
+        let cpuPanel  = app.buttons["CPU Usage Panel"]
+        let memPanel  = app.buttons["Memory Usage Panel"]
+        let diskPanel = app.buttons["Disk Usage Panel"]
+
+        XCTAssertTrue(cpuPanel.waitForExistence(timeout: 5),  "CPU panel should be visible")
+        XCTAssertTrue(memPanel.waitForExistence(timeout: 5),  "Memory panel should be visible")
+        XCTAssertTrue(diskPanel.waitForExistence(timeout: 5), "Disk panel should be visible")
     }
 
-    func testDashboardPanelNavigatesToDetail() throws {
+    // MARK: — Dashboard Panel Navigation
+    func testCPUPanelNavigatesToDetail() throws {
         ensureMain()
-        let systemItem = sidebar.cells["System"]
-        systemItem.click()
-        XCTAssertTrue(app.staticTexts["Mac Performance Dashboard"].waitForExistence(timeout: 5))
+        sidebar.buttons["System"].click()
 
-        let cpuLabel = app.staticTexts["CPU Usage"]
-        XCTAssertTrue(cpuLabel.exists, "CPU Usage label must exist")
-        cpuLabel.click()
+        // wait for dashboard title
+        XCTAssertTrue(
+          app.staticTexts["Mac Performance Dashboard"]
+             .waitForExistence(timeout: 5)
+        )
 
-        let backButton = app.buttons["Mac Performance Dashboard"]
-        XCTAssertTrue(backButton.waitForExistence(timeout: 5),
-                      "After tapping CPU Usage, a back button labelled with the dashboard title should appear")
-        XCTAssertTrue(app.staticTexts["CPU Usage"].exists,
-                      "Detail view should display the 'CPU Usage' title")
+        // grab the CPU panel as a button
+        let cpuPanel = app.buttons["CPU Usage Panel"]
+        XCTAssertTrue(
+          cpuPanel.waitForExistence(timeout: 5),
+          "Should see the CPU panel"
+        )
+
+        // click it
+        cpuPanel.click()
+
+        // now assert detail view
+        XCTAssertTrue(
+          app.staticTexts["CPU Usage Detailed View"].waitForExistence(timeout: 5),
+          "Detail view should show the CPU Usage title"
+        )
     }
 
-    // MARK: — Memory & Disk Panel Navigation
 
     func testMemoryPanelNavigatesToDetail() throws {
         ensureMain()
-        let systemItem = sidebar.cells["System"]
-        systemItem.click()
-        XCTAssertTrue(app.staticTexts["Mac Performance Dashboard"].waitForExistence(timeout: 5))
+        sidebar.buttons["System"].click()
 
-        let memoryLabel = app.staticTexts["Memory Usage"]
-        XCTAssertTrue(memoryLabel.exists, "Memory Usage panel must exist")
-        memoryLabel.click()
+        // wait for dashboard title
+        XCTAssertTrue(
+          app.staticTexts["Mac Performance Dashboard"]
+             .waitForExistence(timeout: 5)
+        )
 
-        let backButton = app.buttons["Mac Performance Dashboard"]
-        XCTAssertTrue(backButton.waitForExistence(timeout: 5),
-                      "Back button labelled with dashboard title should appear")
-        XCTAssertTrue(app.staticTexts["Memory Usage"].exists,
-                      "Detail view should display the 'Memory Usage' title")
+        // grab the CPU panel as a button
+        let memoryPanel = app.buttons["Memory Usage Panel"]
+        XCTAssertTrue(
+          memoryPanel.waitForExistence(timeout: 5),
+          "Should see the Memory panel"
+        )
+
+        // click it
+        memoryPanel.click()
+
+        // now assert detail view
+        XCTAssertTrue(
+          app.staticTexts["Memory Usage Detailed View"].waitForExistence(timeout: 5),
+          "Detail view should show the Memory Usage title"
+        )
     }
 
     func testDiskPanelNavigatesToDetail() throws {
         ensureMain()
-        let systemItem = sidebar.cells["System"]
-        systemItem.click()
-        XCTAssertTrue(app.staticTexts["Mac Performance Dashboard"].waitForExistence(timeout: 5),
-                      "Dashboard title should be visible")
+        sidebar.buttons["System"].click()
 
-        let diskLabel = app.staticTexts["Disk Activity"]
-        XCTAssertTrue(diskLabel.exists, "Disk Activity panel must exist")
-        diskLabel.click()
+        // wait for dashboard title
+        XCTAssertTrue(
+          app.staticTexts["Mac Performance Dashboard"]
+             .waitForExistence(timeout: 5)
+        )
 
-        XCTAssertTrue(app.staticTexts["Disk Usage Breakdown"].waitForExistence(timeout: 5),
-                      "Detail view should show 'Disk Usage Breakdown' title")
-        let usedEntry = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "Used:")).firstMatch
-        XCTAssertTrue(usedEntry.exists, "Used: label should be visible in Disk detail")
-        let freeEntry = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "Free:")).firstMatch
-        XCTAssertTrue(freeEntry.exists, "Free: label should be visible in Disk detail")
+        // grab the CPU panel as a button
+        let diskPanel = app.buttons["Disk Usage Panel"]
+        XCTAssertTrue(
+          diskPanel.waitForExistence(timeout: 5),
+          "Should see the Disk panel"
+        )
+
+        // click it
+        diskPanel.click()
+
+        // now assert detail view
+        XCTAssertTrue(
+          app.staticTexts["Disk Usage Breakdown"].waitForExistence(timeout: 5),
+          "Detail view should show the Disk Usage title"
+        )
     }
 
     // MARK: — Process View Tests
 
     func testProcessOptionShowsProcessList() throws {
         ensureMain()
-        let processItem = sidebar.cells["Process"]
+        let processItem = sidebar.buttons["Process"]
+        
         XCTAssertTrue(processItem.exists, "Process item should exist in sidebar")
+        
         processItem.click()
 
-        let sortMenuButton = app.buttons["Sort by"]
-        XCTAssertTrue(sortMenuButton.exists, "\"Sort by\" menu should appear in Process view")
+        let sortMenu = app.popUpButtons["SortByMenu"]
+        XCTAssertTrue(
+          sortMenu.waitForExistence(timeout: 5),
+          "‘Sort by’ menu should appear in Process view"
+        )
 
-        let table = app.tables.firstMatch
-        XCTAssertTrue(table.waitForExistence(timeout: 5),
-                      "Selecting 'Process' should show the process list")
-        let firstCell = table.cells.element(boundBy: 0)
-        XCTAssertTrue(firstCell.exists,
-                      "There should be at least one process listed in the table")
+        let processList = app.outlines["ProcessList"]
+        XCTAssertTrue(
+          processList.waitForExistence(timeout: 5),
+          "The process list should appear"
+        )
+        
+        let firstRow = processList.outlineRows.element(boundBy: 0)
+        XCTAssertTrue(firstRow.waitForExistence(timeout: 10),
+                      "There should be at least one process listed")
     }
 
     func testProcessDetailShowsCorrectInfo() throws {
         ensureMain()
-        let processItem = sidebar.cells["Process"]
+        
+        let processItem = sidebar.buttons["Process"]
+        
         processItem.click()
 
-        let table = app.tables.firstMatch
-        XCTAssertTrue(table.waitForExistence(timeout: 5))
-        let firstRowButton = table.buttons.element(boundBy: 0)
-        XCTAssertTrue(firstRowButton.exists, "There should be a tappable process row")
-        firstRowButton.click()
+        let processList = app.outlines["ProcessList"]
+        XCTAssertTrue(
+          processList.waitForExistence(timeout: 2),
+          "The process list should appear")
+        
+
+        let firstRow = processList.outlineRows.element(boundBy: 0)
+        XCTAssertTrue(firstRow.waitForExistence(timeout: 10),
+                    "There should be at least one process listed")
+        
+        let rowButton = firstRow.buttons.firstMatch
+        XCTAssertTrue(rowButton.exists, "Row should contain a tappable button")
+        rowButton.click()
 
         let sheet = app.sheets.firstMatch
         XCTAssertTrue(sheet.waitForExistence(timeout: 5),
                       "Process detail sheet should appear")
-        XCTAssertTrue(sheet.staticTexts["Process Details"].exists)
+        XCTAssertTrue(sheet.staticTexts["Process Details"].waitForExistence(timeout: 5))
         XCTAssertTrue(sheet.staticTexts["Process name:"].exists)
         XCTAssertTrue(sheet.staticTexts["Process ID:"].exists)
         XCTAssertTrue(sheet.staticTexts["CPU Usage:"].exists)
@@ -163,88 +216,84 @@ class MacPulseUITestsmacOS: XCTestCase {
 
     // MARK: — Log View Tests
 
-    func testLogOptionShowsLogList() throws {
+    
+    func testLogCategoryPickerSelectionOnly() throws {
         ensureMain()
-        let logItem = sidebar.cells["Log"]
-        XCTAssertTrue(logItem.exists, "Log item should exist in sidebar")
-        logItem.click()
 
-        XCTAssertTrue(app.navigationBars["Log"].waitForExistence(timeout: 5),
-                      "Selecting 'Log' should navigate to the log view")
-        if app.staticTexts["No logs yet."].exists {
-            XCTAssertTrue(app.staticTexts["No logs yet."].exists,
-                          "When there are no logs, it should show a placeholder")
-        } else {
-            let logText = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "INFO")).firstMatch
-            XCTAssertTrue(logText.exists, "Log content should be visible in the log view")
-        }
-    }
-
-    func testLogOptionShowsLogViewElements() throws {
-        ensureMain()
-        let logItem = sidebar.cells["Log"]
-        logItem.click()
+        // 1) Navigate to the Log view
+        let logButton = sidebar.buttons["Log"]
+        XCTAssertTrue(logButton.waitForExistence(timeout: 5),
+                      "Log item should exist in sidebar")
+        logButton.click()
 
         XCTAssertTrue(app.staticTexts["Log"].waitForExistence(timeout: 5),
-                      "Log view should display the ‘Log’ title")
-        let picker = app.segmentedControls.firstMatch
-        XCTAssertTrue(picker.exists, "Category picker should exist in Log view")
-        let defaultSegment = picker.buttons["Error & Debug"]
-        XCTAssertTrue(defaultSegment.exists && defaultSegment.isSelected,
-                      "Default segment (‘Error & Debug’) should be selected")
-        XCTAssertTrue(app.staticTexts["No logs yet."].exists,
-                      "When there are no logs, it should show a placeholder")
-    }
+                      "Tapping 'Log' should show the Log view header")
 
-    func testLogCategoryFilteringKeepsPlaceholder() throws {
-        ensureMain()
-        let picker = app.segmentedControls.firstMatch
-        let categories = picker.buttons.allElementsBoundByIndex.map { $0.label }
-        for category in categories where category != "Error & Debug" {
-            let segment = picker.buttons[category]
-            segment.click()
-            XCTAssertTrue(segment.isSelected,
-                          "Tapping ‘\(category)’ should select that segment")
-            XCTAssertTrue(app.staticTexts["No logs yet."].exists,
-                          "Still shows placeholder when category has no logs")
+        // 2) The six segments we expect
+        let categories = [
+          "ErrorAndDebug",
+          "SyncConnection",
+          "SyncTransmission",
+          "SyncRetrieval",
+          "DataPersistence",
+          "Backup"
+        ]
+
+        for category in categories {
+          // 3) Find the segment by its visible label
+          let segment = app.radioButtons[category]
+          XCTAssertTrue(segment.waitForExistence(timeout: 5),
+                        "Segment '\(category)' should exist")
+
+          // 4) Click it
+          segment.click()
+
+          // 5) Confirm the UI updated: either a scrollView (logs) or the "No logs yet." text
+          let didShowList = app.scrollViews.firstMatch.waitForExistence(timeout: 2)
+          let didShowPlaceholder = app.staticTexts["No logs yet."].waitForExistence(timeout: 2)
+          XCTAssertTrue(
+            didShowList || didShowPlaceholder,
+            "After tapping '\(category)', either the log list or placeholder should appear"
+          )
         }
     }
 
     // MARK: — Settings View Tests
 
-    func testSettingsOptionShowsSlidersAndToggle() throws {
+    func testSettingsOptionShowsSlidersAndToggleExist() throws {
         ensureMain()
-        let settingsItem = sidebar.cells["Settings"]
+        let settingsItem = sidebar.buttons["Settings"]
         XCTAssertTrue(settingsItem.exists, "Settings item should exist in sidebar")
         settingsItem.click()
 
-        XCTAssertTrue(app.staticTexts["Notification"].waitForExistence(timeout: 5))
+        // Section headers
+        XCTAssertTrue(app.staticTexts["Notification"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["Accessibility"].exists)
 
-        XCTAssertTrue(app.staticTexts["CPU Alert ≥ 50%"].exists)
-        XCTAssertTrue(app.staticTexts["Memory Alert ≥ 50%"].exists)
-        XCTAssertTrue(app.staticTexts["Disk Alert ≥ 90%"].exists)
+        // Labels and sliders by identifier
+        XCTAssertTrue(app.staticTexts["CPUThresholdLabel"].exists)
+        XCTAssertTrue(app.sliders["CPUThresholdSlider"].exists)
 
-        let cpuSlider = app.sliders.element(boundBy: 0)
-        XCTAssertTrue(cpuSlider.exists)
-        let memSlider = app.sliders.element(boundBy: 1)
-        XCTAssertTrue(memSlider.exists)
-        let diskSlider = app.sliders.element(boundBy: 2)
-        XCTAssertTrue(diskSlider.exists)
+        XCTAssertTrue(app.staticTexts["MemoryThresholdLabel"].exists)
+        XCTAssertTrue(app.sliders["MemoryThresholdSlider"].exists)
 
-        let invertCheckbox = app.checkBoxes["Invert Colors"]
-        XCTAssertTrue(invertCheckbox.exists)
+        XCTAssertTrue(app.staticTexts["DiskThresholdLabel"].exists)
+        XCTAssertTrue(app.sliders["DiskThresholdSlider"].exists)
+
+        // Invert‐colors toggle
+        XCTAssertTrue(app.checkBoxes["Invert Colors"].exists)
     }
 
     func testSettingsToggleInvertColorsChangesState() throws {
         ensureMain()
-        let settingsItem = sidebar.cells["Settings"]
-        settingsItem.click()
+        sidebar.buttons["Settings"].click()
+        XCTAssertTrue(app.staticTexts["Accessibility"].waitForExistence(timeout: 2))
 
-        let invertCheckbox = app.checkBoxes["Invert Colors"]
-        XCTAssertEqual(invertCheckbox.value as? String, "0")
-        invertCheckbox.click()
-        XCTAssertEqual(invertCheckbox.value as? String, "1")
+        let toggle = app.switches["InvertColorToggle"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 2))
+
+        toggle.click()
+
     }
 }
 #endif

@@ -33,7 +33,12 @@ struct LogView: View {
             // MARK: - Category Picker
             Picker("Category", selection: $selectedCategory) {
                 ForEach(LogCategory.allCases, id: \.self) { category in
-                    Text(category.rawValue).tag(category)
+                    Text(category.rawValue)
+                        .tag(category)
+                        .accessibilityIdentifier("\(category.rawValue)Segment")
+                        .accessibilityAddTraits(
+                            selectedCategory == category ? .isSelected : []
+                              )
                 }
             }
             .pickerStyle(SegmentedPickerStyle())
