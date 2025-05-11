@@ -11,7 +11,7 @@ import Security
 class KeyManager {
 
     // Keychain query to store and retrieve the encryption key
-    static let encryptionKeyKey = "encryptionKey"
+    static let encryptionKeyKey = "encryptionKeyKeyy"
 
     // Method to retrieve the encryption key securely from the Keychain
     static func getEncryptionKey() -> String? {
@@ -82,4 +82,13 @@ class KeyManager {
             print("Error storing encryption key: \(status)")
         }
     }
+    
+    static func validateEncryptionKey(_ key: String) -> Data? {
+        guard let keyData = Data(base64Encoded: key), keyData.count == 32 else {
+            print("Invalid key length. Key must be 32 bytes for AES.")
+            return nil
+        }
+        return keyData
+    }
+
 }

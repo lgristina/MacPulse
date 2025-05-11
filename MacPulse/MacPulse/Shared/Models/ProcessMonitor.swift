@@ -34,33 +34,45 @@ class ProcessMonitor: ObservableObject {
     
     /// Collects current running process metrics and persists them.
     func collectAndSaveProcesses() {
+        LogManager.shared.log(.dataPersistence, level: .medium, "📊 Collecting process metrics.")
+
         runningProcesses = getRunningProcesses()
         if !runningProcesses.isEmpty {
             LogManager.shared.log(.dataPersistence, level: .medium, "📥 Retrieved \(runningProcesses.count) process metrics.")
-            
-            // Serialize processes into JSON data
+
             do {
+                // Serialize processes into JSON data
                 let jsonData = try JSONEncoder().encode(runningProcesses)
+                
                 guard let jsonString = String(data: jsonData, encoding: .utf8) else {
                     throw NSError(domain: "ProcessMonitor", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert process data to string."])
                 }
-                
+
+                // Retrieve encryption key
                 guard let encryptionKey = KeyManager.getEncryptionKey() else {
+                    LogManager.shared.log(.dataPersistence, level: .high, "❌ Encryption key is missing.")
                     throw NSError(domain: "ProcessMonitor", code: -1, userInfo: [NSLocalizedDescriptionKey: "Encryption key is missing."])
                 }
-                
+
+                // Encrypt process data
                 let encryptedProcesses = try CryptoHelper.encrypt(jsonString, with: encryptionKey)
-                
-                Task { @MainActor in
-                    DataManager.shared.saveEncryptedProcessMetrics(encryptedProcesses)
+
+                // Save encrypted process metrics
+                LogManager.shared.log(.dataPersistence, level: .medium, "🔒 Encryption successful. Saving encrypted metrics.")
+                Task {
+                    await MainActor.run {
+                        DataManager.shared.saveEncryptedProcessMetrics(encryptedProcesses)
+                    }
                 }
+
             } catch {
-                LogManager.shared.log(.dataPersistence, level: .high, "⚠️ Failed to encrypt process metrics: \(error.localizedDescription)")
+                LogManager.shared.log(.dataPersistence, level: .high, "⚠️ Failed to encrypt and save process metrics: \(error.localizedDescription)")
             }
         } else {
-            LogManager.shared.log(.dataPersistence, level: .low, "⚠️ No processes retrieved during this cycle.")
+            LogManager.shared.log(.dataPersistence, level: .low, "⚠️ No processes retrieved this cycle.")
         }
     }
+
 
     /// Uses `/bin/ps` to retrieve process info.
     /// - Returns: An array of `CustomProcessInfo` for each running process.

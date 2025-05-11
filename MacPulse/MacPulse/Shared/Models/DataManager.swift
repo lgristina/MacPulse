@@ -114,6 +114,8 @@ class DataManager {
 
 
     // MARK: - Fetch and Decrypt Process Metrics
+    
+    /// Fetches and decrypts process metrics from CoreData.
     func fetchProcessMetrics() {
         do {
             let fetchDescriptor = FetchDescriptor<CustomProcessInfo>()
@@ -133,6 +135,11 @@ class DataManager {
 
 
     //  MARK: - Mirror Insert
+    
+    /// Inserts a copy of the model object into the backup context with encrypted data.
+    ///
+    /// - Parameter model: The model object to insert into the backup context.
+    /// - Parameter backupContext: The backup context to insert into.
     private func mirrorInsert<T: PersistentModel>(_ model: T, into backupContext: ModelContext) throws {
         if let process = model as? CustomProcessInfo {
             do {
@@ -264,6 +271,13 @@ class DataManager {
         }
     }
 
+    
+    
+    /// Checks for corruption in the main and backup containers at app launch.
+    ///
+    /// - This method calls `checkForCorruption()` to check if data is corrupted.
+    /// - If corruption is detected, it restores the backup and logs the event.
+    /// - If no corruption is detected, it logs the event and resets the corruption detection flag.
     @MainActor
     func checkForCorruptionOnLaunch() {
         // Check for corruption in the main and backup containers
@@ -278,6 +292,12 @@ class DataManager {
         }
     }
     
+    /// Checks the data in the main container to detect if corruption is present.
+    ///
+    /// - Attempts to fetch the most recent system metric from the main context.
+    /// - If the fetch is successful, no corruption is detected.
+    /// - If the fetch fails, an error is logged, and corruption is likely.
+    /// - Returns `true` if corruption is detected, `false` otherwise.
     @MainActor
     func checkForCorruption() -> Bool {
         do {
@@ -291,6 +311,12 @@ class DataManager {
         }
     }
     
+    /// Restores the backup data from the backup context into the main context.
+    ///
+    /// - Fetches backup data for both system metrics and process metrics from the backup context.
+    /// - Clears the existing data in the main context.
+    /// - Copies the backup data into the main context.
+    /// - Attempts to save the restored data and logs the result.
     @MainActor
     func restoreBackup() {
         let backupContext = backupContext
@@ -320,6 +346,13 @@ class DataManager {
         }
     }
     
+
+    /// Deletes all system and process data from the given context.
+    ///
+    /// - Fetches all `SystemMetric` and `CustomProcessInfo` entities from the provided context.
+    /// - Deletes each fetched entity.
+    /// - Attempts to save the changes to the context after deletion.
+    /// - Throws an error if deletion or saving fails.
     func deleteAllData(in context: ModelContext) throws {
         let metricDescriptor = FetchDescriptor<SystemMetric>()
         let processDescriptor = FetchDescriptor<CustomProcessInfo>()
@@ -338,25 +371,40 @@ class DataManager {
         try context.save()
     }
 
-
+    
+    /// Saves encrypted process metrics data to a file in the Documents directory.
+    ///
+    /// - Takes in a string containing the encrypted data.
+    /// - Writes the encrypted data to a file named "encryptedProcessMetrics.txt" in the Documents directory.
+    /// - Logs success or failure of the file saving operation.
+    /// - If the Documents directory cannot be accessed, logs an error.
+    ///
+    /// - Parameter encryptedData: The encrypted data string to save to the file.
     func saveEncryptedProcessMetrics(_ encryptedData: String) {
-        // Get the URL for the Documents directory
+        LogManager.shared.log(.dataPersistence, level: .low, "🔒 Saving encrypted process metrics.")
+        
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             LogManager.shared.log(.dataPersistence, level: .high, "❌ Failed to get Documents directory path.")
             return
         }
         
-        // Define the file path where the encrypted data will be saved
         let fileURL = documentsDirectory.appendingPathComponent("encryptedProcessMetrics.txt")
         
+        LogManager.shared.log(.dataPersistence, level: .low, "Saving to: \(fileURL.path)")
+        
         do {
-            // Write the encrypted data to the file
             try encryptedData.write(to: fileURL, atomically: true, encoding: .utf8)
-            LogManager.shared.log(.dataPersistence, level: .medium, "✅ Successfully saved encrypted process data to file: \(fileURL.path)")
+            LogManager.shared.log(.dataPersistence, level: .low, "✅ Encrypted process metrics saved to \(fileURL.path).")
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                    LogManager.shared.log(.dataPersistence, level: .medium, "✅ File successfully saved.")
+                } else {
+                    LogManager.shared.log(.dataPersistence, level: .high, "❌ File does not exist at expected location.")
+                }
         } catch {
-            LogManager.shared.log(.dataPersistence, level: .high, "❌ Failed to save encrypted process data: \(error.localizedDescription)")
+            LogManager.shared.log(.dataPersistence, level: .high, "❌ Failed to save encrypted process metrics: \(error.localizedDescription)")
         }
     }
+
     
     
     

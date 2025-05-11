@@ -64,4 +64,5 @@ struct KeychainHelper {
                     LogManager.shared.log(.dataPersistence, level: .high, "Successfully saved key '\(keyName)' to Keychain.")
                 }
     }
+    
 }
