@@ -28,9 +28,11 @@ struct LandingView: View {
                 .padding()
                 .accessibilityIdentifier("Welcome to MacPulse")
             #elseif os(iOS)
+            
             Text("Monitor a Mac from your iPhone or iPad")
                 .font(.title2)
                 .padding()
+                .foregroundColor(.blue)
                 .accessibilityIdentifier("Monitor a Mac from your iPhone or iPad")
             #endif
 
