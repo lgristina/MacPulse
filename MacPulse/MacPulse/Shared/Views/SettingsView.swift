@@ -54,18 +54,6 @@ struct SettingsView: View {
         #else
         // — iOS: simple VStack so everything always fits
         VStack(alignment: .leading, spacing: 32) {
-            // 1) Notification sliders (static, not scrollable)
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Notifications")
-                    .font(.title2)
-
-                ThresholdSlider(label: "CPU",    value: $cpuThreshold)
-                ThresholdSlider(label: "Memory", value: $memoryThreshold)
-                ThresholdSlider(label: "Disk",   value: $diskThreshold)
-            }
-            .padding(.horizontal)
-
-            // 2) Accessibility toggle (always visible)
             VStack(alignment: .leading, spacing: 16) {
                 Text("Accessibility")
                     .font(.title2)

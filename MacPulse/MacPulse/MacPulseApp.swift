@@ -41,11 +41,6 @@ struct MacPulseApp: App {
     @StateObject private var syncService: MCConnectionManager
     @StateObject private var notifier = ThresholdNotifier()
 
-    #if os(iOS)
-    @UIApplicationDelegateAdaptor(UserNotificationDelegate.self)
-    private var notificationDelegate: UserNotificationDelegate
-    #endif
-
     init() {
         // Reset persisted hasStarted when requested by UI tests
         if ProcessInfo.processInfo.arguments.contains("--reset-hasStarted") {
@@ -59,9 +54,6 @@ struct MacPulseApp: App {
         RemoteSystemMonitor.shared.configure(connectionManager: manager)
         DataManager.shared.checkForCorruptionOnLaunch()
 
-        #if os(iOS)
-        UNUserNotificationCenter.current().delegate = notificationDelegate
-        #endif
         NotificationManager.requestPermission()
     }
 
