@@ -8,12 +8,16 @@
 import Foundation
 import Security
 
+
+/// A manager class responsible for securely handling the encryption key in the Keychain, including retrieving, storing, generating, and validating the encryption key.
 class KeyManager {
 
-    // Keychain query to store and retrieve the encryption key
+    /// Keychain query to store and retrieve the encryption key
     static let encryptionKeyKey = "encryptionKeyKeyy"
 
-    // Method to retrieve the encryption key securely from the Keychain
+    
+    /// Retrieves the encryption key securely from the Keychain. If the key does not exist, it generates a new key and stores it in the Keychain.
+    /// - Returns: The encryption key as a `String`, or `nil` if an error occurs.
     static func getEncryptionKey() -> String? {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
@@ -37,8 +41,8 @@ class KeyManager {
         }
     }
 
-
-    // Method to generate a new encryption key securely
+    /// Generates a new encryption key securely.
+    /// - Returns: A Base64-encoded string representation of the new encryption key.
     static func generateEncryptionKey() -> String {
         var key = Data(count: 32)
         _ = key.withUnsafeMutableBytes { (bytes: UnsafeMutableRawBufferPointer) in
@@ -49,8 +53,8 @@ class KeyManager {
     }
 
 
-
-    // Method to store the encryption key in the Keychain
+    /// Stores the given encryption key in the Keychain. If the key already exists, it updates the existing key.
+    /// - Parameter key: The encryption key to be stored in the Keychain.
     static func storeEncryptionKey(_ key: String) {
         let keyData = key.data(using: .utf8)!
 
@@ -83,6 +87,10 @@ class KeyManager {
         }
     }
     
+    
+    /// Validates the encryption key to ensure it meets the required length for AES encryption (32 bytes).
+    /// - Parameter key: The encryption key to be validated.
+    /// - Returns: The decoded `Data` if the key is valid, or `nil` if the key is invalid.
     static func validateEncryptionKey(_ key: String) -> Data? {
         guard let keyData = Data(base64Encoded: key), keyData.count == 32 else {
             print("Invalid key length. Key must be 32 bytes for AES.")
