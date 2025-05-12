@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "DA5E7F26-AF03-42C5-9DC8-31E251AF0BB4",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "skippedTests" : [
+        "MacPulseUITestsmacOS",
+        "MacPulseUITestsmacOS\/testCPUPanelNavigatesToDetail()",
+        "MacPulseUITestsmacOS\/testDiskPanelNavigatesToDetail()",
+        "MacPulseUITestsmacOS\/testLandingViewDisplaysWelcomeAndStartButton()",
+        "MacPulseUITestsmacOS\/testLandingViewStartMonitoringNavigatesToSystem()",
+        "MacPulseUITestsmacOS\/testLogCategoryPickerSelectionOnly()",
+        "MacPulseUITestsmacOS\/testMemoryPanelNavigatesToDetail()",
+        "MacPulseUITestsmacOS\/testProcessDetailShowsCorrectInfo()",
+        "MacPulseUITestsmacOS\/testProcessOptionShowsProcessList()",
+        "MacPulseUITestsmacOS\/testSettingsOptionShowsSlidersAndToggleExist()",
+        "MacPulseUITestsmacOS\/testSettingsToggleInvertColorsChangesState()",
+        "MacPulseUITestsmacOS\/testSystemOptionShowsDashboardPanels()"
+      ],
+      "target" : {
+        "containerPath" : "container:MacPulse.xcodeproj",
+        "identifier" : "778521552D7FBF6300C057AF",
+        "name" : "MacPulseUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
